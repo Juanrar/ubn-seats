@@ -116,6 +116,30 @@ describe('buildSeats — posiciones', () => {
   })
 })
 
+describe('buildSeats — redondeo', () => {
+  const decimals = (n: number): number => {
+    const s = n.toString()
+    const i = s.indexOf('.')
+    return i === -1 ? 0 : s.length - i - 1
+  }
+
+  it('ninguna butaca tiene más de 3 decimales en x, y ni angle', () => {
+    for (const s of seats) {
+      expect(decimals(s.x)).toBeLessThanOrEqual(3)
+      expect(decimals(s.y)).toBeLessThanOrEqual(3)
+      expect(decimals(s.angle)).toBeLessThanOrEqual(3)
+    }
+  })
+
+  it('ninguna butaca tiene -0 en x, y ni angle', () => {
+    for (const s of seats) {
+      expect(Object.is(s.x, -0)).toBe(false)
+      expect(Object.is(s.y, -0)).toBe(false)
+      expect(Object.is(s.angle, -0)).toBe(false)
+    }
+  })
+})
+
 describe('seatBounds', () => {
   it('encierra todas las butacas', () => {
     const box = seatBounds(seats)

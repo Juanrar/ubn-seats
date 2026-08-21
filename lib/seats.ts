@@ -12,6 +12,16 @@ import { VENUE_ROWS } from '@/lib/venue'
 
 const pad2 = (n: number) => String(n).padStart(2, '0')
 
+/**
+ * Redondea a 3 decimales. Math.sin/cos no estan garantizados identicos bit a
+ * bit entre implementaciones de JS, y esa diferencia de 1 ULP se serializa
+ * distinto en el SVG del servidor y el del cliente, lo que hace que React
+ * reporte un mismatch de hidratacion. A 24 unidades de paso de butaca, 3
+ * decimales son invisibles. Se le suma 0 para normalizar -0 a 0, porque -0 se
+ * serializa como "0" en algunos contextos y como "-0" en otros.
+ */
+export const round3 = (n: number): number => Math.round(n * 1000) / 1000 + 0
+
 function seatId(sector: SectorId, row: number, number: number): string {
   return `${sector}-F${pad2(row)}-${number}`
 }
@@ -35,9 +45,9 @@ function makeSeat(
     number,
     kind: sector === 'platea-accesible' ? 'accessible' : 'standard',
     price: priceFor(sector, row),
-    x,
-    y,
-    angle,
+    x: round3(x),
+    y: round3(y),
+    angle: round3(angle),
   }
 }
 

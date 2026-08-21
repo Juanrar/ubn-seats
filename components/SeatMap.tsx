@@ -4,7 +4,7 @@ import { useMemo } from 'react'
 import { SeatArc, type SeatArcProps } from '@/components/SeatArc'
 import { Stage, STAGE_BOX } from '@/components/Stage'
 import { boundingBox } from '@/lib/geometry'
-import { seatBounds } from '@/lib/seats'
+import { round3, seatBounds } from '@/lib/seats'
 import type { Seat } from '@/lib/types'
 
 export interface SeatMapProps extends SeatArcProps {
@@ -34,7 +34,7 @@ export function SeatMap({ seats, onKeyDown, ...arcProps }: SeatMapProps) {
       ],
       24,
     )
-    return `${box.x} ${box.y} ${box.width} ${box.height}`
+    return `${round3(box.x)} ${round3(box.y)} ${round3(box.width)} ${round3(box.height)}`
   }, [seats])
 
   const rows = useMemo(() => byRow(seats), [seats])

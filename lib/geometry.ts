@@ -32,16 +32,6 @@ export function offsetToTheta(offset: number, radius: number): number {
 }
 
 /**
- * Redondea a 3 decimales. Math.sin/cos no estan garantizados identicos bit a
- * bit entre implementaciones de JS, y esa diferencia de 1 ULP se serializa
- * distinto en el SVG del servidor y el del cliente, lo que hace que React
- * reporte un mismatch de hidratacion. A 24 unidades de paso de butaca, 3
- * decimales son invisibles. Se le suma 0 para normalizar -0 a 0, porque -0 se
- * serializa como "0" en algunos contextos y como "-0" en otros.
- */
-const round3 = (n: number): number => Math.round(n * 1000) / 1000 + 0
-
-/**
  * Punto del arco de radio `radius` en el ángulo `theta` (radianes), con la
  * rotación necesaria para que la butaca encare al centro de curvatura.
  *
@@ -50,9 +40,9 @@ const round3 = (n: number): number => Math.round(n * 1000) / 1000 + 0
  */
 export function placeOnArc(radius: number, theta: number): Placement {
   return {
-    x: round3(CENTER.x + radius * Math.sin(theta)),
-    y: round3(CENTER.y + radius * Math.cos(theta)),
-    angle: round3((-theta * 180) / Math.PI),
+    x: CENTER.x + radius * Math.sin(theta),
+    y: CENTER.y + radius * Math.cos(theta),
+    angle: (-theta * 180) / Math.PI,
   }
 }
 

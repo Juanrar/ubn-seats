@@ -88,27 +88,6 @@ describe('placeOnArc', () => {
   })
 })
 
-describe('redondeo de coordenadas', () => {
-  it('placeOnArc devuelve x, y y angle con a lo sumo 3 decimales', () => {
-    const decimals = (n: number): number => {
-      const s = n.toString()
-      const i = s.indexOf('.')
-      return i === -1 ? 0 : s.length - i - 1
-    }
-    for (const [radius, theta] of [
-      [400, 0.37],
-      [360, -0.4],
-      [572, 0.123456],
-      [400, 0],
-    ] as const) {
-      const p = placeOnArc(radius, theta)
-      expect(decimals(p.x)).toBeLessThanOrEqual(3)
-      expect(decimals(p.y)).toBeLessThanOrEqual(3)
-      expect(decimals(p.angle)).toBeLessThanOrEqual(3)
-    }
-  })
-})
-
 describe('boundingBox', () => {
   it('encierra todos los puntos y agrega el padding', () => {
     const box = boundingBox([{ x: -10, y: 5 }, { x: 30, y: 45 }], 10)
