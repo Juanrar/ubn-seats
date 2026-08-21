@@ -61,7 +61,7 @@ export function SeatButton({ seat, status, focused, onToggle, onFocus }: SeatBut
       tabIndex={focused ? 0 : -1}
       data-seat-id={seat.id}
       transform={`translate(${seat.x} ${seat.y}) rotate(${seat.angle})`}
-      className={occupied ? 'cursor-default' : 'cursor-pointer focus:outline-none'}
+      className={occupied ? 'cursor-default' : 'cursor-pointer'}
       onClick={() => {
         if (!occupied) onToggle(seat)
       }}
@@ -70,11 +70,7 @@ export function SeatButton({ seat, status, focused, onToggle, onFocus }: SeatBut
       <SeatShape
         status={status}
         kind={seat.kind}
-        className={
-          occupied
-            ? ''
-            : 'transition-colors hover:stroke-accent group-focus-visible:stroke-accent'
-        }
+        className={occupied ? '' : 'transition-colors hover:stroke-accent'}
       />
       <title>{label}</title>
     </g>
