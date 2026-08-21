@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { PlateaPicker } from '@/components/PlateaPicker'
 import { buildSeats } from '@/lib/seats'
 import { buildOccupancy } from '@/lib/occupancy'
+import { nextSeatId } from '@/lib/navigation'
 import { MAX_SEATS } from '@/lib/constants'
 
 const seats = buildSeats()
@@ -72,23 +73,48 @@ describe('PlateaPicker', () => {
     expect(screen.getByText(/eleg[íi] tus butacas/i)).toBeInTheDocument()
   })
 
-  it('mueve el foco con las flechas y selecciona con Enter', async () => {
+  it('mueve el foco real del DOM con las flechas', async () => {
     render(<PlateaPicker />)
-    const mapa = screen.getByRole('group', { name: /mapa de butacas/i })
-    let boton = screen.getAllByRole('button').find((b) => b.getAttribute('tabindex') === '0')!
-    boton.focus()
+    const inicial = screen.getAllByRole('button').find((b) => b.getAttribute('tabindex') === '0')!
+    inicial.focus()
+    const idInicial = inicial.getAttribute('data-seat-id')!
+    const idEsperado = nextSeatId(seats, idInicial, 'right')
+    // Sanity: si esto fallara, el resto del test no probaría nada.
+    expect(idEsperado).not.toBe(idInicial)
 
-    // El vecino inmediato puede caer ocupado según la semilla fija: se sigue
-    // moviendo con la flecha hasta pisar una butaca libre antes de elegir.
-    while (boton.getAttribute('aria-disabled') === 'true') {
-      await userEvent.keyboard('{ArrowRight}')
-      boton = document.activeElement as HTMLElement
-    }
-    await userEvent.keyboard('{Enter}')
+    const anterior = document.activeElement
+    await userEvent.keyboard('{ArrowRight}')
+
+    expect(document.activeElement).not.toBe(anterior)
+    expect(document.activeElement).toBe(
+      document.querySelector(`[data-seat-id="${idEsperado}"]`),
+    )
+  })
+
+  it('selecciona con Enter la butaca a la que se llegó con la flecha, no la de partida', async () => {
+    render(<PlateaPicker />)
+    const inicial = screen.getAllByRole('button').find((b) => b.getAttribute('tabindex') === '0')!
+    inicial.focus()
+    const idInicial = inicial.getAttribute('data-seat-id')!
+
+    // Se calcula de antemano cuántas flechas hacen falta para llegar a una
+    // butaca libre distinta de la de partida: la ocupación depende de la
+    // semilla fija, así que el vecino inmediato podría estar ocupado.
+    let id = idInicial
+    const teclas: string[] = []
+    do {
+      const next = nextSeatId(seats, id, 'right')
+      if (next === id) throw new Error('sin butacas libres a la derecha para probar Enter')
+      id = next
+      teclas.push('{ArrowRight}')
+    } while (occupied.has(id))
+    const seatEsperado = seats.find((s) => s.id === id)!
+
+    await userEvent.keyboard(teclas.join('') + '{Enter}')
 
     const resumen = screen.getByRole('region', { name: /tu selección/i })
     expect(within(resumen).getAllByRole('listitem')).toHaveLength(1)
-    expect(mapa).toBeInTheDocument()
+    expect(within(resumen).getByText(new RegExp(`Fila ${seatEsperado.row}`))).toBeInTheDocument()
   })
 
   it('mantiene una sola parada de tabulación después de navegar', async () => {
