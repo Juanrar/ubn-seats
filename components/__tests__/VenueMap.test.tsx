@@ -33,10 +33,16 @@ describe('VenueMap', () => {
   })
 
   it('rotula cada franja de tarifa con su precio', () => {
-    renderMap()
-    expect(screen.getByText('Platea A · 45.000')).toBeInTheDocument()
-    expect(screen.getByText('Platea B · 38.000')).toBeInTheDocument()
-    expect(screen.getByText('Platea C · 30.000')).toBeInTheDocument()
+    const { container } = renderMap()
+    expect(container.querySelector('[data-tier-label="Platea A"]')?.textContent).toBe(
+      'Platea A · 45.000',
+    )
+    expect(container.querySelector('[data-tier-label="Platea B"]')?.textContent).toBe(
+      'Platea B · 38.000',
+    )
+    expect(container.querySelector('[data-tier-label="Platea C"]')?.textContent).toBe(
+      'Platea C · 30.000',
+    )
   })
 
   it('toma el viewBox del recinto y no lo hardcodea', () => {
@@ -71,10 +77,9 @@ describe('VenueMap', () => {
   })
 
   it('ancla las tres etiquetas de franja a la misma x, fuera del bloque de butacas', () => {
-    renderMap()
-    const labels = ['Platea A · 45.000', 'Platea B · 38.000', 'Platea C · 30.000']
-    for (const text of labels) {
-      const node = screen.getByText(text)
+    const { container } = renderMap()
+    for (const band of venue.tierBands) {
+      const node = container.querySelector(`[data-tier-label="${band.label}"]`)!
       expect(node.getAttribute('data-x')).toBe(String(venue.tierLabelX))
     }
   })
@@ -107,12 +112,19 @@ describe('VenueMap', () => {
     }
   })
 
-  it('en la vista chica sólo se ve la franja de tarifa activa', () => {
+  it('en el margen del plano, las tres franjas quedan ocultas en la vista chica (van arriba como texto aparte)', () => {
     const { container } = renderMap(7)
     for (const band of venue.tierBands) {
       const node = container.querySelector(`[data-tier-label="${band.label}"]`)!
-      const active = 7 >= band.fromRow && 7 <= band.throughRow
-      expect(node.className.includes('hidden')).toBe(!active)
+      expect(node.className.includes('hidden')).toBe(true)
     }
+  })
+
+  it('en la vista chica, la franja activa aparece como texto normal arriba del plano, sin cortarse en el borde', () => {
+    const { container } = renderMap(7)
+    const caption = container.querySelector('[data-mobile-tier-label="Platea B"]')!
+    expect(caption.textContent).toBe('Platea B · 38.000')
+    expect(caption.className.includes('md:hidden')).toBe(true)
+    expect(caption.className.includes('absolute')).toBe(false)
   })
 })
