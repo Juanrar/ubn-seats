@@ -5,7 +5,7 @@ import { buildSeats, round3, seatBounds } from '@/lib/venue/catalog'
 import { tierFor } from '@/lib/venue/pricing'
 
 const TIER_LABEL_GAP = 12
-const TIER_LABEL_CHAR_WIDTH = 9
+const TIER_LABEL_CHAR_WIDTH = 7
 const TIER_LABEL_PRICE_CHARS = 9
 
 export interface VenueRow {
@@ -109,9 +109,7 @@ function buildTierBands(plan: VenuePlan, rows: VenueRow[]): TierBand[] {
   for (const tier of plan.centerBlock.tiers) {
     const throughRow = tier.throughRow ?? lastRow
     const firstRow = rows.find((row) => row.row === fromRow)
-    const y = firstRow
-      ? round3(Math.min(...firstRow.seats.map((seat) => seat.y)) - plan.geometry.rowPitch / 2)
-      : 0
+    const y = firstRow ? firstRow.labelY : 0
     bands.push({ label: tier.label, price: tier.price, fromRow, throughRow, y })
     fromRow = throughRow + 1
   }

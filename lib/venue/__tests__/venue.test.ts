@@ -426,6 +426,13 @@ describe('buildVenue — franjas de tarifa', () => {
     const xs = new Set(venue.tierBands.map(() => venue.tierLabelX))
     expect(xs.size).toBe(1)
   })
+
+  it('la y de cada franja queda a la altura del rótulo de fila de su primera fila, no de sus butacas', () => {
+    for (const band of venue.tierBands) {
+      const firstRow = venue.rows.find((row) => row.row === band.fromRow)!
+      expect(band.y).toBeCloseTo(firstRow.labelY, 3)
+    }
+  })
 })
 
 describe('buildVenue — rótulos de fila', () => {

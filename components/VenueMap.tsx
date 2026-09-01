@@ -32,7 +32,7 @@ export function VenueMap({ venue, statusOf, activeRow, onPickRow }: VenueMapProp
   return (
     <svg
       viewBox={venue.viewBox}
-      className="h-full w-full select-none"
+      className="block h-auto w-full select-none"
       aria-hidden="true"
       focusable="false"
     >
@@ -61,6 +61,7 @@ export function VenueMap({ venue, statusOf, activeRow, onPickRow }: VenueMapProp
           x={venue.tierLabelX}
           y={band.y}
           textAnchor="end"
+          dominantBaseline="middle"
           className="fill-ink-mute font-ui text-[15px]"
         >
           {`${band.label} · ${formatPrice(band.price)}`}

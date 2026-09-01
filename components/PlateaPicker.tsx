@@ -50,7 +50,7 @@ export function PlateaPicker() {
         <ThemeToggle />
       </header>
 
-      <div className="min-h-0 flex-1 px-5 py-3">
+      <div className="px-5 py-3">
         <VenueMap
           venue={venue}
           statusOf={picker.statusOf}
@@ -59,7 +59,7 @@ export function PlateaPicker() {
         />
       </div>
 
-      <div className="flex flex-col gap-3 px-5">
+      <div className="flex min-h-0 flex-1 flex-col justify-center gap-3 px-5">
         <RowBand
           venue={venue}
           row={rows.row}
