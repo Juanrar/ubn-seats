@@ -7,7 +7,7 @@ import {
 import { boundingBox, placeAtOffset, type Box } from '@/lib/geometry'
 import { centerRowNumbers, wingNumber } from '@/lib/numbering'
 import { priceFor, tierLabel } from '@/lib/pricing'
-import type { RowConfig, Seat, SectorId } from '@/lib/types'
+import type { RowPlan, Seat, SectorId } from '@/lib/types'
 import { VENUE_ROWS } from '@/lib/venue'
 
 const pad2 = (n: number) => String(n).padStart(2, '0')
@@ -22,12 +22,20 @@ const pad2 = (n: number) => String(n).padStart(2, '0')
  */
 export const round3 = (n: number): number => Math.round(n * 1000) / 1000 + 0
 
+function describe(sector: SectorId, row: number, number: number): string {
+  const tier = tierLabel(sector, row)
+  if (sector === 'platea-accesible') {
+    return `Fila ${row}, espacio accesible ${number}, ${tier}`
+  }
+  return `Fila ${row}, butaca ${number}, ${tier}`
+}
+
 function seatId(sector: SectorId, row: number, number: number): string {
   return `${sector}-F${pad2(row)}-${number}`
 }
 
 /** Semianchura del bloque central de la fila, en unidades de SEAT_PITCH. */
-function halfWidth(config: RowConfig): number {
+function halfWidth(config: RowPlan): number {
   return config.center > 0 ? (config.center - 1) / 2 : 0
 }
 
@@ -45,6 +53,8 @@ function makeSeat(
     number,
     kind: sector === 'platea-accesible' ? 'accessible' : 'standard',
     price: priceFor(sector, row),
+    tier: tierLabel(sector, row),
+    label: describe(sector, row, number),
     x: round3(x),
     y: round3(y),
     angle: round3(angle),
@@ -99,8 +109,5 @@ export function seatBounds(seats: Seat[]): Box {
 
 /** Descripción de la plaza para aria-label y tooltip. */
 export function seatLabel(seat: Seat): string {
-  if (seat.sector === 'platea-accesible') {
-    return `Fila ${seat.row}, espacio accesible ${seat.number}, ${tierLabel(seat.sector, seat.row)}`
-  }
-  return `Fila ${seat.row}, butaca ${seat.number}, ${tierLabel(seat.sector, seat.row)}`
+  return seat.label
 }

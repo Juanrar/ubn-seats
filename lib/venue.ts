@@ -1,4 +1,4 @@
-import type { RowConfig } from '@/lib/types'
+import type { RowPlan } from '@/lib/types'
 
 /**
  * Configuración del sector Platea del Teatro del Globo, leída del plano.
@@ -12,7 +12,7 @@ import type { RowConfig } from '@/lib/types'
  * - Los espacios accesibles son plazas adicionales en el pasillo; no
  *   reemplazan butacas, por eso no alteran `center`.
  */
-export const VENUE_ROWS: RowConfig[] = [
+export const VENUE_ROWS: RowPlan[] = [
   { row: 1, center: 14, wing: 0, accessible: true },
   { row: 2, center: 16, wing: 0, accessible: false },
   { row: 3, center: 16, wing: 0, accessible: false },

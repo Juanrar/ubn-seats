@@ -9,28 +9,78 @@ export type SeatKind = 'standard' | 'accessible'
 export type SeatStatus = 'available' | 'occupied' | 'selected'
 
 export interface Seat {
-  /** Estable y derivable de (sector, fila, número). Ej: "platea-F07-12". */
   id: string
   sector: SectorId
-  /** 1-indexada, igual que el plano. */
   row: number
-  /** Numeración del plano: impares a la izquierda, pares a la derecha. */
   number: number
   kind: SeatKind
   price: number
+  tier: string
+  label: string
   x: number
   y: number
-  /** GRADOS, para el transform del SVG. */
   angle: number
 }
 
-export interface RowConfig {
-  /** 1-indexada. */
+export interface GeometryPlan {
+  seatWidth: number
+  seatHeight: number
+  seatPitch: number
+  rowPitch: number
+  firstRowRadius: number
+  center: { x: number; y: number }
+  aisleGap: number
+  wingInnerOffset: number
+}
+
+export interface RowPlan {
   row: number
-  /** Butacas del bloque central. 0 si la fila no tiene bloque central. */
   center: number
-  /** Butacas por ala (por lado). 0 si la fila no tiene alas. */
   wing: number
-  /** Si es true, la fila lleva 2 espacios accesibles, uno por lado. */
   accessible: boolean
+}
+
+export interface TierPlan {
+  label: string
+  price: number
+  throughRow?: number
+}
+
+export interface CenterBlockPlan {
+  sector: SectorId
+  tiers: TierPlan[]
+}
+
+export interface WingsPlan {
+  leftSector: SectorId
+  rightSector: SectorId
+  leftStartNumber: number
+  rightStartNumber: number
+  tier: TierPlan
+}
+
+export interface AccessiblePlan {
+  sector: SectorId
+  tier: TierPlan
+}
+
+export interface StagePlan {
+  x: number
+  y: number
+  width: number
+  height: number
+  label: string
+}
+
+export interface VenuePlan {
+  id: string
+  name: string
+  sectionName: string
+  geometry: GeometryPlan
+  stage: StagePlan
+  rows: RowPlan[]
+  centerBlock: CenterBlockPlan
+  wings: WingsPlan
+  accessible: AccessiblePlan
+  framePadding: number
 }

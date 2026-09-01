@@ -1,0 +1,56 @@
+import type { VenuePlan } from '@/lib/types'
+
+export const TEATRO_DEL_GLOBO: VenuePlan = {
+  id: 'teatro-del-globo',
+  name: 'Teatro del Globo',
+  sectionName: 'Platea',
+  geometry: {
+    seatWidth: 20,
+    seatHeight: 17,
+    seatPitch: 24,
+    rowPitch: 26,
+    firstRowRadius: 360,
+    center: { x: 0, y: 0 },
+    aisleGap: 2.5,
+    wingInnerOffset: 11,
+  },
+  stage: { x: -270, y: 140, width: 540, height: 100, label: 'ESCENARIO' },
+  rows: [
+    { row: 1, center: 14, wing: 0, accessible: true },
+    { row: 2, center: 16, wing: 0, accessible: false },
+    { row: 3, center: 16, wing: 0, accessible: false },
+    { row: 4, center: 16, wing: 0, accessible: true },
+    { row: 5, center: 16, wing: 0, accessible: false },
+    { row: 6, center: 16, wing: 3, accessible: false },
+    { row: 7, center: 16, wing: 3, accessible: false },
+    { row: 8, center: 16, wing: 3, accessible: false },
+    { row: 9, center: 16, wing: 3, accessible: false },
+    { row: 10, center: 16, wing: 3, accessible: false },
+    { row: 11, center: 16, wing: 3, accessible: false },
+    { row: 12, center: 16, wing: 3, accessible: false },
+    { row: 13, center: 16, wing: 3, accessible: false },
+    { row: 14, center: 16, wing: 3, accessible: true },
+    { row: 15, center: 14, wing: 3, accessible: false },
+    { row: 16, center: 0, wing: 3, accessible: false },
+  ],
+  centerBlock: {
+    sector: 'platea',
+    tiers: [
+      { label: 'Platea A', price: 45000, throughRow: 5 },
+      { label: 'Platea B', price: 38000, throughRow: 10 },
+      { label: 'Platea C', price: 30000 },
+    ],
+  },
+  wings: {
+    leftSector: 'platea-ala-izq',
+    rightSector: 'platea-ala-der',
+    leftStartNumber: 17,
+    rightStartNumber: 18,
+    tier: { label: 'Ala lateral', price: 24000 },
+  },
+  accessible: {
+    sector: 'platea-accesible',
+    tier: { label: 'Espacio accesible', price: 24000 },
+  },
+  framePadding: 24,
+}
