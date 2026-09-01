@@ -8,12 +8,10 @@ export const THEME_COLORS: Record<ResolvedTheme, string> = {
   dark: '#1f1c16',
 }
 
-/** Normaliza lo que venga de localStorage. Cualquier basura cae en 'system'. */
 export function parseThemePref(value: unknown): ThemePref {
   return value === 'light' || value === 'dark' || value === 'system' ? value : 'system'
 }
 
-/** Preferencia + estado del sistema => tema efectivo. */
 export function resolveTheme(pref: ThemePref, prefersDark: boolean): ResolvedTheme {
   if (pref === 'light' || pref === 'dark') return pref
   return prefersDark ? 'dark' : 'light'

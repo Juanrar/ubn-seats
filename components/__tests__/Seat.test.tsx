@@ -2,9 +2,10 @@ import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { SeatButton } from '@/components/Seat'
-import { buildSeats } from '@/lib/seats'
+import { TEATRO_DEL_GLOBO } from '@/lib/plans/teatro-del-globo'
+import { buildVenue } from '@/lib/venue'
 
-const seats = buildSeats()
+const seats = buildVenue(TEATRO_DEL_GLOBO).seats
 const butaca = seats.find((s) => s.sector === 'platea' && s.row === 7 && s.number === 12)!
 const accesible = seats.find((s) => s.sector === 'platea-accesible')!
 
@@ -15,6 +16,7 @@ function renderSeat(props: Partial<Parameters<typeof SeatButton>[0]> = {}) {
     <svg>
       <SeatButton
         seat={butaca}
+        geometry={TEATRO_DEL_GLOBO.geometry}
         status="available"
         focused
         onToggle={onToggle}
@@ -74,6 +76,7 @@ describe('SeatButton', () => {
       <svg>
         <SeatButton
           seat={accesible}
+          geometry={TEATRO_DEL_GLOBO.geometry}
           status="available"
           focused={false}
           onToggle={() => {}}

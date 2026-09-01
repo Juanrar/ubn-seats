@@ -27,8 +27,6 @@ function apply(pref: ThemePref): void {
 export function ThemeToggle() {
   const [pref, setPref] = useState<ThemePref>('system')
 
-  // El script inline de layout.tsx ya pintó el tema correcto antes del primer
-  // frame; acá solo sincronizamos el estado de React con lo que hay guardado.
   useEffect(() => {
     try {
       setPref(parseThemePref(localStorage.getItem(THEME_STORAGE_KEY)))
@@ -42,7 +40,6 @@ export function ThemeToggle() {
     try {
       localStorage.setItem(THEME_STORAGE_KEY, next)
     } catch {
-      // Modo privado o storage bloqueado: el tema igual se aplica en memoria.
     }
     apply(next)
   }
@@ -51,7 +48,7 @@ export function ThemeToggle() {
     <div
       role="radiogroup"
       aria-label="Tema"
-      className="flex items-center gap-px rounded-sm border border-rule text-xs"
+      className="flex items-center gap-px rounded-sm border border-rule text-hand-sm"
     >
       {OPTIONS.map((option) => (
         <button
@@ -60,7 +57,7 @@ export function ThemeToggle() {
           role="radio"
           aria-checked={pref === option.value}
           onClick={() => choose(option.value)}
-          className={`px-2 py-1 font-mono transition-colors ${
+          className={`px-3 py-0.5 transition-colors ${
             pref === option.value
               ? 'bg-accent text-paper'
               : 'text-ink-mute hover:text-accent'

@@ -1,16 +1,18 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { SeatMap } from '@/components/SeatMap'
-import { buildSeats } from '@/lib/seats'
+import { TEATRO_DEL_GLOBO } from '@/lib/plans/teatro-del-globo'
+import { buildVenue } from '@/lib/venue'
 import type { Seat, SeatStatus } from '@/lib/types'
 
-const seats = buildSeats()
+const venue = buildVenue(TEATRO_DEL_GLOBO)
+const seats = venue.seats
 
 function renderMap(statusOf: (s: Seat) => SeatStatus = () => 'available') {
   const onToggle = vi.fn()
   render(
     <SeatMap
-      seats={seats}
+      venue={venue}
       statusOf={statusOf}
       focusedId={seats[0].id}
       onToggle={onToggle}
@@ -28,7 +30,7 @@ describe('SeatMap', () => {
 
   it('rotula el escenario', () => {
     renderMap()
-    expect(screen.getByText('ESCENARIO')).toBeInTheDocument()
+    expect(screen.getByText('Escenario')).toBeInTheDocument()
   })
 
   it('calcula el viewBox a partir del contenido, no hardcodeado', () => {
@@ -39,9 +41,7 @@ describe('SeatMap', () => {
     expect(Number.isFinite(x) && Number.isFinite(y)).toBe(true)
     expect(w).toBeGreaterThan(0)
     expect(h).toBeGreaterThan(0)
-    // El escenario está arriba de todo, así que el borde superior lo incluye.
     expect(y).toBeLessThan(140)
-    // Y la fila 16 es lo más bajo.
     const maxY = Math.max(...seats.map((s) => s.y))
     expect(y + h).toBeGreaterThan(maxY)
   })
@@ -59,7 +59,6 @@ describe('SeatMap', () => {
     const ocupadas = screen
       .getAllByRole('button')
       .filter((b) => b.getAttribute('aria-disabled') === 'true')
-    // Fila 1: 14 butacas centrales + 2 espacios accesibles.
     expect(ocupadas).toHaveLength(16)
   })
 })

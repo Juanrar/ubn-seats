@@ -1,9 +1,10 @@
 import { describe, it, expect } from 'vitest'
 import { mulberry32, buildOccupancy } from '@/lib/occupancy'
-import { buildSeats } from '@/lib/seats'
+import { TEATRO_DEL_GLOBO } from '@/lib/plans/teatro-del-globo'
+import { buildVenue } from '@/lib/venue'
 import { OCCUPANCY_RATE } from '@/lib/constants'
 
-const seats = buildSeats()
+const seats = buildVenue(TEATRO_DEL_GLOBO).seats
 
 describe('mulberry32', () => {
   it('devuelve la misma secuencia para la misma semilla', () => {

@@ -2,12 +2,13 @@ import { describe, it, expect } from 'vitest'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { PlateaPicker } from '@/components/PlateaPicker'
-import { buildSeats } from '@/lib/seats'
+import { TEATRO_DEL_GLOBO } from '@/lib/plans/teatro-del-globo'
+import { buildVenue } from '@/lib/venue'
 import { buildOccupancy } from '@/lib/occupancy'
 import { nextSeatId } from '@/lib/navigation'
 import { MAX_SEATS } from '@/lib/constants'
 
-const seats = buildSeats()
+const seats = buildVenue(TEATRO_DEL_GLOBO).seats
 const occupied = buildOccupancy(seats)
 const libre = (n = 0) =>
   seats.filter((s) => s.kind === 'standard' && !occupied.has(s.id))[n]
@@ -29,8 +30,6 @@ describe('PlateaPicker', () => {
 
     const resumen = screen.getByRole('region', { name: /tu selección/i })
     expect(within(resumen).getByText(new RegExp(`Fila ${seat.row}`))).toBeInTheDocument()
-    // Se ignora el párrafo sr-only del aria-live: repite el mismo texto "$ "
-    // que la fila de Total visible y produciría un match múltiple.
     expect(within(resumen).getByText(/\$ /, { ignore: '.sr-only' })).toBeInTheDocument()
   })
 
@@ -55,12 +54,8 @@ describe('PlateaPicker', () => {
     for (let i = 0; i < MAX_SEATS + 2; i++) {
       await userEvent.click(botonDe(libre(i).id))
     }
-    // Se acota a la región del resumen: la Leyenda también usa <li> para sus
-    // ítems y contaminaría un conteo global.
     const resumen = screen.getByRole('region', { name: /tu selección/i })
     expect(within(resumen).getAllByRole('listitem')).toHaveLength(MAX_SEATS)
-    // También se ignora el sr-only: repite "8 butacas seleccionadas" y
-    // colisiona con el aviso de tope.
     expect(
       screen.getByText(new RegExp(`${MAX_SEATS} butacas`, 'i'), { ignore: '.sr-only' }),
     ).toBeInTheDocument()
@@ -79,7 +74,6 @@ describe('PlateaPicker', () => {
     inicial.focus()
     const idInicial = inicial.getAttribute('data-seat-id')!
     const idEsperado = nextSeatId(seats, idInicial, 'right')
-    // Sanity: si esto fallara, el resto del test no probaría nada.
     expect(idEsperado).not.toBe(idInicial)
 
     const anterior = document.activeElement
@@ -97,9 +91,6 @@ describe('PlateaPicker', () => {
     inicial.focus()
     const idInicial = inicial.getAttribute('data-seat-id')!
 
-    // Se calcula de antemano cuántas flechas hacen falta para llegar a una
-    // butaca libre distinta de la de partida: la ocupación depende de la
-    // semilla fija, así que el vecino inmediato podría estar ocupado.
     let id = idInicial
     const teclas: string[] = []
     do {

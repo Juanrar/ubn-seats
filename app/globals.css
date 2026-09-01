@@ -7,16 +7,30 @@
   --color-paper-2: #ece1c7;
   --color-ink: #2b2820;
   --color-ink-soft: #5a5444;
-  --color-ink-mute: #8a8170;
+  --color-ink-mute: #6f6858;
   --color-rule: #c9bfa3;
   --color-rule-soft: #ddd2b4;
   --color-accent: #8a6a3b;
   --color-accent-soft: #a3814d;
   --color-highlight: #5a4622;
 
-  --font-body: var(--font-lora), Georgia, serif;
+  --font-body: var(--font-caveat), "Segoe Script", cursive;
   --font-mono: var(--font-jetbrains), ui-monospace, monospace;
-  --font-hand: var(--font-caveat), cursive;
+  --font-hand: var(--font-caveat), "Segoe Script", cursive;
+  --font-prose: var(--font-lora), Georgia, serif;
+
+  --text-hand-h1: 3.25rem;
+  --text-hand-h1--line-height: 0.95;
+  --text-hand-h2: 2rem;
+  --text-hand-h2--line-height: 1;
+  --text-hand-lead: 1.5rem;
+  --text-hand-lead--line-height: 1.2;
+  --text-hand-base: 1.3125rem;
+  --text-hand-base--line-height: 1.35;
+  --text-hand-sm: 1.1875rem;
+  --text-hand-sm--line-height: 1.3;
+  --text-hand-xs: 1.125rem;
+  --text-hand-xs--line-height: 1.25;
 
   --reading-max: 720px;
   --layout-stack: 960px;
@@ -27,7 +41,7 @@
   --color-paper-2: #1a1813;
   --color-ink: #ece2cb;
   --color-ink-soft: #bfb59b;
-  --color-ink-mute: #8a8270;
+  --color-ink-mute: #9d9482;
   --color-rule: #3a3528;
   --color-rule-soft: #2c281d;
   --color-accent: #d4a76a;
@@ -43,6 +57,7 @@ body {
 
 body {
   font-family: var(--font-body);
+  font-weight: 500;
   -webkit-font-smoothing: antialiased;
 }
 

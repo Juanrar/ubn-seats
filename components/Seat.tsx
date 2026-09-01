@@ -1,9 +1,7 @@
 'use client'
 
-import { SEAT_HEIGHT, SEAT_WIDTH } from '@/lib/constants'
 import { formatPrice } from '@/lib/format'
-import { seatLabel } from '@/lib/seats'
-import type { Seat, SeatStatus } from '@/lib/types'
+import type { GeometryPlan, Seat, SeatStatus } from '@/lib/types'
 
 const STATUS_TEXT: Record<SeatStatus, string> = {
   available: 'disponible',
@@ -11,7 +9,6 @@ const STATUS_TEXT: Record<SeatStatus, string> = {
   occupied: 'ocupada',
 }
 
-/** Clases del rect según el estado. El trazo discontinuo lo pone `kind`. */
 function shapeClass(status: SeatStatus): string {
   if (status === 'occupied') return 'fill-rule-soft stroke-none'
   if (status === 'selected') return 'fill-accent stroke-accent'
@@ -21,17 +18,18 @@ function shapeClass(status: SeatStatus): string {
 export interface SeatShapeProps {
   status: SeatStatus
   kind: Seat['kind']
+  width: number
+  height: number
   className?: string
 }
 
-/** El rectángulo suelto, sin interacción. Lo reutiliza la leyenda. */
-export function SeatShape({ status, kind, className = '' }: SeatShapeProps) {
+export function SeatShape({ status, kind, width, height, className = '' }: SeatShapeProps) {
   return (
     <rect
-      x={-SEAT_WIDTH / 2}
-      y={-SEAT_HEIGHT / 2}
-      width={SEAT_WIDTH}
-      height={SEAT_HEIGHT}
+      x={-width / 2}
+      y={-height / 2}
+      width={width}
+      height={height}
       rx={2}
       strokeWidth={1}
       strokeDasharray={kind === 'accessible' ? '3 2' : undefined}
@@ -42,15 +40,23 @@ export function SeatShape({ status, kind, className = '' }: SeatShapeProps) {
 
 export interface SeatButtonProps {
   seat: Seat
+  geometry: GeometryPlan
   status: SeatStatus
   focused: boolean
   onToggle: (seat: Seat) => void
   onFocus: (id: string) => void
 }
 
-export function SeatButton({ seat, status, focused, onToggle, onFocus }: SeatButtonProps) {
+export function SeatButton({
+  seat,
+  geometry,
+  status,
+  focused,
+  onToggle,
+  onFocus,
+}: SeatButtonProps) {
   const occupied = status === 'occupied'
-  const label = `${seatLabel(seat)}, ${formatPrice(seat.price)} pesos, ${STATUS_TEXT[status]}`
+  const label = `${seat.label}, ${formatPrice(seat.price)} pesos, ${STATUS_TEXT[status]}`
 
   return (
     <g
@@ -70,6 +76,8 @@ export function SeatButton({ seat, status, focused, onToggle, onFocus }: SeatBut
       <SeatShape
         status={status}
         kind={seat.kind}
+        width={geometry.seatWidth}
+        height={geometry.seatHeight}
         className={occupied ? '' : 'transition-colors hover:stroke-accent'}
       />
       <title>{label}</title>
