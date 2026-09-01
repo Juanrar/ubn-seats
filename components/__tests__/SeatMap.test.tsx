@@ -25,7 +25,7 @@ function renderMap(statusOf: (s: Seat) => SeatStatus = () => 'available') {
 describe('SeatMap', () => {
   it('pinta las 302 butacas', () => {
     renderMap()
-    expect(screen.getAllByRole('button')).toHaveLength(302)
+    expect(screen.getAllByRole('gridcell')).toHaveLength(302)
   })
 
   it('rotula el escenario', () => {
@@ -49,7 +49,7 @@ describe('SeatMap', () => {
   it('la platea entera es una sola parada de tabulación', () => {
     renderMap()
     const alcanzables = screen
-      .getAllByRole('button')
+      .getAllByRole('gridcell')
       .filter((b) => b.getAttribute('tabindex') === '0')
     expect(alcanzables).toHaveLength(1)
   })
@@ -57,7 +57,7 @@ describe('SeatMap', () => {
   it('refleja el estado que devuelve statusOf', () => {
     renderMap((s) => (s.row === 1 ? 'occupied' : 'available'))
     const ocupadas = screen
-      .getAllByRole('button')
+      .getAllByRole('gridcell')
       .filter((b) => b.getAttribute('aria-disabled') === 'true')
     expect(ocupadas).toHaveLength(14)
   })

@@ -15,7 +15,7 @@ const libre = (n = 0) => seats.filter((s) => !occupied.has(s.id))[n]
 const botonDe = (id: string) => {
   const seat = seats.find((s) => s.id === id)!
   const nombre = new RegExp(`Fila ${seat.row}, butaca ${seat.number},`)
-  return screen.getAllByRole('button', { name: nombre })[0]
+  return screen.getAllByRole('gridcell', { name: nombre })[0]
 }
 
 describe('PlateaPicker', () => {
@@ -66,7 +66,7 @@ describe('PlateaPicker', () => {
 
   it('mueve el foco real del DOM con las flechas', async () => {
     render(<PlateaPicker />)
-    const inicial = screen.getAllByRole('button').find((b) => b.getAttribute('tabindex') === '0')!
+    const inicial = screen.getAllByRole('gridcell').find((b) => b.getAttribute('tabindex') === '0')!
     inicial.focus()
     const idInicial = inicial.getAttribute('data-seat-id')!
     const idEsperado = nextSeatId(seats, idInicial, 'right', occupied)
@@ -83,7 +83,7 @@ describe('PlateaPicker', () => {
 
   it('selecciona con Enter la butaca a la que se llegó con la flecha, no la de partida', async () => {
     render(<PlateaPicker />)
-    const inicial = screen.getAllByRole('button').find((b) => b.getAttribute('tabindex') === '0')!
+    const inicial = screen.getAllByRole('gridcell').find((b) => b.getAttribute('tabindex') === '0')!
     inicial.focus()
     const idInicial = inicial.getAttribute('data-seat-id')!
 
@@ -106,11 +106,11 @@ describe('PlateaPicker', () => {
 
   it('mantiene una sola parada de tabulación después de navegar', async () => {
     render(<PlateaPicker />)
-    const primera = screen.getAllByRole('button').find((b) => b.getAttribute('tabindex') === '0')!
+    const primera = screen.getAllByRole('gridcell').find((b) => b.getAttribute('tabindex') === '0')!
     primera.focus()
     await userEvent.keyboard('{ArrowDown}{ArrowRight}')
     const alcanzables = screen
-      .getAllByRole('button')
+      .getAllByRole('gridcell')
       .filter((b) => b.getAttribute('tabindex') === '0')
     expect(alcanzables).toHaveLength(1)
   })

@@ -28,6 +28,7 @@ export function Legend({ geometry }: LegendProps) {
               status={item.status}
               width={seatWidth}
               height={seatHeight}
+              tierWeight={1}
             />
           </svg>
           {item.label}

@@ -29,6 +29,7 @@ export function SeatArc({
           geometry={geometry}
           status={statusOf(seat)}
           focused={seat.id === focusedId}
+          tierWeight={1}
           onToggle={onToggle}
           onFocus={onFocus}
         />
