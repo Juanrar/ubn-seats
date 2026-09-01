@@ -29,14 +29,14 @@ export function SelectionPanel({
   return (
     <section aria-labelledby="resumen-titulo" className="flex flex-col gap-4">
       <div className="flex items-baseline justify-between border-b border-rule pb-2">
-        <h2 id="resumen-titulo" className="text-lg">
+        <h2 id="resumen-titulo" className="text-hand-h2 font-semibold">
           Tu selección
         </h2>
         {seats.length > 0 ? (
           <button
             type="button"
             onClick={onClear}
-            className="font-mono text-xs text-ink-mute underline-offset-4 hover:text-accent hover:underline"
+            className="text-hand-sm text-ink-mute underline-offset-4 hover:text-accent hover:underline"
           >
             Vaciar
           </button>
@@ -50,7 +50,7 @@ export function SelectionPanel({
       </p>
 
       {seats.length === 0 ? (
-        <p className="text-sm text-ink-mute">
+        <p className="text-hand-base text-ink-mute">
           Elegí tus butacas en el mapa. Podés seleccionar hasta {maxSeats}.
         </p>
       ) : (
@@ -58,18 +58,18 @@ export function SelectionPanel({
           {seats.map((seat) => (
             <li key={seat.id} className="flex items-center justify-between gap-3 py-2">
               <div className="flex flex-col">
-                <span className="font-mono text-sm">
+                <span className="text-hand-base">
                   Fila {seat.row} · {seatName(seat)}
                 </span>
-                <span className="text-xs text-ink-mute">{seat.tier}</span>
+                <span className="text-hand-xs text-ink-mute">{seat.tier}</span>
               </div>
               <div className="flex items-center gap-3">
-                <span className="font-mono text-sm">{formatPrice(seat.price)}</span>
+                <span className="font-mono text-xs">{formatPrice(seat.price)}</span>
                 <button
                   type="button"
                   onClick={() => onRemove(seat)}
                   aria-label={`Quitar fila ${seat.row}, ${seatName(seat).toLowerCase()}`}
-                  className="font-mono text-xs text-ink-mute hover:text-accent"
+                  className="text-hand-sm text-ink-mute hover:text-accent"
                 >
                   ×
                 </button>
@@ -80,14 +80,14 @@ export function SelectionPanel({
       )}
 
       {limitReached ? (
-        <p className="text-xs text-accent">
+        <p className="text-hand-sm text-accent">
           Llegaste al máximo de {maxSeats} butacas por compra.
         </p>
       ) : null}
 
       <div className="flex items-baseline justify-between border-t border-rule pt-2">
-        <span className="text-sm text-ink-soft">Total</span>
-        <span className="font-mono text-lg">{formatTotal(total)}</span>
+        <span className="text-hand-lead text-ink-soft">Total</span>
+        <span className="font-mono text-base">{formatTotal(total)}</span>
       </div>
     </section>
   )
