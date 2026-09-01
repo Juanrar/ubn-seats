@@ -10,15 +10,11 @@ import { MAX_SEATS } from '@/lib/constants'
 
 const seats = buildVenue(TEATRO_DEL_GLOBO).seats
 const occupied = buildOccupancy(seats)
-const libre = (n = 0) =>
-  seats.filter((s) => s.kind === 'standard' && !occupied.has(s.id))[n]
+const libre = (n = 0) => seats.filter((s) => !occupied.has(s.id))[n]
 
 const botonDe = (id: string) => {
   const seat = seats.find((s) => s.id === id)!
-  const nombre =
-    seat.sector === 'platea-accesible'
-      ? new RegExp(`Fila ${seat.row}, espacio accesible ${seat.number}`)
-      : new RegExp(`Fila ${seat.row}, butaca ${seat.number},`)
+  const nombre = new RegExp(`Fila ${seat.row}, butaca ${seat.number},`)
   return screen.getAllByRole('button', { name: nombre })[0]
 }
 
@@ -122,6 +118,6 @@ describe('PlateaPicker', () => {
   it('muestra la leyenda de estados', () => {
     render(<PlateaPicker />)
     expect(screen.getByText('Disponible')).toBeInTheDocument()
-    expect(screen.getByText('Accesible')).toBeInTheDocument()
+    expect(screen.getByText('Ocupada')).toBeInTheDocument()
   })
 })

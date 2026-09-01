@@ -53,10 +53,6 @@ describe('TEATRO_DEL_GLOBO — filas', () => {
     expect(sum(rows.map((r) => r.wing)) * 2).toBe(66)
   })
 
-  it('los espacios accesibles están en las filas 1, 4 y 14', () => {
-    expect(rows.filter((r) => r.accessible).map((r) => r.row)).toEqual([1, 4, 14])
-  })
-
   it('todas las filas centrales tienen cantidad par de butacas', () => {
     for (const r of rows) expect(r.center % 2).toBe(0)
   })
@@ -77,9 +73,8 @@ describe('TEATRO_DEL_GLOBO — franjas', () => {
     for (const t of tiers.slice(0, -1)) expect(t.throughRow).toBeGreaterThan(0)
   })
 
-  it('las alas y los accesibles tienen una sola tarifa cada uno', () => {
+  it('las alas tienen una sola tarifa', () => {
     expect(plan.wings.tier).toEqual({ label: 'Ala lateral', price: 24000 })
-    expect(plan.accessible.tier).toEqual({ label: 'Espacio accesible', price: 24000 })
   })
 
   it('las alas continúan la numeración del bloque central', () => {
@@ -91,6 +86,5 @@ describe('TEATRO_DEL_GLOBO — franjas', () => {
     expect(plan.centerBlock.sector).toBe('platea')
     expect(plan.wings.leftSector).toBe('platea-ala-izq')
     expect(plan.wings.rightSector).toBe('platea-ala-der')
-    expect(plan.accessible.sector).toBe('platea-accesible')
   })
 })

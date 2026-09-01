@@ -23,9 +23,9 @@ function renderMap(statusOf: (s: Seat) => SeatStatus = () => 'available') {
 }
 
 describe('SeatMap', () => {
-  it('pinta las 308 plazas', () => {
+  it('pinta las 302 butacas', () => {
     renderMap()
-    expect(screen.getAllByRole('button')).toHaveLength(308)
+    expect(screen.getAllByRole('button')).toHaveLength(302)
   })
 
   it('rotula el escenario', () => {
@@ -59,6 +59,6 @@ describe('SeatMap', () => {
     const ocupadas = screen
       .getAllByRole('button')
       .filter((b) => b.getAttribute('aria-disabled') === 'true')
-    expect(ocupadas).toHaveLength(16)
+    expect(ocupadas).toHaveLength(14)
   })
 })

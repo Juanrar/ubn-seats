@@ -12,12 +12,6 @@ export interface SelectionPanelProps {
   onClear: () => void
 }
 
-function seatName(seat: Seat): string {
-  return seat.sector === 'platea-accesible'
-    ? `Espacio ${seat.number}`
-    : `Butaca ${seat.number}`
-}
-
 export function SelectionPanel({
   seats,
   total,
@@ -59,7 +53,7 @@ export function SelectionPanel({
             <li key={seat.id} className="flex items-center justify-between gap-3 py-2">
               <div className="flex flex-col">
                 <span className="text-hand-base">
-                  Fila {seat.row} · {seatName(seat)}
+                  Fila {seat.row} · Butaca {seat.number}
                 </span>
                 <span className="text-hand-xs text-ink-mute">{seat.tier}</span>
               </div>
@@ -68,7 +62,7 @@ export function SelectionPanel({
                 <button
                   type="button"
                   onClick={() => onRemove(seat)}
-                  aria-label={`Quitar fila ${seat.row}, ${seatName(seat).toLowerCase()}`}
+                  aria-label={`Quitar fila ${seat.row}, butaca ${seat.number}`}
                   className="text-hand-sm text-ink-mute hover:text-accent"
                 >
                   ×

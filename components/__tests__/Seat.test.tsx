@@ -7,7 +7,6 @@ import { buildVenue } from '@/lib/venue'
 
 const seats = buildVenue(TEATRO_DEL_GLOBO).seats
 const butaca = seats.find((s) => s.sector === 'platea' && s.row === 7 && s.number === 12)!
-const accesible = seats.find((s) => s.sector === 'platea-accesible')!
 
 function renderSeat(props: Partial<Parameters<typeof SeatButton>[0]> = {}) {
   const onToggle = vi.fn()
@@ -71,20 +70,4 @@ describe('SeatButton', () => {
     expect(screen.getByRole('button')).toHaveAttribute('tabindex', '0')
   })
 
-  it('distingue los espacios accesibles con trazo discontinuo, no solo por color', () => {
-    render(
-      <svg>
-        <SeatButton
-          seat={accesible}
-          geometry={TEATRO_DEL_GLOBO.geometry}
-          status="available"
-          focused={false}
-          onToggle={() => {}}
-          onFocus={() => {}}
-        />
-      </svg>,
-    )
-    const rect = screen.getByRole('button').querySelector('rect')!
-    expect(rect.getAttribute('stroke-dasharray')).toBeTruthy()
-  })
 })

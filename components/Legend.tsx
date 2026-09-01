@@ -1,11 +1,10 @@
 import { SeatShape } from '@/components/Seat'
-import type { GeometryPlan, Seat, SeatStatus } from '@/lib/types'
+import type { GeometryPlan, SeatStatus } from '@/lib/types'
 
-const ITEMS: { status: SeatStatus; kind: Seat['kind']; label: string }[] = [
-  { status: 'available', kind: 'standard', label: 'Disponible' },
-  { status: 'selected', kind: 'standard', label: 'Seleccionada' },
-  { status: 'occupied', kind: 'standard', label: 'Ocupada' },
-  { status: 'available', kind: 'accessible', label: 'Accesible' },
+const ITEMS: { status: SeatStatus; label: string }[] = [
+  { status: 'available', label: 'Disponible' },
+  { status: 'selected', label: 'Seleccionada' },
+  { status: 'occupied', label: 'Ocupada' },
 ]
 
 export interface LegendProps {
@@ -27,7 +26,6 @@ export function Legend({ geometry }: LegendProps) {
           >
             <SeatShape
               status={item.status}
-              kind={item.kind}
               width={seatWidth}
               height={seatHeight}
             />

@@ -17,13 +17,12 @@ function shapeClass(status: SeatStatus): string {
 
 export interface SeatShapeProps {
   status: SeatStatus
-  kind: Seat['kind']
   width: number
   height: number
   className?: string
 }
 
-export function SeatShape({ status, kind, width, height, className = '' }: SeatShapeProps) {
+export function SeatShape({ status, width, height, className = '' }: SeatShapeProps) {
   return (
     <rect
       x={-width / 2}
@@ -32,7 +31,6 @@ export function SeatShape({ status, kind, width, height, className = '' }: SeatS
       height={height}
       rx={2}
       strokeWidth={1}
-      strokeDasharray={kind === 'accessible' ? '3 2' : undefined}
       className={`${shapeClass(status)} ${className}`}
     />
   )
@@ -75,7 +73,6 @@ export function SeatButton({
     >
       <SeatShape
         status={status}
-        kind={seat.kind}
         width={geometry.seatWidth}
         height={geometry.seatHeight}
         className={occupied ? '' : 'transition-colors hover:stroke-accent'}

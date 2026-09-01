@@ -22,9 +22,7 @@ export function buildOccupancy(
   const ordered = [...seats].sort((a, b) => a.id.localeCompare(b.id))
 
   for (const seat of ordered) {
-    const roll = rnd()
-    if (seat.kind === 'accessible') continue
-    if (roll < rate) occupied.add(seat.id)
+    if (rnd() < rate) occupied.add(seat.id)
   }
 
   return occupied

@@ -42,16 +42,8 @@ describe('buildOccupancy', () => {
 
   it('ocupa una proporción cercana a la tasa configurada', () => {
     const ocupadas = buildOccupancy(seats).size
-    const standard = seats.filter((s) => s.kind === 'standard').length
-    expect(ocupadas / standard).toBeGreaterThan(OCCUPANCY_RATE - 0.08)
-    expect(ocupadas / standard).toBeLessThan(OCCUPANCY_RATE + 0.08)
-  })
-
-  it('nunca ocupa un espacio accesible', () => {
-    const ocupadas = buildOccupancy(seats)
-    for (const s of seats) {
-      if (s.kind === 'accessible') expect(ocupadas.has(s.id)).toBe(false)
-    }
+    expect(ocupadas / seats.length).toBeGreaterThan(OCCUPANCY_RATE - 0.08)
+    expect(ocupadas / seats.length).toBeLessThan(OCCUPANCY_RATE + 0.08)
   })
 
   it('solo devuelve ids que existen en el catálogo', () => {

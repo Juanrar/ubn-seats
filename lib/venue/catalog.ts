@@ -1,5 +1,5 @@
 import { boundingBox, placeAtOffset, type Box } from '@/lib/geometry'
-import type { RowPlan, Seat, SeatKind, SectorId, VenuePlan } from '@/lib/types'
+import type { RowPlan, Seat, SectorId, VenuePlan } from '@/lib/types'
 import { seatLabel } from '@/lib/venue/labels'
 import { centerRowNumbers, wingNumber } from '@/lib/venue/numbering'
 import { tierFor } from '@/lib/venue/pricing'
@@ -16,10 +16,6 @@ function halfWidth(rowPlan: RowPlan): number {
   return rowPlan.center > 0 ? (rowPlan.center - 1) / 2 : 0
 }
 
-function kindOf(plan: VenuePlan, sector: SectorId): SeatKind {
-  return sector === plan.accessible.sector ? 'accessible' : 'standard'
-}
-
 function makeSeat(
   plan: VenuePlan,
   sector: SectorId,
@@ -29,16 +25,14 @@ function makeSeat(
 ): Seat {
   const { x, y, angle } = placeAtOffset(plan.geometry, row, offset)
   const tier = tierFor(plan, sector, row)
-  const kind = kindOf(plan, sector)
   return {
     id: seatId(sector, row, number),
     sector,
     row,
     number,
-    kind,
     price: tier.price,
     tier: tier.label,
-    label: seatLabel(kind, row, number, tier.label),
+    label: seatLabel(row, number, tier.label),
     x: round3(x),
     y: round3(y),
     angle: round3(angle),
@@ -46,7 +40,7 @@ function makeSeat(
 }
 
 export function buildSeats(plan: VenuePlan): Seat[] {
-  const { aisleGap, wingInnerOffset } = plan.geometry
+  const { wingInnerOffset } = plan.geometry
   const { leftSector, rightSector, leftStartNumber, rightStartNumber } = plan.wings
   const seats: Seat[] = []
 
@@ -57,12 +51,6 @@ export function buildSeats(plan: VenuePlan): Seat[] {
     centerRowNumbers(rowPlan.center).forEach((number, k) => {
       seats.push(makeSeat(plan, plan.centerBlock.sector, row, number, k - h))
     })
-
-    if (rowPlan.accessible) {
-      const offset = h + 1 + aisleGap / 2
-      seats.push(makeSeat(plan, plan.accessible.sector, row, 1, -offset))
-      seats.push(makeSeat(plan, plan.accessible.sector, row, 2, offset))
-    }
 
     for (let j = 0; j < rowPlan.wing; j++) {
       const offset = wingInnerOffset + j

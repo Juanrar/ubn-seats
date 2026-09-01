@@ -2,9 +2,6 @@ export type SectorId =
   | 'platea'
   | 'platea-ala-izq'
   | 'platea-ala-der'
-  | 'platea-accesible'
-
-export type SeatKind = 'standard' | 'accessible'
 
 export type SeatStatus = 'available' | 'occupied' | 'selected'
 
@@ -13,7 +10,6 @@ export interface Seat {
   sector: SectorId
   row: number
   number: number
-  kind: SeatKind
   price: number
   tier: string
   label: string
@@ -37,7 +33,6 @@ export interface RowPlan {
   row: number
   center: number
   wing: number
-  accessible: boolean
 }
 
 export interface TierPlan {
@@ -59,11 +54,6 @@ export interface WingsPlan {
   tier: TierPlan
 }
 
-export interface AccessiblePlan {
-  sector: SectorId
-  tier: TierPlan
-}
-
 export interface StagePlan {
   x: number
   y: number
@@ -81,6 +71,5 @@ export interface VenuePlan {
   rows: RowPlan[]
   centerBlock: CenterBlockPlan
   wings: WingsPlan
-  accessible: AccessiblePlan
   framePadding: number
 }

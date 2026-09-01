@@ -61,12 +61,12 @@ Reglas que sostienen esa forma — respetalas:
 
 Next.js renderiza el mapa en el servidor y en el cliente. Dos cosas lo mantienen idéntico en ambos lados:
 
-1. **PRNG con semilla (`mulberry32`, semilla `20260820`) en vez de `Math.random`.** `Math.random` daría un mapa de ocupación distinto en cada lado y rompería la hidratación. `buildOccupancy` ordena por `id` antes de sortear para no depender del orden de entrada, y los espacios accesibles consumen un número del PRNG aunque nunca se ocupen — así el patrón del resto no depende de esa regla.
+1. **PRNG con semilla (`mulberry32`, semilla `20260820`) en vez de `Math.random`.** `Math.random` daría un mapa de ocupación distinto en cada lado y rompería la hidratación. `buildOccupancy` ordena por `id` antes de sortear para no depender del orden de entrada.
 2. **`round3` dentro de `lib/venue/`.** `Math.sin`/`cos` no están garantizados bit a bit entre implementaciones de JS, y esa diferencia de 1 ULP se serializa distinto en el SVG del servidor y del cliente. Todas las coordenadas y ángulos de cada `Seat` y los cuatro números del `viewBox` pasan por `round3` (que además normaliza `-0` a `0`). Vive en `lib/venue/catalog.ts` y **no se exporta hacia afuera del módulo**: ningún componente redondea nada, porque nada que llegue al DOM sale sin redondear del Recinto. No lo borres ni lo saques del camino.
 
 ### `wingInnerOffset` es constante a propósito
 
-Vale `11` (= `7.5 + 1 + aisleGap`, la posición que corresponde a una fila de 16) y **no se deriva** de la semianchura de cada fila. Las filas 15 (14 butacas) y 16 (sin bloque central) tienen el centro más angosto; derivarlo de ahí correría el ala hacia adentro y torcería una columna que en el plano está recta. El espacio accesible **sí** se deriva de la semianchura, porque en el plano abraza el borde del bloque central.
+Vale `11` (= `7.5 + 1 + aisleGap`, la posición que corresponde a una fila de 16) y **no se deriva** de la semianchura de cada fila. Las filas 15 (14 butacas) y 16 (sin bloque central) tienen el centro más angosto; derivarlo de ahí correría el ala hacia adentro y torcería una columna que en el plano está recta. `geometry.aisleGap` ya no lo lee ninguna función: queda en el plano como el dato que explica esa cuenta, y el test de `lib/plans/` la verifica.
 
 ### Interacción y accesibilidad
 
@@ -76,7 +76,7 @@ Requisitos del spec, no adornos:
 - **Roving `tabindex`**: la Platea entera es *una sola* parada de tabulación. Flechas mueven entre butacas (`nextSeatId`), Enter/Espacio alterna. Mover el foco lógico no mueve el foco del DOM por sí solo: `useSeatPicker` lo hace explícitamente con un `pendingFocus` ref + `useEffect` que busca por `data-seat-id` con `CSS.escape`.
 - Las ocupadas son `aria-disabled` y no responden al click.
 - Región `aria-live="polite"` en `SelectionPanel` que anuncia selección y total.
-- **Ningún estado se comunica sólo por color**: la seleccionada cambia de relleno *y* aparece en la lista del panel; la accesible se distingue por trazo `dashed`.
+- **Ningún estado se comunica sólo por color**: la seleccionada cambia de relleno *y* aparece en la lista del panel.
 - Monocromático: el sector se distingue por posición y etiqueta, nunca por color.
 
 ## Estilo

@@ -14,26 +14,14 @@ const pick = (row: number, number: number) =>
 const dist = (a: Seat, b: Seat) => Math.hypot(a.x - b.x, a.y - b.y)
 
 describe('buildVenue — inventario', () => {
-  it('genera 308 plazas en total', () => {
-    expect(seats).toHaveLength(308)
-  })
-
-  it('genera 302 butacas y 6 espacios accesibles', () => {
-    expect(seats.filter((s) => s.kind === 'standard')).toHaveLength(302)
-    expect(seats.filter((s) => s.kind === 'accessible')).toHaveLength(6)
+  it('genera 302 butacas en total', () => {
+    expect(seats).toHaveLength(302)
   })
 
   it('genera 236 butacas en el bloque central y 33 por ala', () => {
     expect(bySector('platea')).toHaveLength(236)
     expect(bySector('platea-ala-izq')).toHaveLength(33)
     expect(bySector('platea-ala-der')).toHaveLength(33)
-    expect(bySector('platea-accesible')).toHaveLength(6)
-  })
-
-  it('marca los accesibles con kind accessible y el resto con standard', () => {
-    for (const s of seats) {
-      expect(s.kind).toBe(s.sector === 'platea-accesible' ? 'accessible' : 'standard')
-    }
   })
 
   it('no repite ids', () => {
@@ -44,8 +32,8 @@ describe('buildVenue — inventario', () => {
     expect(pick(7, 12).id).toBe('platea-F07-12')
   })
 
-  it('indexa las plazas por id', () => {
-    expect(venue.byId.size).toBe(308)
+  it('indexa las butacas por id', () => {
+    expect(venue.byId.size).toBe(302)
     expect(venue.byId.get('platea-F07-12')).toBe(pick(7, 12))
   })
 
@@ -145,14 +133,7 @@ describe('buildVenue — precios y franjas', () => {
     expect(bySector('platea-ala-der').find((s) => s.row === 16)!.price).toBe(24000)
   })
 
-  it('cobra tarifa accesible en los espacios accesibles', () => {
-    for (const s of bySector('platea-accesible')) {
-      expect(s.price).toBe(24000)
-      expect(s.tier).toBe('Espacio accesible')
-    }
-  })
-
-  it('asigna precio a toda plaza', () => {
+  it('asigna precio a toda butaca', () => {
     expect(seats.every((s) => s.price > 0)).toBe(true)
   })
 })
@@ -160,12 +141,6 @@ describe('buildVenue — precios y franjas', () => {
 describe('buildVenue — etiquetas', () => {
   it('describe la butaca en español, con su franja', () => {
     expect(pick(7, 12).label).toBe('Fila 7, butaca 12, Platea B')
-  })
-
-  it('nombra distinto a los espacios accesibles', () => {
-    const s = bySector('platea-accesible').find((x) => x.row === 4)!
-    expect(s.label).toContain('Espacio accesible')
-    expect(s.label).toContain('espacio accesible')
   })
 })
 
@@ -225,37 +200,13 @@ describe('buildVenue — geometría', () => {
     }
   })
 
-  it('bounds encierra todas las plazas', () => {
+  it('bounds encierra todas las butacas', () => {
     const { bounds } = venue
     for (const s of seats) {
       expect(s.x).toBeGreaterThanOrEqual(bounds.x)
       expect(s.x).toBeLessThanOrEqual(bounds.x + bounds.width)
       expect(s.y).toBeGreaterThanOrEqual(bounds.y)
       expect(s.y).toBeLessThanOrEqual(bounds.y + bounds.height)
-    }
-  })
-})
-
-describe('buildVenue — espacios accesibles', () => {
-  it('los coloca en el pasillo, entre el bloque central y el ala', () => {
-    const acc = bySector('platea-accesible').find((s) => s.row === 14 && s.x > 0)!
-    const bordeCentral = seats
-      .filter((s) => s.sector === 'platea' && s.row === 14)
-      .reduce((max, s) => Math.max(max, s.x), -Infinity)
-    const alaInterna = bySector('platea-ala-der')
-      .filter((s) => s.row === 14)
-      .reduce((min, s) => Math.min(min, s.x), Infinity)
-    expect(acc.x).toBeGreaterThan(bordeCentral)
-    expect(acc.x).toBeLessThan(alaInterna)
-  })
-
-  it('pone 6 accesibles en las filas 1, 4 y 14, uno por lado', () => {
-    const acc = bySector('platea-accesible')
-    expect(acc.map((s) => s.row).sort((a, b) => a - b)).toEqual([1, 1, 4, 4, 14, 14])
-    for (const row of [1, 4, 14]) {
-      const par = acc.filter((s) => s.row === row)
-      expect(par.some((s) => s.x < 0)).toBe(true)
-      expect(par.some((s) => s.x > 0)).toBe(true)
     }
   })
 })
@@ -271,7 +222,7 @@ describe('buildVenue — encuadre', () => {
     }
   })
 
-  it('el viewBox contiene el escenario y todas las plazas', () => {
+  it('el viewBox contiene el escenario y todas las butacas', () => {
     const [x, y, w, h] = venue.viewBox.split(' ').map(Number)
     const stage = TEATRO_DEL_GLOBO.stage
     expect(x).toBeLessThan(stage.x)
@@ -294,15 +245,15 @@ describe('buildVenue — filas agrupadas', () => {
     )
   })
 
-  it('cada fila trae sus plazas ordenadas por x', () => {
+  it('cada fila trae sus butacas ordenadas por x', () => {
     for (const { seats: rowSeats } of venue.rows) {
       const xs = rowSeats.map((s) => s.x)
       expect(xs).toEqual([...xs].sort((a, b) => a - b))
     }
   })
 
-  it('reparte todas las plazas entre las filas sin perder ninguna', () => {
-    expect(venue.rows.reduce((n, r) => n + r.seats.length, 0)).toBe(308)
+  it('reparte todas las butacas entre las filas sin perder ninguna', () => {
+    expect(venue.rows.reduce((n, r) => n + r.seats.length, 0)).toBe(302)
   })
 })
 
@@ -323,8 +274,8 @@ describe('buildVenue — el plano es dato', () => {
     },
     stage: { x: -50, y: 40, width: 100, height: 20, label: 'TABLADO' },
     rows: [
-      { row: 1, center: 2, wing: 0, accessible: false },
-      { row: 2, center: 4, wing: 0, accessible: false },
+      { row: 1, center: 2, wing: 0 },
+      { row: 2, center: 4, wing: 0 },
     ],
     centerBlock: {
       sector: 'platea',
@@ -339,10 +290,6 @@ describe('buildVenue — el plano es dato', () => {
       leftStartNumber: 17,
       rightStartNumber: 18,
       tier: { label: 'Ala', price: 100 },
-    },
-    accessible: {
-      sector: 'platea-accesible',
-      tier: { label: 'Accesible', price: 100 },
     },
     framePadding: 5,
   }
