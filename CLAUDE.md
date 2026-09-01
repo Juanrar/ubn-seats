@@ -81,7 +81,9 @@ Requisitos del spec, no adornos:
 
 ## Estilo
 
-Tailwind v4 con tokens declarados en `@theme` de `app/globals.css` (paleta `paper-bg`, `ink`, `ink-soft`, `ink-mute`, `rule`, `rule-soft`, `accent`, `highlight`; claro y oscuro). Tipografías vía `next/font/google`: **Lora** (títulos/prosa), **JetBrains Mono** (números y tabla), **Caveat** (`font-hand`, una anotación suelta). Sin sombras, sin gradientes, radios chicos, separadores como reglas de 1px. El tema se resuelve con script inline anti-flash en `layout.tsx` + `lib/theme.ts` (`light` / `dark` / `system`).
+Tailwind v4 con tokens declarados en `@theme` de `app/globals.css` (paleta `paper-bg`, `ink`, `ink-soft`, `ink-mute`, `rule`, `rule-soft`, `accent`, `highlight`; claro y oscuro). Tipografías vía `next/font/google`: **Caveat** es la voz de toda la UI (`--font-body` y `--font-hand` apuntan a ella), **JetBrains Mono** queda sólo para cifras donde la alineación en columna es funcional (precio por butaca y total) y **Lora** queda disponible como `--font-prose` para textos largos que todavía no existen.
+
+Caveat no se dimensiona con la escala de Tailwind: su altura de x es baja y necesita ~35% más de tamaño para leerse igual, así que la rampa vive en los tokens `--text-hand-*` (`h1`, `h2`, `lead`, `base`, `sm`, `xs`), cada uno con su `line-height`. Usá esas clases (`text-hand-base`) y no `text-sm`/`text-base`. El cuerpo va en peso 500: con 400 el trazo queda demasiado fino sobre el papel. Tampoco hay versalitas ni caja alta: el rótulo del escenario es "Escenario", no "ESCENARIO". Sin sombras, sin gradientes, radios chicos, separadores como reglas de 1px. El tema se resuelve con script inline anti-flash en `layout.tsx` + `lib/theme.ts` (`light` / `dark` / `system`).
 
 ## Git
 
