@@ -1,11 +1,14 @@
 import { MAX_SEATS } from '@/lib/constants'
 import { boundingBox, type Box } from '@/lib/geometry'
-import type { Seat, StagePlan, VenuePlan } from '@/lib/types'
+import type { Seat, StagePlan, TierPlan, VenuePlan } from '@/lib/types'
 import { buildSeats, round3, seatBounds } from '@/lib/venue/catalog'
+import { tierFor } from '@/lib/venue/pricing'
 
 export interface VenueRow {
   row: number
   seats: Seat[]
+  tier: TierPlan
+  viewBox: string
 }
 
 export interface Venue {
@@ -19,7 +22,24 @@ export interface Venue {
   maxSeats: number
 }
 
-function groupByRow(seats: Seat[]): VenueRow[] {
+function frameRow(plan: VenuePlan, seats: Seat[]): string {
+  const box = seatBounds(plan, seats)
+  const padded = boundingBox(
+    [
+      { x: box.x, y: box.y },
+      { x: box.x + box.width, y: box.y + box.height },
+    ],
+    plan.geometry.seatPitch / 2,
+  )
+  return `${round3(padded.x)} ${round3(padded.y)} ${round3(padded.width)} ${round3(padded.height)}`
+}
+
+function rowTier(plan: VenuePlan, seats: Seat[]): TierPlan {
+  const center = seats.find((seat) => seat.sector === plan.centerBlock.sector)
+  return tierFor(plan, (center ?? seats[0]).sector, (center ?? seats[0]).row)
+}
+
+function groupByRow(plan: VenuePlan, seats: Seat[]): VenueRow[] {
   const groups = new Map<number, Seat[]>()
   for (const seat of seats) {
     const list = groups.get(seat.row)
@@ -28,7 +48,10 @@ function groupByRow(seats: Seat[]): VenueRow[] {
   }
   return [...groups.entries()]
     .sort((a, b) => a[0] - b[0])
-    .map(([row, rowSeats]) => ({ row, seats: [...rowSeats].sort((a, b) => a.x - b.x) }))
+    .map(([row, rowSeats]) => {
+      const sorted = [...rowSeats].sort((a, b) => a.x - b.x)
+      return { row, seats: sorted, tier: rowTier(plan, sorted), viewBox: frameRow(plan, sorted) }
+    })
 }
 
 function frameViewBox(plan: VenuePlan, bounds: Box): string {
@@ -52,7 +75,7 @@ export function buildVenue(plan: VenuePlan, maxSeats: number = MAX_SEATS): Venue
     plan,
     seats,
     byId: new Map(seats.map((seat) => [seat.id, seat])),
-    rows: groupByRow(seats),
+    rows: groupByRow(plan, seats),
     bounds,
     viewBox: frameViewBox(plan, bounds),
     stage: plan.stage,

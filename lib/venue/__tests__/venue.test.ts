@@ -325,3 +325,53 @@ describe('buildVenue — el plano es dato', () => {
     expect(y).toBeLessThan(sintetico.stage.y)
   })
 })
+
+describe('buildVenue — filas', () => {
+  const rowOf = (row: number) => venue.rows.find((r) => r.row === row)!
+
+  it('asigna a cada fila la franja de su bloque central', () => {
+    expect(rowOf(1).tier.label).toBe('Platea A')
+    expect(rowOf(1).tier.price).toBe(45000)
+    expect(rowOf(7).tier.label).toBe('Platea B')
+    expect(rowOf(7).tier.price).toBe(38000)
+    expect(rowOf(11).tier.label).toBe('Platea C')
+    expect(rowOf(11).tier.price).toBe(30000)
+  })
+
+  it('usa la franja del ala en una fila sin bloque central', () => {
+    expect(rowOf(16).tier.label).toBe('Ala lateral')
+    expect(rowOf(16).tier.price).toBe(24000)
+  })
+
+  it('da a cada fila un viewBox propio que contiene sus butacas', () => {
+    const row = rowOf(7)
+    const [x, y, w, h] = row.viewBox.split(' ').map(Number)
+    const xs = row.seats.map((s) => s.x)
+    const ys = row.seats.map((s) => s.y)
+    expect(x).toBeLessThan(Math.min(...xs))
+    expect(y).toBeLessThan(Math.min(...ys))
+    expect(x + w).toBeGreaterThan(Math.max(...xs))
+    expect(y + h).toBeGreaterThan(Math.max(...ys))
+  })
+
+  it('encuadra más angosta la fila más angosta que la más ancha', () => {
+    const wide = Number(rowOf(7).viewBox.split(' ')[2])
+    const narrow = Number(rowOf(1).viewBox.split(' ')[2])
+    expect(narrow).toBeLessThan(wide)
+  })
+
+  it('redondea los cuatro números del viewBox de cada fila', () => {
+    for (const row of venue.rows) {
+      for (const n of row.viewBox.split(' ')) {
+        expect(n).toBe(String(Math.round(Number(n) * 1000) / 1000))
+      }
+    }
+  })
+
+  it('cubre las 16 filas', () => {
+    expect(venue.rows).toHaveLength(16)
+    expect(venue.rows.map((r) => r.row)).toEqual([
+      1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
+    ])
+  })
+})
