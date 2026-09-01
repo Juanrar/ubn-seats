@@ -3,6 +3,8 @@
 import { formatPrice } from '@/lib/format'
 import type { Venue } from '@/lib/venue'
 
+const THUMB_WIDTH = 16
+
 export interface RowRuleProps {
   venue: Venue
   activeRow: number
@@ -27,7 +29,7 @@ export function RowRule({ venue, activeRow, onChange }: RowRuleProps) {
         <div aria-hidden="true" className="pointer-events-none absolute inset-0">
           <div className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-rule" />
           {venue.rows.map((candidate) => {
-            const percent = span === 0 ? 0 : ((candidate.row - first) / span) * 100
+            const percent = span === 0 ? 0 : (candidate.row - first) / span
             const tierStart = tierStartRows.has(candidate.row)
             return (
               <span
@@ -37,7 +39,9 @@ export function RowRule({ venue, activeRow, onChange }: RowRuleProps) {
                 className={`absolute top-1/2 w-px -translate-x-1/2 -translate-y-1/2 ${
                   tierStart ? 'h-3 bg-ink' : 'h-1.5 bg-rule'
                 }`}
-                style={{ left: `${percent}%` }}
+                style={{
+                  left: `calc(${THUMB_WIDTH / 2}px + (100% - ${THUMB_WIDTH}px) * ${percent})`,
+                }}
               />
             )
           })}

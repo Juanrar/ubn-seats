@@ -14,7 +14,7 @@ export const TEATRO_DEL_GLOBO: VenuePlan = {
     aisleGap: 2.5,
     wingInnerOffset: 11,
   },
-  stage: { x: -270, y: 140, width: 540, height: 100, label: 'Escenario' },
+  stage: { x: -270, y: 190, width: 540, height: 50, label: 'Escenario' },
   rows: [
     { row: 1, center: 14, wing: 0 },
     { row: 2, center: 16, wing: 0 },

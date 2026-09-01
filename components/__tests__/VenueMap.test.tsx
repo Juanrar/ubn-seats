@@ -75,15 +75,44 @@ describe('VenueMap', () => {
     const labels = ['Platea A · 45.000', 'Platea B · 38.000', 'Platea C · 30.000']
     for (const text of labels) {
       const node = screen.getByText(text)
-      expect(node.getAttribute('x')).toBe(String(venue.tierLabelX))
-      expect(node.getAttribute('text-anchor')).toBe('end')
+      expect(node.getAttribute('data-x')).toBe(String(venue.tierLabelX))
     }
   })
 
   it('los rótulos de fila 15 y 16 no comparten la misma altura', () => {
     renderMap()
-    const y15 = screen.getAllByText('15')[0].getAttribute('y')
-    const y16 = screen.getAllByText('16')[0].getAttribute('y')
+    const y15 = screen.getAllByText('15')[0].getAttribute('data-y')
+    const y16 = screen.getAllByText('16')[0].getAttribute('data-y')
     expect(y15).not.toBe(y16)
+  })
+
+  it('los rótulos del plano viven fuera del SVG, en texto HTML con piso de tamaño', () => {
+    const { container } = renderMap()
+    const svgText = container.querySelector('svg')!.querySelectorAll('text')
+    expect(svgText).toHaveLength(0)
+    const stageLabel = screen.getByText('Escenario')
+    expect(stageLabel.tagName).toBe('SPAN')
+    expect(stageLabel.className).toContain('text-ui-sm')
+  })
+
+  it('en la vista chica sólo se ven los números de fila en los arranques de franja', () => {
+    const { container } = renderMap(1)
+    const boundaryRows = new Set(venue.tierBands.map((band) => band.fromRow))
+    for (const row of venue.rows) {
+      const nodes = container.querySelectorAll(`[data-row-number="${row.row}"]`)
+      expect(nodes.length).toBeGreaterThan(0)
+      for (const node of Array.from(nodes)) {
+        expect(node.className.includes('hidden')).toBe(!boundaryRows.has(row.row))
+      }
+    }
+  })
+
+  it('en la vista chica sólo se ve la franja de tarifa activa', () => {
+    const { container } = renderMap(7)
+    for (const band of venue.tierBands) {
+      const node = container.querySelector(`[data-tier-label="${band.label}"]`)!
+      const active = 7 >= band.fromRow && 7 <= band.throughRow
+      expect(node.className.includes('hidden')).toBe(!active)
+    }
   })
 })

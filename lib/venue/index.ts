@@ -4,6 +4,8 @@ import type { Seat, StagePlan, TierPlan, VenuePlan } from '@/lib/types'
 import { buildSeats, round3, seatBounds } from '@/lib/venue/catalog'
 import { tierFor } from '@/lib/venue/pricing'
 
+const ROW_LABEL_GAP = 26
+const ROW_LABEL_HALF_WIDTH = 10
 const TIER_LABEL_GAP = 12
 const TIER_LABEL_CHAR_WIDTH = 7
 const TIER_LABEL_PRICE_CHARS = 9
@@ -14,6 +16,8 @@ export interface VenueRow {
   tier: TierPlan
   viewBox: string
   labelY: number
+  labelXLeft: number
+  labelXRight: number
 }
 
 export interface TierBand {
@@ -32,6 +36,7 @@ export interface Venue {
   tierBands: TierBand[]
   bounds: Box
   viewBox: string
+  frame: Box
   tierLabelX: number
   stage: StagePlan
   maxSeats: number
@@ -69,12 +74,15 @@ function groupByRow(plan: VenuePlan, seats: Seat[]): VenueRow[] {
     .sort((a, b) => a[0] - b[0])
     .map(([row, rowSeats]) => {
       const sorted = [...rowSeats].sort((a, b) => a.x - b.x)
+      const xs = sorted.map((seat) => seat.x)
       return {
         row,
         seats: sorted,
         tier: rowTier(plan, sorted),
         viewBox: frameRow(plan, sorted),
         labelY: rowLabelY(plan, row),
+        labelXLeft: round3(Math.min(...xs) - ROW_LABEL_GAP),
+        labelXRight: round3(Math.max(...xs) + ROW_LABEL_GAP),
       }
     })
 }
@@ -84,10 +92,15 @@ function tierLabelMargin(plan: VenuePlan): number {
     (max, tier) => Math.max(max, tier.label.length),
     0,
   )
-  return TIER_LABEL_GAP + (longestLabel + TIER_LABEL_PRICE_CHARS) * TIER_LABEL_CHAR_WIDTH
+  return (
+    ROW_LABEL_GAP +
+    ROW_LABEL_HALF_WIDTH +
+    TIER_LABEL_GAP +
+    (longestLabel + TIER_LABEL_PRICE_CHARS) * TIER_LABEL_CHAR_WIDTH
+  )
 }
 
-function frameViewBox(plan: VenuePlan, bounds: Box): string {
+function frameBox(plan: VenuePlan, bounds: Box): Box {
   const { stage, framePadding } = plan
   const box = boundingBox(
     [
@@ -99,7 +112,12 @@ function frameViewBox(plan: VenuePlan, bounds: Box): string {
     framePadding,
   )
   const margin = tierLabelMargin(plan)
-  return `${round3(box.x - margin)} ${round3(box.y)} ${round3(box.width + margin)} ${round3(box.height)}`
+  return {
+    x: round3(box.x - margin),
+    y: round3(box.y),
+    width: round3(box.width + margin),
+    height: round3(box.height),
+  }
 }
 
 function buildTierBands(plan: VenuePlan, rows: VenueRow[]): TierBand[] {
@@ -120,6 +138,7 @@ export function buildVenue(plan: VenuePlan, maxSeats: number = MAX_SEATS): Venue
   const seats = buildSeats(plan)
   const bounds = seatBounds(plan, seats)
   const rows = groupByRow(plan, seats)
+  const frame = frameBox(plan, bounds)
   return {
     plan,
     seats,
@@ -132,8 +151,9 @@ export function buildVenue(plan: VenuePlan, maxSeats: number = MAX_SEATS): Venue
       width: round3(bounds.width),
       height: round3(bounds.height),
     },
-    viewBox: frameViewBox(plan, bounds),
-    tierLabelX: round3(bounds.x - TIER_LABEL_GAP),
+    viewBox: `${frame.x} ${frame.y} ${frame.width} ${frame.height}`,
+    frame,
+    tierLabelX: round3(bounds.x - ROW_LABEL_GAP - ROW_LABEL_HALF_WIDTH - TIER_LABEL_GAP),
     stage: plan.stage,
     maxSeats,
   }

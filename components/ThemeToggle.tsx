@@ -9,11 +9,13 @@ import {
   type ThemePref,
 } from '@/lib/theme'
 
-const OPTIONS: { value: ThemePref; label: string }[] = [
-  { value: 'light', label: 'Claro' },
-  { value: 'dark', label: 'Oscuro' },
-  { value: 'system', label: 'Sistema' },
-]
+const LABELS: Record<ThemePref, string> = {
+  light: 'Claro',
+  dark: 'Oscuro',
+  system: 'Sistema',
+}
+
+const ORDER: ThemePref[] = ['light', 'dark', 'system']
 
 function apply(pref: ThemePref): void {
   const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -35,7 +37,8 @@ export function ThemeToggle() {
     }
   }, [])
 
-  function choose(next: ThemePref) {
+  function cycle() {
+    const next = ORDER[(ORDER.indexOf(pref) + 1) % ORDER.length]
     setPref(next)
     try {
       localStorage.setItem(THEME_STORAGE_KEY, next)
@@ -45,23 +48,13 @@ export function ThemeToggle() {
   }
 
   return (
-    <div role="radiogroup" aria-label="Tema" className="flex items-center gap-3 font-ui text-ui-xs">
-      {OPTIONS.map((option) => (
-        <button
-          key={option.value}
-          type="button"
-          role="radio"
-          aria-checked={pref === option.value}
-          onClick={() => choose(option.value)}
-          className={`border-b pb-0.5 transition-colors ${
-            pref === option.value
-              ? 'border-ink text-ink'
-              : 'border-transparent text-ink-mute hover:text-ink'
-          }`}
-        >
-          {option.label}
-        </button>
-      ))}
-    </div>
+    <button
+      type="button"
+      onClick={cycle}
+      aria-label={`Tema: ${LABELS[pref]}. Tocá para cambiar.`}
+      className="min-h-11 border-b border-transparent px-1 font-ui text-ui-xs text-ink-mute transition-colors hover:border-ink hover:text-ink"
+    >
+      {LABELS[pref]}
+    </button>
   )
 }

@@ -14,9 +14,9 @@ describe('TEATRO_DEL_GLOBO — identidad', () => {
   it('describe el escenario con su rótulo', () => {
     expect(plan.stage).toEqual({
       x: -270,
-      y: 140,
+      y: 190,
       width: 540,
-      height: 100,
+      height: 50,
       label: 'Escenario',
     })
   })

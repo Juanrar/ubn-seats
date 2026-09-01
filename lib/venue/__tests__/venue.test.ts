@@ -433,6 +433,13 @@ describe('buildVenue — franjas de tarifa', () => {
       expect(band.y).toBeCloseTo(firstRow.labelY, 3)
     }
   })
+
+  it('el rótulo de franja queda fuera de la columna de números de fila, sin superponerse', () => {
+    for (const band of venue.tierBands) {
+      const firstRow = venue.rows.find((row) => row.row === band.fromRow)!
+      expect(venue.tierLabelX).toBeLessThan(firstRow.labelXLeft)
+    }
+  })
 })
 
 describe('buildVenue — rótulos de fila', () => {
@@ -455,5 +462,13 @@ describe('buildVenue — rótulos de fila', () => {
     const rows = buildVenue(synthetic).rows
     expect(rows[1].labelY).not.toBe(rows[0].labelY)
     expect(rows[1].labelY - rows[0].labelY).toBeCloseTo(synthetic.geometry.rowPitch, 3)
+  })
+
+  it('ubica el número de fila a la izquierda y a la derecha de sus propias butacas', () => {
+    for (const row of venue.rows) {
+      const xs = row.seats.map((seat) => seat.x)
+      expect(row.labelXLeft).toBeLessThan(Math.min(...xs))
+      expect(row.labelXRight).toBeGreaterThan(Math.max(...xs))
+    }
   })
 })

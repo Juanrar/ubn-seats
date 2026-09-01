@@ -100,12 +100,12 @@ g[data-seat-id]:focus-visible > rect {
 .row-rule-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 4px;
-  height: 24px;
-  margin-top: 10px;
+  width: 16px;
+  height: 28px;
+  margin-top: 8px;
   background-color: var(--color-ink);
   border: none;
-  border-radius: 1px;
+  border-radius: 8px;
   cursor: pointer;
 }
 
@@ -116,11 +116,11 @@ g[data-seat-id]:focus-visible > rect {
 }
 
 .row-rule-slider::-moz-range-thumb {
-  width: 4px;
-  height: 24px;
+  width: 16px;
+  height: 28px;
   background-color: var(--color-ink);
   border: none;
-  border-radius: 1px;
+  border-radius: 8px;
   cursor: pointer;
 }
 
