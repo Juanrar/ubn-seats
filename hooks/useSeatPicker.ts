@@ -12,14 +12,23 @@ const ARROWS: Record<string, Direction> = {
   ArrowDown: 'down',
 }
 
+export interface Rejection {
+  reason: 'ocupada' | 'tope'
+  seatId: string
+  message: string
+  at: number
+}
+
 export interface SeatPicker {
   statusOf: (seat: Seat) => SeatStatus
   focusedId: string
   selectedSeats: Seat[]
   total: number
   limitReached: boolean
+  rejection: Rejection | null
   toggle: (seat: Seat) => void
   clear: () => void
+  dismissRejection: () => void
   onSeatFocus: (id: string) => void
   onKeyDown: (event: React.KeyboardEvent<SVGSVGElement>) => void
 }
@@ -27,7 +36,9 @@ export interface SeatPicker {
 export function useSeatPicker(venue: Venue, occupied: Set<string>): SeatPicker {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set())
   const [focusedId, setFocusedId] = useState<string>(() => venue.seats[0].id)
+  const [rejection, setRejection] = useState<Rejection | null>(null)
   const pendingFocus = useRef<string | null>(null)
+  const rejectionCount = useRef(0)
 
   useEffect(() => {
     if (!pendingFocus.current) return
@@ -38,24 +49,42 @@ export function useSeatPicker(venue: Venue, occupied: Set<string>): SeatPicker {
     target?.focus()
   })
 
+  const reject = useCallback((reason: Rejection['reason'], seatId: string, message: string) => {
+    rejectionCount.current += 1
+    setRejection({ reason, seatId, message, at: rejectionCount.current })
+  }, [])
+
   const toggle = useCallback(
     (seat: Seat) => {
-      if (occupied.has(seat.id)) return
+      if (occupied.has(seat.id)) {
+        reject('ocupada', seat.id, 'Esa butaca ya está ocupada.')
+        return
+      }
+      if (!selectedIds.has(seat.id) && selectedIds.size >= venue.maxSeats) {
+        reject(
+          'tope',
+          seat.id,
+          `Ya elegiste ${venue.maxSeats} butacas. Quitá una para elegir otra.`,
+        )
+        return
+      }
+      setRejection(null)
       setSelectedIds((prev) => {
         const next = new Set(prev)
-        if (next.has(seat.id)) {
-          next.delete(seat.id)
-          return next
-        }
-        if (next.size >= venue.maxSeats) return prev
-        next.add(seat.id)
+        if (next.has(seat.id)) next.delete(seat.id)
+        else next.add(seat.id)
         return next
       })
     },
-    [occupied, venue],
+    [occupied, reject, selectedIds, venue],
   )
 
-  const clear = useCallback(() => setSelectedIds(new Set()), [])
+  const clear = useCallback(() => {
+    setSelectedIds(new Set())
+    setRejection(null)
+  }, [])
+
+  const dismissRejection = useCallback(() => setRejection(null), [])
 
   const statusOf = useCallback(
     (seat: Seat): SeatStatus => {
@@ -70,7 +99,7 @@ export function useSeatPicker(venue: Venue, occupied: Set<string>): SeatPicker {
       const direction = ARROWS[event.key]
       if (direction) {
         event.preventDefault()
-        const next = nextSeatId(venue.seats, focusedId, direction)
+        const next = nextSeatId(venue.seats, focusedId, direction, occupied)
         if (next !== focusedId) {
           setFocusedId(next)
           pendingFocus.current = next
@@ -83,7 +112,7 @@ export function useSeatPicker(venue: Venue, occupied: Set<string>): SeatPicker {
         if (seat) toggle(seat)
       }
     },
-    [focusedId, toggle, venue],
+    [focusedId, occupied, toggle, venue],
   )
 
   const selectedSeats = useMemo(
@@ -105,8 +134,10 @@ export function useSeatPicker(venue: Venue, occupied: Set<string>): SeatPicker {
     selectedSeats,
     total,
     limitReached: selectedIds.size >= venue.maxSeats,
+    rejection,
     toggle,
     clear,
+    dismissRejection,
     onSeatFocus: setFocusedId,
     onKeyDown,
   }

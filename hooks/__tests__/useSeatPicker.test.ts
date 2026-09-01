@@ -190,3 +190,70 @@ describe('useSeatPicker — teclado', () => {
     expect(result.current.selectedSeats).toHaveLength(0)
   })
 })
+
+describe('useSeatPicker — rechazos', () => {
+  it('arranca sin rechazo', () => {
+    const { result } = renderHook(() => useSeatPicker(venue, new Set()))
+    expect(result.current.rejection).toBeNull()
+  })
+
+  it('rechaza una butaca ocupada con motivo y mensaje', () => {
+    const target = venue.seats[3]
+    const { result } = renderHook(() => useSeatPicker(venue, new Set([target.id])))
+    act(() => result.current.toggle(target))
+    expect(result.current.rejection?.reason).toBe('ocupada')
+    expect(result.current.rejection?.seatId).toBe(target.id)
+    expect(result.current.rejection?.message).toBe('Esa butaca ya está ocupada.')
+    expect(result.current.selectedSeats).toHaveLength(0)
+  })
+
+  it('rechaza al pasarse del tope y nombra el tope', () => {
+    const small = buildVenue(TEATRO_DEL_GLOBO, 2)
+    const { result } = renderHook(() => useSeatPicker(small, new Set()))
+    act(() => result.current.toggle(small.seats[0]))
+    act(() => result.current.toggle(small.seats[1]))
+    expect(result.current.rejection).toBeNull()
+    act(() => result.current.toggle(small.seats[2]))
+    expect(result.current.rejection?.reason).toBe('tope')
+    expect(result.current.rejection?.message).toBe(
+      'Ya elegiste 2 butacas. Quitá una para elegir otra.',
+    )
+    expect(result.current.selectedSeats).toHaveLength(2)
+  })
+
+  it('deseleccionar en el tope no es un rechazo', () => {
+    const small = buildVenue(TEATRO_DEL_GLOBO, 2)
+    const { result } = renderHook(() => useSeatPicker(small, new Set()))
+    act(() => result.current.toggle(small.seats[0]))
+    act(() => result.current.toggle(small.seats[1]))
+    act(() => result.current.toggle(small.seats[1]))
+    expect(result.current.rejection).toBeNull()
+    expect(result.current.selectedSeats).toHaveLength(1)
+  })
+
+  it('un rechazo repetido genera un objeto nuevo para volver a anunciarse', () => {
+    const target = venue.seats[3]
+    const { result } = renderHook(() => useSeatPicker(venue, new Set([target.id])))
+    act(() => result.current.toggle(target))
+    const first = result.current.rejection!
+    act(() => result.current.toggle(target))
+    expect(result.current.rejection!.at).toBeGreaterThan(first.at)
+  })
+
+  it('una selección válida limpia el rechazo anterior', () => {
+    const occupied = venue.seats[3]
+    const { result } = renderHook(() => useSeatPicker(venue, new Set([occupied.id])))
+    act(() => result.current.toggle(occupied))
+    expect(result.current.rejection).not.toBeNull()
+    act(() => result.current.toggle(venue.seats[0]))
+    expect(result.current.rejection).toBeNull()
+  })
+
+  it('se puede descartar el rechazo a mano', () => {
+    const target = venue.seats[3]
+    const { result } = renderHook(() => useSeatPicker(venue, new Set([target.id])))
+    act(() => result.current.toggle(target))
+    act(() => result.current.dismissRejection())
+    expect(result.current.rejection).toBeNull()
+  })
+})

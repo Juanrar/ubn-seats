@@ -69,7 +69,7 @@ describe('PlateaPicker', () => {
     const inicial = screen.getAllByRole('button').find((b) => b.getAttribute('tabindex') === '0')!
     inicial.focus()
     const idInicial = inicial.getAttribute('data-seat-id')!
-    const idEsperado = nextSeatId(seats, idInicial, 'right')
+    const idEsperado = nextSeatId(seats, idInicial, 'right', occupied)
     expect(idEsperado).not.toBe(idInicial)
 
     const anterior = document.activeElement
