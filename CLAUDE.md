@@ -20,7 +20,7 @@ npm run build                    # build de producción
 npm run typecheck                # tsc --noEmit
 npm test                         # Vitest en watch
 npm run test:run                 # Vitest una sola vez (CI)
-npm run test:run -- lib/__tests__/seats.test.ts        # un archivo
+npm run test:run -- lib/venue/__tests__/venue.test.ts  # un archivo
 npm run test:run -- -t "numeración"                    # por nombre de test
 ```
 
@@ -37,19 +37,23 @@ El diseño y el plan originales viven en `docs/superpowers/` (untracked). El spe
 La forma del sistema es una **pipeline determinista y pura** en `lib/`, consumida por un árbol de React que sólo pinta:
 
 ```
-venue.ts (plano)  ─┐
-constants.ts       ├─► seats.ts  buildSeats() ─► Seat[] ─┬─► occupancy.ts  buildOccupancy() ─► Set<id>
-numbering.ts       │   (compone todo)                     ├─► navigation.ts nextSeatId()
-geometry.ts        │                                      └─► PlateaPicker ─► SeatMap ─► SeatArc ─► SeatButton
-pricing.ts        ─┘                                                        └─► SelectionPanel / Legend
+plans/teatro-del-globo.ts   ─►  venue/  buildVenue(plan) ─► Venue ─┬─► occupancy.ts buildOccupancy() ─► Set<id>
+        (VenuePlan: dato)           (numbering + pricing           │
+                                     + geometry + catalog          ├─► useSeatPicker(venue, occupied) ─► SeatPicker
+                                     + labels, detrás del seam)    │        (usa navigation.ts nextSeatId)
+                                                                   └─► PlateaPicker ─► SeatMap ─► SeatArc ─► SeatButton
+                                                                                    └─► SelectionPanel / Legend
 ```
 
 Reglas que sostienen esa forma — respetalas:
 
 - **Todo módulo bajo `lib/` es puro.** Sin `import` de React, sin `window`, sin `document`, sin `Math.random`. Ahí vive la lógica verificable y ahí vive el TDD.
 - **Los componentes no hacen aritmética de geometría.** Consumen `Seat` ya resueltas (con `x`, `y`, `angle` calculados) y las pintan.
-- **`venue.ts` es la única fuente del plano.** Corregir un conteo de filas o butacas toca *sólo* ese archivo: geometría, numeración, precios y encuadre se recalculan solos.
-- **El `viewBox` nunca se hardcodea.** Sale del bounding box de las butacas generadas más el escenario (`SeatMap.tsx` + `seatBounds`). Cambiar una constante no rompe el encuadre.
+- **El plano es dato: `lib/plans/teatro-del-globo.ts` es la única fuente.** Corregir un conteo de filas o butacas, una tarifa o una constante de geometría toca *sólo* ese archivo: geometría, numeración, precios, etiquetas y encuadre se recalculan solos. Otra sala es otro `VenuePlan`, no código nuevo.
+- **`lib/venue/` es un módulo profundo con un seam angosto.** Lo único público es `buildVenue(plan) → Venue` y el tipo `Venue`. `numbering.ts`, `pricing.ts`, `catalog.ts` y `labels.ts` son internos: nada fuera de `lib/venue/` los importa, y el módulo se testea a través del seam (`lib/venue/__tests__/venue.test.ts`), con un `VenuePlan` sintético que prueba que no quedaron constantes del Teatro del Globo escondidas en el código.
+- **`lib/geometry.ts` no lee constantes globales.** `rowRadius`, `offsetToTheta`, `placeOnArc` y `placeAtOffset` reciben el `GeometryPlan` como parámetro. `lib/constants.ts` guarda sólo lo que no es del plano: `MAX_SEATS`, `OCCUPANCY_SEED`, `OCCUPANCY_RATE`.
+- **El `viewBox` nunca se hardcodea ni se calcula en un componente.** Sale de `Venue.viewBox`: el bounding box de las plazas más el escenario más `plan.framePadding`. Cambiar una constante del plano no rompe el encuadre.
+- **La máquina de estados del selector vive en `hooks/useSeatPicker.ts`,** no en el árbol de React. `useSeatPicker(venue, occupied)` concentra selección, tope, foco lógico, movimiento del foco real del DOM, teclas, orden de la selección y total. `PlateaPicker` es sólo layout: sin `useRef`, sin `useEffect`, sin `useCallback`. `SelectionPanel` recibe `seats` y `total` y sólo pinta.
 - **`geometry.ts` trabaja en radianes; `Seat.angle` se expone en grados** porque es lo que consume `transform="rotate(...)"`. La conversión ocurre en un único lugar, al construir el `Seat`.
 - **El `id` de butaca (`platea-F07-12`) es estable y derivable de `(sector, fila, número)`**, no de la geometría: la selección puede serializarse a URL o `localStorage`.
 
@@ -58,18 +62,18 @@ Reglas que sostienen esa forma — respetalas:
 Next.js renderiza el mapa en el servidor y en el cliente. Dos cosas lo mantienen idéntico en ambos lados:
 
 1. **PRNG con semilla (`mulberry32`, semilla `20260820`) en vez de `Math.random`.** `Math.random` daría un mapa de ocupación distinto en cada lado y rompería la hidratación. `buildOccupancy` ordena por `id` antes de sortear para no depender del orden de entrada, y los espacios accesibles consumen un número del PRNG aunque nunca se ocupen — así el patrón del resto no depende de esa regla.
-2. **`round3` en `lib/seats.ts`.** `Math.sin`/`cos` no están garantizados bit a bit entre implementaciones de JS, y esa diferencia de 1 ULP se serializa distinto en el SVG del servidor y del cliente. Todas las coordenadas y ángulos que llegan al DOM pasan por `round3` (que además normaliza `-0` a `0`).
+2. **`round3` dentro de `lib/venue/`.** `Math.sin`/`cos` no están garantizados bit a bit entre implementaciones de JS, y esa diferencia de 1 ULP se serializa distinto en el SVG del servidor y del cliente. Todas las coordenadas y ángulos de cada `Seat` y los cuatro números del `viewBox` pasan por `round3` (que además normaliza `-0` a `0`). Vive en `lib/venue/catalog.ts` y **no se exporta hacia afuera del módulo**: ningún componente redondea nada, porque nada que llegue al DOM sale sin redondear del Recinto. No lo borres ni lo saques del camino.
 
-### `WING_INNER_OFFSET` es constante a propósito
+### `wingInnerOffset` es constante a propósito
 
-Vale `11` (= `7.5 + 1 + AISLE_GAP`, la posición que corresponde a una fila de 16) y **no se deriva** de la semianchura de cada fila. Las filas 15 (14 butacas) y 16 (sin bloque central) tienen el centro más angosto; derivarlo de ahí correría el ala hacia adentro y torcería una columna que en el plano está recta. El espacio accesible **sí** se deriva de la semianchura, porque en el plano abraza el borde del bloque central.
+Vale `11` (= `7.5 + 1 + aisleGap`, la posición que corresponde a una fila de 16) y **no se deriva** de la semianchura de cada fila. Las filas 15 (14 butacas) y 16 (sin bloque central) tienen el centro más angosto; derivarlo de ahí correría el ala hacia adentro y torcería una columna que en el plano está recta. El espacio accesible **sí** se deriva de la semianchura, porque en el plano abraza el borde del bloque central.
 
 ### Interacción y accesibilidad
 
 Requisitos del spec, no adornos:
 
 - Cada butaca es un `role="button"` dentro del SVG, con `aria-label` completo ("Fila 7, butaca 12, Platea B, 38.000 pesos, disponible").
-- **Roving `tabindex`**: la Platea entera es *una sola* parada de tabulación. Flechas mueven entre butacas (`nextSeatId`), Enter/Espacio alterna. Mover el foco lógico no mueve el foco del DOM por sí solo: `PlateaPicker` lo hace explícitamente con un `pendingFocus` ref + `useEffect` que busca por `data-seat-id`.
+- **Roving `tabindex`**: la Platea entera es *una sola* parada de tabulación. Flechas mueven entre butacas (`nextSeatId`), Enter/Espacio alterna. Mover el foco lógico no mueve el foco del DOM por sí solo: `useSeatPicker` lo hace explícitamente con un `pendingFocus` ref + `useEffect` que busca por `data-seat-id` con `CSS.escape`.
 - Las ocupadas son `aria-disabled` y no responden al click.
 - Región `aria-live="polite"` en `SelectionPanel` que anuncia selección y total.
 - **Ningún estado se comunica sólo por color**: la seleccionada cambia de relleno *y* aparece en la lista del panel; la accesible se distingue por trazo `dashed`.
@@ -81,5 +85,5 @@ Tailwind v4 con tokens declarados en `@theme` de `app/globals.css` (paleta `pape
 
 ## Git
 
-- Un commit por unidad de trabajo, en `main`. No se hace `push`: queda en manos del usuario.
+- Un commit por unidad de trabajo. No se hace `push`: queda en manos del usuario.
 - **Nunca `git add -A` ni `git add .`** — stagear por nombre. Hay cosas en el working tree que **no se commitean**: `plan.md`, `docs/` y `distribucion-asientos.png`. Verificar con `git status --short` antes de cada commit.
