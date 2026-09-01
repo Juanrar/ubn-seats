@@ -1,11 +1,12 @@
 'use client'
 
-import { MAX_SEATS } from '@/lib/constants'
 import { formatPrice, formatTotal } from '@/lib/format'
 import type { Seat } from '@/lib/types'
 
 export interface SelectionPanelProps {
   seats: Seat[]
+  total: number
+  maxSeats: number
   limitReached: boolean
   onRemove: (seat: Seat) => void
   onClear: () => void
@@ -17,17 +18,21 @@ function seatName(seat: Seat): string {
     : `Butaca ${seat.number}`
 }
 
-export function SelectionPanel({ seats, limitReached, onRemove, onClear }: SelectionPanelProps) {
-  const ordered = [...seats].sort((a, b) => a.row - b.row || a.number - b.number)
-  const total = ordered.reduce((sum, seat) => sum + seat.price, 0)
-
+export function SelectionPanel({
+  seats,
+  total,
+  maxSeats,
+  limitReached,
+  onRemove,
+  onClear,
+}: SelectionPanelProps) {
   return (
     <section aria-labelledby="resumen-titulo" className="flex flex-col gap-4">
       <div className="flex items-baseline justify-between border-b border-rule pb-2">
         <h2 id="resumen-titulo" className="text-lg">
           Tu selección
         </h2>
-        {ordered.length > 0 ? (
+        {seats.length > 0 ? (
           <button
             type="button"
             onClick={onClear}
@@ -39,18 +44,18 @@ export function SelectionPanel({ seats, limitReached, onRemove, onClear }: Selec
       </div>
 
       <p aria-live="polite" className="sr-only">
-        {ordered.length === 0
+        {seats.length === 0
           ? 'No hay butacas seleccionadas.'
-          : `${ordered.length} ${ordered.length === 1 ? 'butaca seleccionada' : 'butacas seleccionadas'}. Total ${formatTotal(total)}.`}
+          : `${seats.length} ${seats.length === 1 ? 'butaca seleccionada' : 'butacas seleccionadas'}. Total ${formatTotal(total)}.`}
       </p>
 
-      {ordered.length === 0 ? (
+      {seats.length === 0 ? (
         <p className="text-sm text-ink-mute">
-          Elegí tus butacas en el mapa. Podés seleccionar hasta {MAX_SEATS}.
+          Elegí tus butacas en el mapa. Podés seleccionar hasta {maxSeats}.
         </p>
       ) : (
         <ul className="flex flex-col divide-y divide-rule-soft">
-          {ordered.map((seat) => (
+          {seats.map((seat) => (
             <li key={seat.id} className="flex items-center justify-between gap-3 py-2">
               <div className="flex flex-col">
                 <span className="font-mono text-sm">
@@ -76,7 +81,7 @@ export function SelectionPanel({ seats, limitReached, onRemove, onClear }: Selec
 
       {limitReached ? (
         <p className="text-xs text-accent">
-          Llegaste al máximo de {MAX_SEATS} butacas por compra.
+          Llegaste al máximo de {maxSeats} butacas por compra.
         </p>
       ) : null}
 

@@ -12,7 +12,7 @@ const pick = (row: number, number: number) =>
 describe('SelectionPanel', () => {
   it('invita a elegir cuando no hay nada seleccionado', () => {
     render(
-      <SelectionPanel seats={[]} limitReached={false} onRemove={vi.fn()} onClear={vi.fn()} />,
+      <SelectionPanel seats={[]} total={0} maxSeats={8} limitReached={false} onRemove={vi.fn()} onClear={vi.fn()} />,
     )
     expect(screen.getByText(/eleg[íi] tus butacas/i)).toBeInTheDocument()
     expect(screen.getByText('$ 0')).toBeInTheDocument()
@@ -22,6 +22,8 @@ describe('SelectionPanel', () => {
     render(
       <SelectionPanel
         seats={[pick(2, 1), pick(12, 4)]}
+        total={75000}
+        maxSeats={8}
         limitReached={false}
         onRemove={vi.fn()}
         onClear={vi.fn()}
@@ -30,10 +32,12 @@ describe('SelectionPanel', () => {
     expect(screen.getByText('$ 75.000')).toBeInTheDocument()
   })
 
-  it('ordena la lista por fila y después por butaca, sin importar el orden de entrada', () => {
+  it('pinta la lista en el orden en que la recibe, fila y butaca', () => {
     render(
       <SelectionPanel
-        seats={[pick(12, 4), pick(2, 3), pick(2, 1)]}
+        seats={[pick(2, 1), pick(2, 3), pick(12, 4)]}
+        total={120000}
+        maxSeats={8}
         limitReached={false}
         onRemove={vi.fn()}
         onClear={vi.fn()}
@@ -50,6 +54,8 @@ describe('SelectionPanel', () => {
     render(
       <SelectionPanel
         seats={[pick(7, 12)]}
+        total={38000}
+        maxSeats={8}
         limitReached={false}
         onRemove={vi.fn()}
         onClear={vi.fn()}
@@ -65,6 +71,8 @@ describe('SelectionPanel', () => {
     render(
       <SelectionPanel
         seats={[butaca]}
+        total={38000}
+        maxSeats={8}
         limitReached={false}
         onRemove={onRemove}
         onClear={vi.fn()}
@@ -79,6 +87,8 @@ describe('SelectionPanel', () => {
     render(
       <SelectionPanel
         seats={[pick(7, 12)]}
+        total={38000}
+        maxSeats={8}
         limitReached={false}
         onRemove={vi.fn()}
         onClear={onClear}
@@ -92,6 +102,8 @@ describe('SelectionPanel', () => {
     render(
       <SelectionPanel
         seats={[pick(7, 12)]}
+        total={38000}
+        maxSeats={8}
         limitReached
         onRemove={vi.fn()}
         onClear={vi.fn()}
@@ -104,6 +116,8 @@ describe('SelectionPanel', () => {
     const { container } = render(
       <SelectionPanel
         seats={[pick(7, 12)]}
+        total={38000}
+        maxSeats={8}
         limitReached={false}
         onRemove={vi.fn()}
         onClear={vi.fn()}
