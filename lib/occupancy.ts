@@ -1,10 +1,6 @@
 import { OCCUPANCY_RATE, OCCUPANCY_SEED } from '@/lib/constants'
 import type { Seat } from '@/lib/types'
 
-/**
- * PRNG de 32 bits con semilla. Reemplaza a Math.random, que daría un mapa
- * distinto en el servidor y en el cliente y rompería la hidratación de Next.js.
- */
 export function mulberry32(seed: number): () => number {
   let a = seed >>> 0
   return function next(): number {
@@ -16,14 +12,6 @@ export function mulberry32(seed: number): () => number {
   }
 }
 
-/**
- * Conjunto de butacas ocupadas. Ordena por id antes de sortear para que el
- * resultado no dependa del orden en que llegan las butacas.
- *
- * Los espacios accesibles nunca se ocupan: son solo 6 y verlos ocupados al azar
- * arruinaría la demostración de ese estado. Igual consumen un número del PRNG,
- * para que el patrón del resto no dependa de esta decisión.
- */
 export function buildOccupancy(
   seats: Seat[],
   seed: number = OCCUPANCY_SEED,

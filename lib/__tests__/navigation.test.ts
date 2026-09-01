@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest'
 import { nextSeatId } from '@/lib/navigation'
-import { buildSeats } from '@/lib/seats'
+import { TEATRO_DEL_GLOBO } from '@/lib/plans/teatro-del-globo'
+import { buildVenue } from '@/lib/venue'
 
-const seats = buildSeats()
+const seats = buildVenue(TEATRO_DEL_GLOBO).seats
 const byId = (id: string) => seats.find((s) => s.id === id)!
 const fila = (row: number) => seats.filter((s) => s.row === row).sort((a, b) => a.x - b.x)
 

@@ -1,10 +1,11 @@
 import { describe, it, expect } from 'vitest'
 import { act, renderHook } from '@testing-library/react'
 import { useSeatSelection } from '@/hooks/useSeatSelection'
-import { buildSeats } from '@/lib/seats'
+import { TEATRO_DEL_GLOBO } from '@/lib/plans/teatro-del-globo'
+import { buildVenue } from '@/lib/venue'
 import { MAX_SEATS } from '@/lib/constants'
 
-const seats = buildSeats()
+const seats = buildVenue(TEATRO_DEL_GLOBO).seats
 const libres = seats.filter((s) => s.sector === 'platea').slice(0, MAX_SEATS + 3)
 const ocupada = seats.find((s) => s.sector === 'platea' && s.row === 3)!
 
