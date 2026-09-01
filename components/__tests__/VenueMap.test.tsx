@@ -1,0 +1,72 @@
+import { describe, it, expect, vi } from 'vitest'
+import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { VenueMap, tierWeightOf } from '@/components/VenueMap'
+import { TEATRO_DEL_GLOBO } from '@/lib/plans/teatro-del-globo'
+import { buildVenue } from '@/lib/venue'
+
+const venue = buildVenue(TEATRO_DEL_GLOBO)
+
+function renderMap(activeRow = 1) {
+  const onPickRow = vi.fn()
+  const view = render(
+    <VenueMap venue={venue} statusOf={() => 'available'} activeRow={activeRow} onPickRow={onPickRow} />,
+  )
+  return { onPickRow, ...view }
+}
+
+describe('VenueMap', () => {
+  it('pinta las 302 butacas del plano real', () => {
+    const { container } = renderMap()
+    expect(container.querySelectorAll('[data-seat-id]')).toHaveLength(302)
+  })
+
+  it('rotula el escenario', () => {
+    renderMap()
+    expect(screen.getByText('Escenario')).toBeInTheDocument()
+  })
+
+  it('escribe el número de fila en los dos extremos de cada arco', () => {
+    renderMap()
+    expect(screen.getAllByText('7')).toHaveLength(2)
+    expect(screen.getAllByText('16')).toHaveLength(2)
+  })
+
+  it('rotula cada franja de tarifa con su precio', () => {
+    renderMap()
+    expect(screen.getByText('Platea A · 45.000')).toBeInTheDocument()
+    expect(screen.getByText('Platea B · 38.000')).toBeInTheDocument()
+    expect(screen.getByText('Platea C · 30.000')).toBeInTheDocument()
+  })
+
+  it('toma el viewBox del recinto y no lo hardcodea', () => {
+    const { container } = renderMap()
+    expect(container.querySelector('svg')!.getAttribute('viewBox')).toBe(venue.viewBox)
+  })
+
+  it('marca la fila activa', () => {
+    const { container } = renderMap(7)
+    const active = container.querySelectorAll('[data-row="7"][data-active="true"]')
+    expect(active.length).toBeGreaterThan(0)
+    expect(container.querySelectorAll('[data-row="8"][data-active="true"]')).toHaveLength(0)
+  })
+
+  it('tocar una fila la lleva al foco', async () => {
+    const { onPickRow, container } = renderMap()
+    const seat = container.querySelector('[data-seat-id="platea-F09-12"]')!
+    await userEvent.click(seat)
+    expect(onPickRow).toHaveBeenCalledWith(9)
+  })
+
+  it('el plano no es una parada de tabulación ni expone botones', () => {
+    const { container } = renderMap()
+    expect(screen.queryAllByRole('button')).toHaveLength(0)
+    expect(container.querySelectorAll('[tabindex="0"]')).toHaveLength(0)
+  })
+
+  it('da más trazo a la franja cara que a la barata', () => {
+    expect(tierWeightOf(venue, 45000)).toBeGreaterThan(tierWeightOf(venue, 24000))
+    expect(tierWeightOf(venue, 45000)).toBe(1.6)
+    expect(tierWeightOf(venue, 24000)).toBe(0.7)
+  })
+})
