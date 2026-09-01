@@ -19,8 +19,8 @@ export function PlateaPicker() {
     <div className="mx-auto flex w-full max-w-[var(--layout-stack)] flex-col gap-8 px-5 py-10">
       <header className="flex items-start justify-between gap-4 border-b border-rule pb-5">
         <div>
-          <h1 className="text-2xl">{venue.plan.name}</h1>
-          <p className="mt-1 text-sm text-ink-soft">
+          <h1 className="text-hand-h1 font-bold">{venue.plan.name}</h1>
+          <p className="mt-1 text-hand-lead text-ink-soft">
             Sector {venue.plan.sectionName} · elegí dónde sentarte
           </p>
         </div>
@@ -42,7 +42,7 @@ export function PlateaPicker() {
             </div>
           </div>
           <Legend geometry={venue.plan.geometry} />
-          <p className="font-hand text-base text-ink-mute">
+          <p className="text-hand-base text-ink-mute">
             usá las flechas para moverte y Enter para elegir
           </p>
         </div>
