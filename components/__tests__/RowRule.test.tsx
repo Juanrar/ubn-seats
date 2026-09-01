@@ -45,4 +45,26 @@ describe('RowRule', () => {
     fireEvent.change(screen.getByRole('slider'), { target: { value: '12' } })
     expect(onChange).toHaveBeenCalledWith(12)
   })
+
+  it('dibuja una marca por cada fila', () => {
+    const { container } = renderRule()
+    expect(container.querySelectorAll('[data-row-tick]')).toHaveLength(venue.rows.length)
+  })
+
+  it('distingue las marcas donde arranca una franja de tarifa', () => {
+    const { container } = renderRule()
+    const tierStartRows = venue.tierBands.map((band) => band.fromRow)
+    expect(tierStartRows.length).toBeGreaterThan(0)
+    for (const row of tierStartRows) {
+      expect(container.querySelector(`[data-row-tick="${row}"]`)).toHaveAttribute(
+        'data-tier-start',
+        'true',
+      )
+    }
+    const midRow = venue.rows.find((r) => !tierStartRows.includes(r.row))!.row
+    expect(container.querySelector(`[data-row-tick="${midRow}"]`)).toHaveAttribute(
+      'data-tier-start',
+      'false',
+    )
+  })
 })

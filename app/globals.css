@@ -86,3 +86,50 @@ g[data-seat-id]:focus-visible > rect {
   stroke: var(--color-accent);
   stroke-width: 2;
 }
+
+.row-rule-slider {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.row-rule-slider::-webkit-slider-runnable-track {
+  height: 100%;
+  background: transparent;
+}
+
+.row-rule-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 4px;
+  height: 24px;
+  margin-top: 10px;
+  background-color: var(--color-ink);
+  border: none;
+  border-radius: 1px;
+  cursor: pointer;
+}
+
+.row-rule-slider::-moz-range-track {
+  height: 100%;
+  background: transparent;
+  border: none;
+}
+
+.row-rule-slider::-moz-range-thumb {
+  width: 4px;
+  height: 24px;
+  background-color: var(--color-ink);
+  border: none;
+  border-radius: 1px;
+  cursor: pointer;
+}
+
+.row-rule-slider:focus-visible::-webkit-slider-thumb {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
+}
+
+.row-rule-slider:focus-visible::-moz-range-thumb {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
+}
