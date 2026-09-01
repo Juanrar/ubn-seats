@@ -15,7 +15,6 @@ export const metadata: Metadata = {
   description: 'Selección de butacas del sector Platea del Teatro del Globo.',
 }
 
-// Corre antes del primer frame para evitar el flash de tema claro.
 const THEME_SCRIPT = `(function(){var k="theme",s=null;try{s=localStorage.getItem(k)}catch(e){}
 var p=(s==="light"||s==="dark"||s==="system")?s:"system";
 var d=p==="dark"||(p==="system"&&window.matchMedia("(prefers-color-scheme: dark)").matches);

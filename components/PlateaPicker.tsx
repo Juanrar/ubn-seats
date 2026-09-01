@@ -8,8 +8,9 @@ import { ThemeToggle } from '@/components/ThemeToggle'
 import { useSeatSelection } from '@/hooks/useSeatSelection'
 import { nextSeatId, type Direction } from '@/lib/navigation'
 import { buildOccupancy } from '@/lib/occupancy'
-import { buildSeats } from '@/lib/seats'
+import { TEATRO_DEL_GLOBO } from '@/lib/plans/teatro-del-globo'
 import type { Seat, SeatStatus } from '@/lib/types'
+import { buildVenue } from '@/lib/venue'
 
 const ARROWS: Record<string, Direction> = {
   ArrowLeft: 'left',
@@ -19,18 +20,13 @@ const ARROWS: Record<string, Direction> = {
 }
 
 export function PlateaPicker() {
-  // El catálogo y la ocupación son deterministas: se calculan una sola vez y
-  // dan lo mismo en el servidor que en el cliente.
-  const seats = useMemo(() => buildSeats(), [])
-  const occupied = useMemo(() => buildOccupancy(seats), [seats])
-  const byId = useMemo(() => new Map(seats.map((s) => [s.id, s])), [seats])
+  const venue = useMemo(() => buildVenue(TEATRO_DEL_GLOBO), [])
+  const occupied = useMemo(() => buildOccupancy(venue.seats), [venue])
 
   const { selectedIds, toggle, clear, limitReached } = useSeatSelection(occupied)
-  const [focusedId, setFocusedId] = useState<string>(() => seats[0].id)
+  const [focusedId, setFocusedId] = useState<string>(() => venue.seats[0].id)
   const pendingFocus = useRef<string | null>(null)
 
-  // Cuando el teclado mueve el foco lógico, hay que mover también el foco real
-  // del DOM: el roving tabindex por sí solo no lo hace.
   useEffect(() => {
     if (!pendingFocus.current) return
     const target = document.querySelector<SVGGElement>(
@@ -53,7 +49,7 @@ export function PlateaPicker() {
       const direction = ARROWS[event.key]
       if (direction) {
         event.preventDefault()
-        const next = nextSeatId(seats, focusedId, direction)
+        const next = nextSeatId(venue.seats, focusedId, direction)
         if (next !== focusedId) {
           setFocusedId(next)
           pendingFocus.current = next
@@ -62,25 +58,25 @@ export function PlateaPicker() {
       }
       if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault()
-        const seat = byId.get(focusedId)
+        const seat = venue.byId.get(focusedId)
         if (seat) toggle(seat)
       }
     },
-    [byId, focusedId, seats, toggle],
+    [focusedId, toggle, venue],
   )
 
   const selectedSeats = useMemo(
-    () => seats.filter((s) => selectedIds.has(s.id)),
-    [seats, selectedIds],
+    () => venue.seats.filter((s) => selectedIds.has(s.id)),
+    [selectedIds, venue],
   )
 
   return (
     <div className="mx-auto flex w-full max-w-[var(--layout-stack)] flex-col gap-8 px-5 py-10">
       <header className="flex items-start justify-between gap-4 border-b border-rule pb-5">
         <div>
-          <h1 className="text-2xl">Teatro del Globo</h1>
+          <h1 className="text-2xl">{venue.plan.name}</h1>
           <p className="mt-1 text-sm text-ink-soft">
-            Sector Platea · elegí dónde sentarte
+            Sector {venue.plan.sectionName} · elegí dónde sentarte
           </p>
         </div>
         <ThemeToggle />
@@ -88,14 +84,10 @@ export function PlateaPicker() {
 
       <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
         <div className="flex min-w-0 flex-1 flex-col gap-5">
-          {/*
-            En pantallas angostas el mapa no se comprime hasta volverse
-            intocable: se le da un ancho mínimo y el contenedor scrollea.
-          */}
           <div className="-mx-5 overflow-x-auto px-5">
             <div className="min-w-[560px]">
               <SeatMap
-                seats={seats}
+                venue={venue}
                 statusOf={statusOf}
                 focusedId={focusedId}
                 onToggle={toggle}
@@ -104,7 +96,7 @@ export function PlateaPicker() {
               />
             </div>
           </div>
-          <Legend />
+          <Legend geometry={venue.plan.geometry} />
           <p className="font-hand text-base text-ink-mute">
             usá las flechas para moverte y Enter para elegir
           </p>

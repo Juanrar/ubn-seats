@@ -27,8 +27,6 @@ function apply(pref: ThemePref): void {
 export function ThemeToggle() {
   const [pref, setPref] = useState<ThemePref>('system')
 
-  // El script inline de layout.tsx ya pintó el tema correcto antes del primer
-  // frame; acá solo sincronizamos el estado de React con lo que hay guardado.
   useEffect(() => {
     try {
       setPref(parseThemePref(localStorage.getItem(THEME_STORAGE_KEY)))
@@ -42,7 +40,6 @@ export function ThemeToggle() {
     try {
       localStorage.setItem(THEME_STORAGE_KEY, next)
     } catch {
-      // Modo privado o storage bloqueado: el tema igual se aplica en memoria.
     }
     apply(next)
   }

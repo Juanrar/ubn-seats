@@ -2,11 +2,9 @@
 
 import { MAX_SEATS } from '@/lib/constants'
 import { formatPrice, formatTotal } from '@/lib/format'
-import { tierLabel } from '@/lib/pricing'
 import type { Seat } from '@/lib/types'
 
 export interface SelectionPanelProps {
-  /** Butacas ya resueltas, no ids: el panel no toca el catálogo. */
   seats: Seat[]
   limitReached: boolean
   onRemove: (seat: Seat) => void
@@ -58,7 +56,7 @@ export function SelectionPanel({ seats, limitReached, onRemove, onClear }: Selec
                 <span className="font-mono text-sm">
                   Fila {seat.row} · {seatName(seat)}
                 </span>
-                <span className="text-xs text-ink-mute">{tierLabel(seat.sector, seat.row)}</span>
+                <span className="text-xs text-ink-mute">{seat.tier}</span>
               </div>
               <div className="flex items-center gap-3">
                 <span className="font-mono text-sm">{formatPrice(seat.price)}</span>

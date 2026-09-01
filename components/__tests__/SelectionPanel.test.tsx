@@ -2,9 +2,10 @@ import { describe, it, expect, vi } from 'vitest'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { SelectionPanel } from '@/components/SelectionPanel'
-import { buildSeats } from '@/lib/seats'
+import { TEATRO_DEL_GLOBO } from '@/lib/plans/teatro-del-globo'
+import { buildVenue } from '@/lib/venue'
 
-const catalogo = buildSeats()
+const catalogo = buildVenue(TEATRO_DEL_GLOBO).seats
 const pick = (row: number, number: number) =>
   catalogo.find((s) => s.sector === 'platea' && s.row === row && s.number === number)!
 
@@ -18,7 +19,6 @@ describe('SelectionPanel', () => {
   })
 
   it('suma el total de la selección', () => {
-    // Fila 2 => Platea A (45.000). Fila 12 => Platea C (30.000).
     render(
       <SelectionPanel
         seats={[pick(2, 1), pick(12, 4)]}
