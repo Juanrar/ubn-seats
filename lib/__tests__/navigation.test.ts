@@ -65,3 +65,38 @@ describe('nextSeatId', () => {
     expect(nextSeatId(seats, 'no-existe', 'left')).toBe('no-existe')
   })
 })
+
+describe('nextSeatId — saltea butacas ocupadas', () => {
+  const venue = buildVenue(TEATRO_DEL_GLOBO)
+  const rowSeven = venue.rows.find((r) => r.row === 7)!.seats
+
+  it('sin conjunto de salteo se comporta igual que antes', () => {
+    const from = rowSeven[0].id
+    expect(nextSeatId(venue.seats, from, 'right')).toBe(rowSeven[1].id)
+  })
+
+  it('salta por encima de una ocupada contigua', () => {
+    const skip = new Set([rowSeven[1].id])
+    expect(nextSeatId(venue.seats, rowSeven[0].id, 'right', skip)).toBe(rowSeven[2].id)
+  })
+
+  it('salta por encima de varias ocupadas seguidas', () => {
+    const skip = new Set([rowSeven[1].id, rowSeven[2].id, rowSeven[3].id])
+    expect(nextSeatId(venue.seats, rowSeven[0].id, 'right', skip)).toBe(rowSeven[4].id)
+  })
+
+  it('se queda donde está si no queda ninguna libre en esa dirección', () => {
+    const skip = new Set(rowSeven.slice(1).map((s) => s.id))
+    expect(nextSeatId(venue.seats, rowSeven[0].id, 'right', skip)).toBe(rowSeven[0].id)
+  })
+
+  it('al cambiar de fila elige la más cercana que no esté ocupada', () => {
+    const rowEight = venue.rows.find((r) => r.row === 8)!.seats
+    const current = rowSeven[5]
+    const natural = nextSeatId(venue.seats, current.id, 'down')
+    const skip = new Set([natural])
+    const chosen = nextSeatId(venue.seats, current.id, 'down', skip)
+    expect(chosen).not.toBe(natural)
+    expect(rowEight.some((s) => s.id === chosen)).toBe(true)
+  })
+})
