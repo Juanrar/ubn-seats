@@ -14,10 +14,23 @@
   --color-accent-soft: #a3814d;
   --color-highlight: #5a4622;
 
-  --font-body: var(--font-caveat), "Segoe Script", cursive;
+  --font-body: var(--font-atkinson), system-ui, sans-serif;
+  --font-ui: var(--font-atkinson), system-ui, sans-serif;
   --font-mono: var(--font-jetbrains), ui-monospace, monospace;
   --font-hand: var(--font-caveat), "Segoe Script", cursive;
-  --font-prose: var(--font-lora), Georgia, serif;
+
+  --text-ui-xs: 0.8125rem;
+  --text-ui-xs--line-height: 1.35;
+  --text-ui-sm: 0.875rem;
+  --text-ui-sm--line-height: 1.4;
+  --text-ui-base: 1rem;
+  --text-ui-base--line-height: 1.45;
+  --text-ui-lead: 1.125rem;
+  --text-ui-lead--line-height: 1.4;
+  --text-ui-xl: 1.5rem;
+  --text-ui-xl--line-height: 1.2;
+  --text-ui-2xl: 2rem;
+  --text-ui-2xl--line-height: 1.1;
 
   --text-hand-h1: 3.25rem;
   --text-hand-h1--line-height: 0.95;
@@ -57,7 +70,6 @@ body {
 
 body {
   font-family: var(--font-body);
-  font-weight: 500;
   -webkit-font-smoothing: antialiased;
 }
 

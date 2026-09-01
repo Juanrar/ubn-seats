@@ -1,8 +1,13 @@
 import type { Metadata } from 'next'
-import { Caveat, JetBrains_Mono, Lora } from 'next/font/google'
+import { Atkinson_Hyperlegible, Caveat, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 
-const lora = Lora({ subsets: ['latin'], variable: '--font-lora', display: 'swap' })
+const atkinson = Atkinson_Hyperlegible({
+  subsets: ['latin'],
+  weight: ['400', '700'],
+  variable: '--font-atkinson',
+  display: 'swap',
+})
 const jetbrains = JetBrains_Mono({
   subsets: ['latin'],
   variable: '--font-jetbrains',
@@ -26,7 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="es"
-      className={`${lora.variable} ${jetbrains.variable} ${caveat.variable}`}
+      className={`${atkinson.variable} ${jetbrains.variable} ${caveat.variable}`}
       suppressHydrationWarning
     >
       <head>
