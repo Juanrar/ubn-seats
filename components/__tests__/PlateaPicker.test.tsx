@@ -2,6 +2,13 @@ import { describe, it, expect } from 'vitest'
 import { render, screen, within, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { PlateaPicker } from '@/components/PlateaPicker'
+import { TEATRO_DEL_GLOBO } from '@/lib/plans/teatro-del-globo'
+import { buildVenue } from '@/lib/venue'
+import { buildOccupancy } from '@/lib/occupancy'
+import { nextSeatId } from '@/lib/navigation'
+
+const venue = buildVenue(TEATRO_DEL_GLOBO)
+const occupied = buildOccupancy(venue.seats)
 
 describe('PlateaPicker', () => {
   it('nombra el teatro y el sector', () => {
@@ -28,6 +35,19 @@ describe('PlateaPicker', () => {
     const slider = screen.getByRole('slider', { name: /fila/i })
     fireEvent.change(slider, { target: { value: '7' } })
     const grid = screen.getByRole('grid', { name: /fila 7/i })
+    const cells = within(grid).getAllByRole('gridcell')
+    const before = cells.findIndex((cell) => cell.getAttribute('tabindex') === '0')
+    expect(before).toBe(0)
+    fireEvent.keyDown(grid, { key: 'ArrowRight' })
+    const after = cells.findIndex((cell) => cell.getAttribute('tabindex') === '0')
+    expect(after).toBeGreaterThan(before)
+  })
+
+  it('tocar una fila del plano también mueve el foco lógico para que las flechas operen ahí', () => {
+    const { container } = render(<PlateaPicker />)
+    const planRow = container.querySelector('g[data-row="9"]:not([data-seat-id])')!
+    fireEvent.click(planRow)
+    const grid = screen.getByRole('grid', { name: /fila 9/i })
     const cells = within(grid).getAllByRole('gridcell')
     const before = cells.findIndex((cell) => cell.getAttribute('tabindex') === '0')
     expect(before).toBe(0)
@@ -70,8 +90,34 @@ describe('PlateaPicker', () => {
     expect(screen.getByRole('slider', { name: /fila/i })).toBeInTheDocument()
   })
 
-  it('no deja el plano en el orden de tabulación', () => {
+  it('mueve el foco real del DOM con las flechas', async () => {
+    render(<PlateaPicker />)
+    const grid = screen.getByRole('grid', { name: /fila 1/i })
+    const inicial = within(grid)
+      .getAllByRole('gridcell')
+      .find((cell) => cell.getAttribute('tabindex') === '0')!
+    inicial.focus()
+    const idInicial = inicial.getAttribute('data-seat-id')!
+    const idEsperado = nextSeatId(venue.seats, idInicial, 'right', occupied)
+    expect(idEsperado).not.toBe(idInicial)
+
+    const anterior = document.activeElement
+    await userEvent.keyboard('{ArrowRight}')
+
+    expect(document.activeElement).not.toBe(anterior)
+    expect(document.activeElement).toBe(
+      document.querySelector(`svg[role="grid"] [data-seat-id="${idEsperado}"]`),
+    )
+  })
+
+  it('mantiene una sola parada de tabulación después de navegar', async () => {
     const { container } = render(<PlateaPicker />)
+    const grid = screen.getByRole('grid', { name: /fila 1/i })
+    const inicial = within(grid)
+      .getAllByRole('gridcell')
+      .find((cell) => cell.getAttribute('tabindex') === '0')!
+    inicial.focus()
+    await userEvent.keyboard('{ArrowRight}{ArrowRight}')
     const tabbable = container.querySelectorAll('svg[role="grid"] [tabindex="0"]')
     expect(tabbable).toHaveLength(1)
   })

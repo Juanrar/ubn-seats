@@ -43,7 +43,7 @@ export function useSeatPicker(venue: Venue, occupied: Set<string>): SeatPicker {
   useEffect(() => {
     if (!pendingFocus.current) return
     const target = document.querySelector<SVGGElement>(
-      `[data-seat-id="${CSS.escape(pendingFocus.current)}"]`,
+      `svg[role="grid"] [data-seat-id="${CSS.escape(pendingFocus.current)}"]`,
     )
     pendingFocus.current = null
     target?.focus()

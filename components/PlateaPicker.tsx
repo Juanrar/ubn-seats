@@ -20,7 +20,7 @@ export function PlateaPicker() {
   const rows = useRowFocus(venue)
   const [confirming, setConfirming] = useState(false)
 
-  function moveRail(row: number) {
+  function pickRow(row: number) {
     rows.setActiveRow(row)
     const nextRow = venue.rows.find((candidate) => candidate.row === row)
     if (nextRow) picker.onSeatFocus(nextRow.seats[0].id)
@@ -55,7 +55,7 @@ export function PlateaPicker() {
           venue={venue}
           statusOf={picker.statusOf}
           activeRow={rows.activeRow}
-          onPickRow={rows.setActiveRow}
+          onPickRow={pickRow}
         />
       </div>
 
@@ -75,7 +75,7 @@ export function PlateaPicker() {
         <p id="band-hint" className="font-ui text-ui-xs text-ink-mute">
           Tocá una butaca para elegirla. Con el teclado, usá las flechas y Enter.
         </p>
-        <RowRule venue={venue} activeRow={rows.activeRow} onChange={moveRail} />
+        <RowRule venue={venue} activeRow={rows.activeRow} onChange={pickRow} />
       </div>
 
       <div className="sticky bottom-0">
