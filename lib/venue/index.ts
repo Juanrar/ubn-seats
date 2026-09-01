@@ -11,11 +11,19 @@ export interface VenueRow {
   viewBox: string
 }
 
+export interface TierBand {
+  label: string
+  price: number
+  fromRow: number
+  throughRow: number
+}
+
 export interface Venue {
   plan: VenuePlan
   seats: Seat[]
   byId: Map<string, Seat>
   rows: VenueRow[]
+  tierBands: TierBand[]
   bounds: Box
   viewBox: string
   stage: StagePlan
@@ -68,14 +76,28 @@ function frameViewBox(plan: VenuePlan, bounds: Box): string {
   return `${round3(box.x)} ${round3(box.y)} ${round3(box.width)} ${round3(box.height)}`
 }
 
+function buildTierBands(plan: VenuePlan, rows: VenueRow[]): TierBand[] {
+  const lastRow = rows[rows.length - 1].row
+  const bands: TierBand[] = []
+  let fromRow = rows[0].row
+  for (const tier of plan.centerBlock.tiers) {
+    const throughRow = tier.throughRow ?? lastRow
+    bands.push({ label: tier.label, price: tier.price, fromRow, throughRow })
+    fromRow = throughRow + 1
+  }
+  return bands
+}
+
 export function buildVenue(plan: VenuePlan, maxSeats: number = MAX_SEATS): Venue {
   const seats = buildSeats(plan)
   const bounds = seatBounds(plan, seats)
+  const rows = groupByRow(plan, seats)
   return {
     plan,
     seats,
     byId: new Map(seats.map((seat) => [seat.id, seat])),
-    rows: groupByRow(plan, seats),
+    rows,
+    tierBands: buildTierBands(plan, rows),
     bounds,
     viewBox: frameViewBox(plan, bounds),
     stage: plan.stage,

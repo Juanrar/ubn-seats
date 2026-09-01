@@ -375,3 +375,35 @@ describe('buildVenue — filas', () => {
     ])
   })
 })
+
+describe('buildVenue — franjas de tarifa', () => {
+  it('deriva las franjas del bloque central con sus filas', () => {
+    expect(venue.tierBands).toEqual([
+      { label: 'Platea A', price: 45000, fromRow: 1, throughRow: 5 },
+      { label: 'Platea B', price: 38000, fromRow: 6, throughRow: 10 },
+      { label: 'Platea C', price: 30000, fromRow: 11, throughRow: 16 },
+    ])
+  })
+
+  it('no hardcodea los límites: otro plano da otras franjas', () => {
+    const synthetic: VenuePlan = {
+      ...TEATRO_DEL_GLOBO,
+      rows: [
+        { row: 1, center: 4, wing: 0 },
+        { row: 2, center: 4, wing: 0 },
+        { row: 3, center: 4, wing: 0 },
+      ],
+      centerBlock: {
+        sector: 'platea',
+        tiers: [
+          { label: 'Frente', price: 100, throughRow: 1 },
+          { label: 'Fondo', price: 50 },
+        ],
+      },
+    }
+    expect(buildVenue(synthetic).tierBands).toEqual([
+      { label: 'Frente', price: 100, fromRow: 1, throughRow: 1 },
+      { label: 'Fondo', price: 50, fromRow: 2, throughRow: 3 },
+    ])
+  })
+})
