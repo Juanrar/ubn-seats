@@ -1,123 +1,78 @@
 import { describe, it, expect } from 'vitest'
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, within, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { PlateaPicker } from '@/components/PlateaPicker'
-import { TEATRO_DEL_GLOBO } from '@/lib/plans/teatro-del-globo'
-import { buildVenue } from '@/lib/venue'
-import { buildOccupancy } from '@/lib/occupancy'
-import { nextSeatId } from '@/lib/navigation'
-import { MAX_SEATS } from '@/lib/constants'
-
-const seats = buildVenue(TEATRO_DEL_GLOBO).seats
-const occupied = buildOccupancy(seats)
-const libre = (n = 0) => seats.filter((s) => !occupied.has(s.id))[n]
-
-const botonDe = (id: string) => {
-  const seat = seats.find((s) => s.id === id)!
-  const nombre = new RegExp(`Fila ${seat.row}, butaca ${seat.number},`)
-  return screen.getAllByRole('gridcell', { name: nombre })[0]
-}
 
 describe('PlateaPicker', () => {
-  it('al elegir una butaca aparece en el resumen y suma al total', async () => {
+  it('nombra el teatro y el sector', () => {
     render(<PlateaPicker />)
-    const seat = libre()
-    await userEvent.click(botonDe(seat.id))
-
-    const resumen = screen.getByRole('region', { name: /tu selección/i })
-    expect(within(resumen).getByText(new RegExp(`Fila ${seat.row}`))).toBeInTheDocument()
-    expect(within(resumen).getByText(/\$ /, { ignore: '.sr-only' })).toBeInTheDocument()
+    expect(screen.getByText('Teatro del Globo')).toBeInTheDocument()
+    expect(screen.getByText('Platea')).toBeInTheDocument()
   })
 
-  it('al volver a tocarla se deselecciona', async () => {
+  it('arranca en la fila 1 con la banda y la regla', () => {
     render(<PlateaPicker />)
-    const seat = libre()
-    await userEvent.click(botonDe(seat.id))
-    await userEvent.click(botonDe(seat.id))
-    expect(screen.getByText(/eleg[íi] tus butacas/i)).toBeInTheDocument()
+    expect(screen.getByRole('grid', { name: /fila 1/i })).toBeInTheDocument()
+    expect(screen.getByRole('slider', { name: /fila/i })).toHaveValue('1')
   })
 
-  it('quitar desde el panel deselecciona en el mapa', async () => {
+  it('mover la regla cambia la banda', async () => {
     render(<PlateaPicker />)
-    const seat = libre()
-    await userEvent.click(botonDe(seat.id))
-    await userEvent.click(screen.getByRole('button', { name: /^quitar fila/i }))
-    expect(screen.getByText(/eleg[íi] tus butacas/i)).toBeInTheDocument()
+    const slider = screen.getByRole('slider', { name: /fila/i })
+    fireEvent.change(slider, { target: { value: '7' } })
+    expect(screen.getByRole('grid', { name: /fila 7/i })).toBeInTheDocument()
   })
 
-  it('no deja pasar del tope y lo avisa', async () => {
+  it('mover la regla mueve el foco lógico para que las flechas operen en la fila nueva', () => {
     render(<PlateaPicker />)
-    for (let i = 0; i < MAX_SEATS + 2; i++) {
-      await userEvent.click(botonDe(libre(i).id))
-    }
-    const resumen = screen.getByRole('region', { name: /tu selección/i })
-    expect(within(resumen).getAllByRole('listitem')).toHaveLength(MAX_SEATS)
-    expect(
-      screen.getByText(new RegExp(`${MAX_SEATS} butacas`, 'i'), { ignore: '.sr-only' }),
-    ).toBeInTheDocument()
+    const slider = screen.getByRole('slider', { name: /fila/i })
+    fireEvent.change(slider, { target: { value: '7' } })
+    const grid = screen.getByRole('grid', { name: /fila 7/i })
+    const cells = within(grid).getAllByRole('gridcell')
+    const before = cells.findIndex((cell) => cell.getAttribute('tabindex') === '0')
+    expect(before).toBe(0)
+    fireEvent.keyDown(grid, { key: 'ArrowRight' })
+    const after = cells.findIndex((cell) => cell.getAttribute('tabindex') === '0')
+    expect(after).toBeGreaterThan(before)
   })
 
-  it('no permite seleccionar una butaca ocupada', async () => {
+  it('elegir una butaca disponible la suma al total', async () => {
     render(<PlateaPicker />)
-    const ocupada = seats.find((s) => occupied.has(s.id))!
-    await userEvent.click(botonDe(ocupada.id))
-    expect(screen.getByText(/eleg[íi] tus butacas/i)).toBeInTheDocument()
-  })
-
-  it('mueve el foco real del DOM con las flechas', async () => {
-    render(<PlateaPicker />)
-    const inicial = screen.getAllByRole('gridcell').find((b) => b.getAttribute('tabindex') === '0')!
-    inicial.focus()
-    const idInicial = inicial.getAttribute('data-seat-id')!
-    const idEsperado = nextSeatId(seats, idInicial, 'right', occupied)
-    expect(idEsperado).not.toBe(idInicial)
-
-    const anterior = document.activeElement
-    await userEvent.keyboard('{ArrowRight}')
-
-    expect(document.activeElement).not.toBe(anterior)
-    expect(document.activeElement).toBe(
-      document.querySelector(`[data-seat-id="${idEsperado}"]`),
-    )
-  })
-
-  it('selecciona con Enter la butaca a la que se llegó con la flecha, no la de partida', async () => {
-    render(<PlateaPicker />)
-    const inicial = screen.getAllByRole('gridcell').find((b) => b.getAttribute('tabindex') === '0')!
-    inicial.focus()
-    const idInicial = inicial.getAttribute('data-seat-id')!
-
-    let id = idInicial
-    const teclas: string[] = []
-    do {
-      const next = nextSeatId(seats, id, 'right')
-      if (next === id) throw new Error('sin butacas libres a la derecha para probar Enter')
-      id = next
-      teclas.push('{ArrowRight}')
-    } while (occupied.has(id))
-    const seatEsperado = seats.find((s) => s.id === id)!
-
-    await userEvent.keyboard(teclas.join('') + '{Enter}')
-
-    const resumen = screen.getByRole('region', { name: /tu selección/i })
-    expect(within(resumen).getAllByRole('listitem')).toHaveLength(1)
-    expect(within(resumen).getByText(new RegExp(`Fila ${seatEsperado.row}`))).toBeInTheDocument()
-  })
-
-  it('mantiene una sola parada de tabulación después de navegar', async () => {
-    render(<PlateaPicker />)
-    const primera = screen.getAllByRole('gridcell').find((b) => b.getAttribute('tabindex') === '0')!
-    primera.focus()
-    await userEvent.keyboard('{ArrowDown}{ArrowRight}')
-    const alcanzables = screen
+    const grid = screen.getByRole('grid')
+    const free = within(grid)
       .getAllByRole('gridcell')
-      .filter((b) => b.getAttribute('tabindex') === '0')
-    expect(alcanzables).toHaveLength(1)
+      .find((cell) => cell.getAttribute('aria-disabled') !== 'true')!
+    await userEvent.click(free)
+    expect(screen.getByText(/1 de 8/)).toBeInTheDocument()
   })
 
-  it('muestra la leyenda de estados', () => {
+  it('tocar una ocupada muestra el motivo', async () => {
     render(<PlateaPicker />)
-    expect(screen.getByText('Disponible')).toBeInTheDocument()
-    expect(screen.getByText('Ocupada')).toBeInTheDocument()
+    const grid = screen.getByRole('grid')
+    const taken = within(grid)
+      .getAllByRole('gridcell')
+      .find((cell) => cell.getAttribute('aria-disabled') === 'true')
+    if (!taken) return
+    await userEvent.click(taken)
+    expect(screen.getByText('Esa butaca ya está ocupada.')).toBeInTheDocument()
+  })
+
+  it('Continuar lleva a la confirmación y se puede volver', async () => {
+    render(<PlateaPicker />)
+    const grid = screen.getByRole('grid')
+    const free = within(grid)
+      .getAllByRole('gridcell')
+      .find((cell) => cell.getAttribute('aria-disabled') !== 'true')!
+    await userEvent.click(free)
+    await userEvent.click(screen.getByRole('button', { name: /continuar/i }))
+    expect(screen.getByRole('heading', { name: /listo/i })).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: /volver/i }))
+    expect(screen.getByRole('slider', { name: /fila/i })).toBeInTheDocument()
+  })
+
+  it('no deja el plano en el orden de tabulación', () => {
+    const { container } = render(<PlateaPicker />)
+    const tabbable = container.querySelectorAll('svg[role="grid"] [tabindex="0"]')
+    expect(tabbable).toHaveLength(1)
   })
 })

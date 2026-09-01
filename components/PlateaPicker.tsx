@@ -1,10 +1,13 @@
 'use client'
 
-import { useMemo } from 'react'
-import { Legend } from '@/components/Legend'
-import { SeatMap } from '@/components/SeatMap'
-import { SelectionPanel } from '@/components/SelectionPanel'
+import { useMemo, useState } from 'react'
+import { Confirmation } from '@/components/Confirmation'
+import { RowBand } from '@/components/RowBand'
+import { RowRule } from '@/components/RowRule'
+import { SelectionBar } from '@/components/SelectionBar'
 import { ThemeToggle } from '@/components/ThemeToggle'
+import { VenueMap } from '@/components/VenueMap'
+import { useRowFocus } from '@/hooks/useRowFocus'
 import { useSeatPicker } from '@/hooks/useSeatPicker'
 import { buildOccupancy } from '@/lib/occupancy'
 import { TEATRO_DEL_GLOBO } from '@/lib/plans/teatro-del-globo'
@@ -14,49 +17,76 @@ export function PlateaPicker() {
   const venue = useMemo(() => buildVenue(TEATRO_DEL_GLOBO), [])
   const occupied = useMemo(() => buildOccupancy(venue.seats), [venue])
   const picker = useSeatPicker(venue, occupied)
+  const rows = useRowFocus(venue)
+  const [confirming, setConfirming] = useState(false)
+
+  function moveRail(row: number) {
+    rows.setActiveRow(row)
+    const nextRow = venue.rows.find((candidate) => candidate.row === row)
+    if (nextRow) picker.onSeatFocus(nextRow.seats[0].id)
+  }
+
+  if (confirming) {
+    return (
+      <Confirmation
+        seats={picker.selectedSeats}
+        total={picker.total}
+        venueName={venue.plan.name}
+        sectionName={venue.plan.sectionName}
+        onBack={() => setConfirming(false)}
+      />
+    )
+  }
 
   return (
-    <div className="mx-auto flex w-full max-w-[var(--layout-stack)] flex-col gap-8 px-5 py-10">
-      <header className="flex items-start justify-between gap-4 border-b border-rule pb-5">
-        <div>
-          <h1 className="text-hand-h1 font-bold">{venue.plan.name}</h1>
-          <p className="mt-1 text-hand-lead text-ink-soft">
-            Sector {venue.plan.sectionName} · elegí dónde sentarte
-          </p>
+    <div className="flex min-h-dvh flex-col">
+      <header className="flex items-baseline justify-between gap-3 px-5 pt-5">
+        <div className="flex flex-col">
+          <span className="font-hand text-hand-h2 leading-none text-ink">
+            {venue.plan.name}
+          </span>
+          <span className="font-ui text-ui-sm text-ink-mute">{venue.plan.sectionName}</span>
         </div>
         <ThemeToggle />
       </header>
 
-      <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
-        <div className="flex min-w-0 flex-1 flex-col gap-5">
-          <div className="-mx-5 overflow-x-auto px-5">
-            <div className="min-w-[560px]">
-              <SeatMap
-                venue={venue}
-                statusOf={picker.statusOf}
-                focusedId={picker.focusedId}
-                onToggle={picker.toggle}
-                onFocus={picker.onSeatFocus}
-                onKeyDown={picker.onKeyDown}
-              />
-            </div>
-          </div>
-          <Legend geometry={venue.plan.geometry} />
-          <p className="text-hand-base text-ink-mute">
-            usá las flechas para moverte y Enter para elegir
-          </p>
-        </div>
+      <div className="min-h-0 flex-1 px-5 py-3">
+        <VenueMap
+          venue={venue}
+          statusOf={picker.statusOf}
+          activeRow={rows.activeRow}
+          onPickRow={rows.setActiveRow}
+        />
+      </div>
 
-        <aside className="w-full shrink-0 border-t border-rule pt-5 lg:sticky lg:top-8 lg:w-72 lg:border-t-0 lg:pt-0">
-          <SelectionPanel
-            seats={picker.selectedSeats}
-            total={picker.total}
-            maxSeats={venue.maxSeats}
-            limitReached={picker.limitReached}
-            onRemove={picker.toggle}
-            onClear={picker.clear}
-          />
-        </aside>
+      <div className="flex flex-col gap-3 px-5">
+        <RowBand
+          venue={venue}
+          row={rows.row}
+          statusOf={picker.statusOf}
+          focusedId={picker.focusedId}
+          onToggle={picker.toggle}
+          onFocus={(id) => {
+            picker.onSeatFocus(id)
+            rows.focusSeatRow(id)
+          }}
+          onKeyDown={picker.onKeyDown}
+        />
+        <p id="band-hint" className="font-ui text-ui-xs text-ink-mute">
+          Tocá una butaca para elegirla. Con el teclado, usá las flechas y Enter.
+        </p>
+        <RowRule venue={venue} activeRow={rows.activeRow} onChange={moveRail} />
+      </div>
+
+      <div className="sticky bottom-0">
+        <SelectionBar
+          seats={picker.selectedSeats}
+          total={picker.total}
+          maxSeats={venue.maxSeats}
+          rejection={picker.rejection}
+          onClear={picker.clear}
+          onContinue={() => setConfirming(true)}
+        />
       </div>
     </div>
   )
