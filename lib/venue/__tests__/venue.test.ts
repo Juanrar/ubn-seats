@@ -377,8 +377,11 @@ describe('buildVenue — filas', () => {
 })
 
 describe('buildVenue — franjas de tarifa', () => {
+  const sinY = (bands: typeof venue.tierBands) =>
+    bands.map(({ label, price, fromRow, throughRow }) => ({ label, price, fromRow, throughRow }))
+
   it('deriva las franjas del bloque central con sus filas', () => {
-    expect(venue.tierBands).toEqual([
+    expect(sinY(venue.tierBands)).toEqual([
       { label: 'Platea A', price: 45000, fromRow: 1, throughRow: 5 },
       { label: 'Platea B', price: 38000, fromRow: 6, throughRow: 10 },
       { label: 'Platea C', price: 30000, fromRow: 11, throughRow: 16 },
@@ -401,9 +404,49 @@ describe('buildVenue — franjas de tarifa', () => {
         ],
       },
     }
-    expect(buildVenue(synthetic).tierBands).toEqual([
+    expect(sinY(buildVenue(synthetic).tierBands)).toEqual([
       { label: 'Frente', price: 100, fromRow: 1, throughRow: 1 },
       { label: 'Fondo', price: 50, fromRow: 2, throughRow: 3 },
     ])
+  })
+
+  it('redondea la y de cada franja a 3 decimales', () => {
+    for (const band of venue.tierBands) {
+      expect(band.y).toBe(Math.round(band.y * 1000) / 1000)
+    }
+  })
+
+  it('el rótulo de cada franja queda a la izquierda de todas las butacas, aunque su primera fila tenga alas', () => {
+    for (const seat of venue.seats) {
+      expect(venue.tierLabelX).toBeLessThan(seat.x)
+    }
+  })
+
+  it('el rótulo de franja usa la misma x aunque la fila arranque con alas', () => {
+    const xs = new Set(venue.tierBands.map(() => venue.tierLabelX))
+    expect(xs.size).toBe(1)
+  })
+})
+
+describe('buildVenue — rótulos de fila', () => {
+  it('cada fila tiene una y de rótulo distinta de la de sus vecinas, sin importar si tiene bloque central', () => {
+    const labelYs = venue.rows.map((row) => row.labelY)
+    for (let i = 1; i < labelYs.length; i++) {
+      expect(labelYs[i]).not.toBe(labelYs[i - 1])
+      expect(labelYs[i] - labelYs[i - 1]).toBeCloseTo(TEATRO_DEL_GLOBO.geometry.rowPitch, 3)
+    }
+  })
+
+  it('no depende de las butacas de la fila: una fila sin bloque central igual queda separada', () => {
+    const synthetic: VenuePlan = {
+      ...TEATRO_DEL_GLOBO,
+      rows: [
+        { row: 1, center: 4, wing: 3 },
+        { row: 2, center: 0, wing: 3 },
+      ],
+    }
+    const rows = buildVenue(synthetic).rows
+    expect(rows[1].labelY).not.toBe(rows[0].labelY)
+    expect(rows[1].labelY - rows[0].labelY).toBeCloseTo(synthetic.geometry.rowPitch, 3)
   })
 })

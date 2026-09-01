@@ -1,14 +1,19 @@
 import { MAX_SEATS } from '@/lib/constants'
-import { boundingBox, type Box } from '@/lib/geometry'
+import { boundingBox, rowRadius, type Box } from '@/lib/geometry'
 import type { Seat, StagePlan, TierPlan, VenuePlan } from '@/lib/types'
 import { buildSeats, round3, seatBounds } from '@/lib/venue/catalog'
 import { tierFor } from '@/lib/venue/pricing'
+
+const TIER_LABEL_GAP = 12
+const TIER_LABEL_CHAR_WIDTH = 9
+const TIER_LABEL_PRICE_CHARS = 9
 
 export interface VenueRow {
   row: number
   seats: Seat[]
   tier: TierPlan
   viewBox: string
+  labelY: number
 }
 
 export interface TierBand {
@@ -16,6 +21,7 @@ export interface TierBand {
   price: number
   fromRow: number
   throughRow: number
+  y: number
 }
 
 export interface Venue {
@@ -26,6 +32,7 @@ export interface Venue {
   tierBands: TierBand[]
   bounds: Box
   viewBox: string
+  tierLabelX: number
   stage: StagePlan
   maxSeats: number
 }
@@ -47,6 +54,10 @@ function rowTier(plan: VenuePlan, seats: Seat[]): TierPlan {
   return tierFor(plan, (center ?? seats[0]).sector, (center ?? seats[0]).row)
 }
 
+function rowLabelY(plan: VenuePlan, row: number): number {
+  return round3(plan.geometry.center.y + rowRadius(plan.geometry, row))
+}
+
 function groupByRow(plan: VenuePlan, seats: Seat[]): VenueRow[] {
   const groups = new Map<number, Seat[]>()
   for (const seat of seats) {
@@ -58,8 +69,22 @@ function groupByRow(plan: VenuePlan, seats: Seat[]): VenueRow[] {
     .sort((a, b) => a[0] - b[0])
     .map(([row, rowSeats]) => {
       const sorted = [...rowSeats].sort((a, b) => a.x - b.x)
-      return { row, seats: sorted, tier: rowTier(plan, sorted), viewBox: frameRow(plan, sorted) }
+      return {
+        row,
+        seats: sorted,
+        tier: rowTier(plan, sorted),
+        viewBox: frameRow(plan, sorted),
+        labelY: rowLabelY(plan, row),
+      }
     })
+}
+
+function tierLabelMargin(plan: VenuePlan): number {
+  const longestLabel = plan.centerBlock.tiers.reduce(
+    (max, tier) => Math.max(max, tier.label.length),
+    0,
+  )
+  return TIER_LABEL_GAP + (longestLabel + TIER_LABEL_PRICE_CHARS) * TIER_LABEL_CHAR_WIDTH
 }
 
 function frameViewBox(plan: VenuePlan, bounds: Box): string {
@@ -73,7 +98,8 @@ function frameViewBox(plan: VenuePlan, bounds: Box): string {
     ],
     framePadding,
   )
-  return `${round3(box.x)} ${round3(box.y)} ${round3(box.width)} ${round3(box.height)}`
+  const margin = tierLabelMargin(plan)
+  return `${round3(box.x - margin)} ${round3(box.y)} ${round3(box.width + margin)} ${round3(box.height)}`
 }
 
 function buildTierBands(plan: VenuePlan, rows: VenueRow[]): TierBand[] {
@@ -82,7 +108,11 @@ function buildTierBands(plan: VenuePlan, rows: VenueRow[]): TierBand[] {
   let fromRow = rows[0].row
   for (const tier of plan.centerBlock.tiers) {
     const throughRow = tier.throughRow ?? lastRow
-    bands.push({ label: tier.label, price: tier.price, fromRow, throughRow })
+    const firstRow = rows.find((row) => row.row === fromRow)
+    const y = firstRow
+      ? round3(Math.min(...firstRow.seats.map((seat) => seat.y)) - plan.geometry.rowPitch / 2)
+      : 0
+    bands.push({ label: tier.label, price: tier.price, fromRow, throughRow, y })
     fromRow = throughRow + 1
   }
   return bands
@@ -98,8 +128,14 @@ export function buildVenue(plan: VenuePlan, maxSeats: number = MAX_SEATS): Venue
     byId: new Map(seats.map((seat) => [seat.id, seat])),
     rows,
     tierBands: buildTierBands(plan, rows),
-    bounds,
+    bounds: {
+      x: round3(bounds.x),
+      y: round3(bounds.y),
+      width: round3(bounds.width),
+      height: round3(bounds.height),
+    },
     viewBox: frameViewBox(plan, bounds),
+    tierLabelX: round3(bounds.x - TIER_LABEL_GAP),
     stage: plan.stage,
     maxSeats,
   }

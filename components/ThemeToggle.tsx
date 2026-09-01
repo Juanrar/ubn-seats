@@ -45,11 +45,7 @@ export function ThemeToggle() {
   }
 
   return (
-    <div
-      role="radiogroup"
-      aria-label="Tema"
-      className="flex items-center gap-px rounded-sm border border-rule text-hand-sm"
-    >
+    <div role="radiogroup" aria-label="Tema" className="flex items-center gap-3 font-ui text-ui-xs">
       {OPTIONS.map((option) => (
         <button
           key={option.value}
@@ -57,10 +53,10 @@ export function ThemeToggle() {
           role="radio"
           aria-checked={pref === option.value}
           onClick={() => choose(option.value)}
-          className={`px-3 py-0.5 transition-colors ${
+          className={`border-b pb-0.5 transition-colors ${
             pref === option.value
-              ? 'bg-accent text-paper'
-              : 'text-ink-mute hover:text-accent'
+              ? 'border-ink text-ink'
+              : 'border-transparent text-ink-mute hover:text-ink'
           }`}
         >
           {option.label}

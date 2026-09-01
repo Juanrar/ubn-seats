@@ -69,4 +69,21 @@ describe('VenueMap', () => {
     expect(tierWeightOf(venue, 45000)).toBe(1.6)
     expect(tierWeightOf(venue, 24000)).toBe(0.7)
   })
+
+  it('ancla las tres etiquetas de franja a la misma x, fuera del bloque de butacas', () => {
+    renderMap()
+    const labels = ['Platea A · 45.000', 'Platea B · 38.000', 'Platea C · 30.000']
+    for (const text of labels) {
+      const node = screen.getByText(text)
+      expect(node.getAttribute('x')).toBe(String(venue.tierLabelX))
+      expect(node.getAttribute('text-anchor')).toBe('end')
+    }
+  })
+
+  it('los rótulos de fila 15 y 16 no comparten la misma altura', () => {
+    renderMap()
+    const y15 = screen.getAllByText('15')[0].getAttribute('y')
+    const y16 = screen.getAllByText('16')[0].getAttribute('y')
+    expect(y15).not.toBe(y16)
+  })
 })

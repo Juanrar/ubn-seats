@@ -55,29 +55,21 @@ export function VenueMap({ venue, statusOf, activeRow, onPickRow }: VenueMapProp
         {stage.label}
       </text>
 
-      {venue.tierBands.map((band) => {
-        const first = venue.rows.find((row) => row.row === band.fromRow)
-        if (!first) return null
-        const y = Math.min(...first.seats.map((seat) => seat.y)) - geometry.rowPitch / 2
-        const left = Math.min(...first.seats.map((seat) => seat.x))
-        return (
-          <g key={band.label}>
-            <text
-              x={left}
-              y={y - 6}
-              className="fill-ink-mute font-ui text-[15px]"
-            >
-              {`${band.label} · ${formatPrice(band.price)}`}
-            </text>
-          </g>
-        )
-      })}
+      {venue.tierBands.map((band) => (
+        <text
+          key={band.label}
+          x={venue.tierLabelX}
+          y={band.y}
+          textAnchor="end"
+          className="fill-ink-mute font-ui text-[15px]"
+        >
+          {`${band.label} · ${formatPrice(band.price)}`}
+        </text>
+      ))}
 
       {venue.rows.map((row) => {
         const active = row.row === activeRow
         const xs = row.seats.map((seat) => seat.x)
-        const ys = row.seats.map((seat) => seat.y)
-        const midY = (Math.min(...ys) + Math.max(...ys)) / 2
         return (
           <g
             key={row.row}
@@ -88,7 +80,7 @@ export function VenueMap({ venue, statusOf, activeRow, onPickRow }: VenueMapProp
           >
             <text
               x={Math.min(...xs) - ROW_LABEL_GAP}
-              y={midY}
+              y={row.labelY}
               textAnchor="middle"
               dominantBaseline="middle"
               className="fill-ink-mute font-ui text-[15px]"
@@ -113,7 +105,7 @@ export function VenueMap({ venue, statusOf, activeRow, onPickRow }: VenueMapProp
             ))}
             <text
               x={Math.max(...xs) + ROW_LABEL_GAP}
-              y={midY}
+              y={row.labelY}
               textAnchor="middle"
               dominantBaseline="middle"
               className="fill-ink-mute font-ui text-[15px]"
