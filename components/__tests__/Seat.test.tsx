@@ -100,4 +100,10 @@ describe('SeatShape — estado por tinta, nunca por color', () => {
     expect(dear.querySelector('rect')!.getAttribute('stroke-width')).toBe('1.6')
     expect(cheap.querySelector('rect')!.getAttribute('stroke-width')).toBe('0.8')
   })
+
+  it('la butaca ocupada se lee con tinta legible, no con la regla tenue', () => {
+    const { container } = renderShape('occupied')
+    expect(container.querySelector('rect')).toHaveClass('stroke-ink-mute')
+    expect(container.querySelector('[data-testid="seat-slash"]')).toHaveClass('stroke-ink-mute')
+  })
 })

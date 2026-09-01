@@ -10,7 +10,7 @@ const STATUS_TEXT: Record<SeatStatus, string> = {
 }
 
 function shapeClass(status: SeatStatus): string {
-  if (status === 'occupied') return 'fill-transparent stroke-rule'
+  if (status === 'occupied') return 'fill-transparent stroke-ink-mute'
   if (status === 'selected') return 'fill-accent stroke-accent'
   return 'fill-transparent stroke-ink-mute'
 }
@@ -50,7 +50,7 @@ export function SeatShape({
           x2={half.w}
           y2={-half.h}
           strokeWidth={tierWeight}
-          className="stroke-rule"
+          className="stroke-ink-mute"
         />
       ) : null}
     </>
