@@ -17,7 +17,7 @@ describe('TEATRO_DEL_GLOBO — identidad', () => {
       y: 140,
       width: 540,
       height: 100,
-      label: 'ESCENARIO',
+      label: 'Escenario',
     })
   })
 

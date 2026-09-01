@@ -20,7 +20,7 @@ export function Stage({ stage }: StageProps) {
         x={x + width / 2}
         y={y + height / 2 + 4}
         textAnchor="middle"
-        className="fill-ink-soft font-mono text-[13px] tracking-[0.35em]"
+        className="fill-ink-soft text-[26px] font-semibold tracking-[0.24em]"
       >
         {label}
       </text>

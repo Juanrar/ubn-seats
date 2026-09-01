@@ -30,7 +30,7 @@ describe('SeatMap', () => {
 
   it('rotula el escenario', () => {
     renderMap()
-    expect(screen.getByText('ESCENARIO')).toBeInTheDocument()
+    expect(screen.getByText('Escenario')).toBeInTheDocument()
   })
 
   it('calcula el viewBox a partir del contenido, no hardcodeado', () => {

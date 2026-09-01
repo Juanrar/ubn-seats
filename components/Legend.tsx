@@ -15,7 +15,7 @@ export interface LegendProps {
 export function Legend({ geometry }: LegendProps) {
   const { seatWidth, seatHeight } = geometry
   return (
-    <ul className="flex flex-wrap items-center gap-x-5 gap-y-2 font-mono text-xs text-ink-mute">
+    <ul className="flex flex-wrap items-center gap-x-5 gap-y-2 text-hand-sm text-ink-mute">
       {ITEMS.map((item) => (
         <li key={item.label} className="flex items-center gap-2">
           <svg
