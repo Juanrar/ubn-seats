@@ -29,7 +29,7 @@ export function SeatShape({ status, width, height, className = '' }: SeatShapePr
       y={-height / 2}
       width={width}
       height={height}
-      rx={2}
+      rx={1}
       strokeWidth={1}
       className={`${shapeClass(status)} ${className}`}
     />
