@@ -89,3 +89,4 @@ Caveat no se dimensiona con la escala de Tailwind: su altura de x es baja y nece
 
 - Un commit por unidad de trabajo. No se hace `push`: queda en manos del usuario.
 - **Nunca `git add -A` ni `git add .`** — stagear por nombre. Hay cosas en el working tree que **no se commitean**: `plan.md`, `docs/` y `distribucion-asientos.png`. Verificar con `git status --short` antes de cada commit.
+- **Toda feature o implementación nueva arranca en un worktree**, de entrada y sin que haga falta pedirlo: usá el skill `superpowers:using-git-worktrees` al planificar el trabajo, no sólo si el usuario lo menciona. El worktree deja una copia del repo en otra carpeta, sobre su propia rama, mientras `main` en el directorio principal queda libre para seguir usándose en paralelo. Se salta este paso sólo para cambios triviales (un typo, un ajuste de una línea) o si el usuario pide explícitamente trabajar directo sobre `main`.
