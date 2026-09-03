@@ -43,6 +43,7 @@ export interface SeatButtonProps {
   focused: boolean
   onToggle: (seat: Seat) => void
   onFocus: (id: string) => void
+  revealDelayMs?: number
 }
 
 export function SeatButton({
@@ -52,6 +53,7 @@ export function SeatButton({
   focused,
   onToggle,
   onFocus,
+  revealDelayMs = 0,
 }: SeatButtonProps) {
   const occupied = status === 'occupied'
   const label = `${seat.label}, ${formatPrice(seat.price)} pesos, ${STATUS_TEXT[status]}`
@@ -71,12 +73,14 @@ export function SeatButton({
       }}
       onFocus={() => onFocus(seat.id)}
     >
-      <SeatShape
-        status={status}
-        width={geometry.seatWidth}
-        height={geometry.seatHeight}
-        className={occupied ? '' : 'transition-colors hover:stroke-accent'}
-      />
+      <g className="seat-reveal" style={{ animationDelay: `${revealDelayMs}ms` }}>
+        <SeatShape
+          status={status}
+          width={geometry.seatWidth}
+          height={geometry.seatHeight}
+          className={occupied ? '' : 'transition-colors hover:stroke-accent'}
+        />
+      </g>
       <title>{label}</title>
     </g>
   )

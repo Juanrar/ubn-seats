@@ -8,11 +8,13 @@ import { ThemeToggle } from '@/components/ThemeToggle'
 import { useSeatPicker } from '@/hooks/useSeatPicker'
 import { buildOccupancy } from '@/lib/occupancy'
 import { TEATRO_DEL_GLOBO } from '@/lib/plans/teatro-del-globo'
+import { buildRevealDelays } from '@/lib/reveal'
 import { buildVenue } from '@/lib/venue'
 
 export function PlateaPicker() {
   const venue = useMemo(() => buildVenue(TEATRO_DEL_GLOBO), [])
   const occupied = useMemo(() => buildOccupancy(venue.seats), [venue])
+  const revealDelays = useMemo(() => buildRevealDelays(venue.seats, venue.stage), [venue])
   const picker = useSeatPicker(venue, occupied)
 
   return (
@@ -33,6 +35,7 @@ export function PlateaPicker() {
                 onToggle={picker.toggle}
                 onFocus={picker.onSeatFocus}
                 onKeyDown={picker.onKeyDown}
+                revealDelayOf={(seat) => revealDelays.get(seat.id) ?? 0}
               />
             </div>
           </div>

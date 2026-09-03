@@ -10,6 +10,7 @@ export interface SeatArcProps {
   focusedId: string | null
   onToggle: (seat: Seat) => void
   onFocus: (id: string) => void
+  revealDelayOf?: (seat: Seat) => number
 }
 
 export function SeatArc({
@@ -19,6 +20,7 @@ export function SeatArc({
   focusedId,
   onToggle,
   onFocus,
+  revealDelayOf = () => 0,
 }: SeatArcProps) {
   return (
     <g>
@@ -31,6 +33,7 @@ export function SeatArc({
           focused={seat.id === focusedId}
           onToggle={onToggle}
           onFocus={onFocus}
+          revealDelayMs={revealDelayOf(seat)}
         />
       ))}
     </g>
