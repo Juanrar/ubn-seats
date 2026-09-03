@@ -16,7 +16,7 @@ export function SeatMap({ venue, onKeyDown, ...arcProps }: SeatMapProps) {
       aria-label="Mapa de butacas de la Platea"
       viewBox={venue.viewBox}
       onKeyDown={onKeyDown}
-      className="h-auto w-full touch-pan-y select-none"
+      className="h-auto w-full touch-pan-x touch-pan-y select-none"
     >
       <Stage stage={venue.stage} />
       {venue.rows.map((row) => (
