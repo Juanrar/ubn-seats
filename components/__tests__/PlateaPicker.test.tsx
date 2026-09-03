@@ -29,6 +29,20 @@ describe('PlateaPicker', () => {
     expect(within(resumen).getByText(/\$ /, { ignore: '.sr-only' })).toBeInTheDocument()
   })
 
+  it('sin selección no muestra la barra inferior, y al elegir una butaca aparece con el botón Continuar', async () => {
+    render(<PlateaPicker />)
+    expect(
+      screen.queryByRole('region', { name: /resumen de selección y continuar/i }),
+    ).not.toBeInTheDocument()
+
+    const seat = libre()
+    await userEvent.click(botonDe(seat.id))
+
+    const barra = screen.getByRole('region', { name: /resumen de selección y continuar/i })
+    expect(within(barra).getByRole('button', { name: /continuar/i })).toBeEnabled()
+    expect(within(barra).getByText(/1 butaca\b/i)).toBeInTheDocument()
+  })
+
   it('al volver a tocarla se deselecciona', async () => {
     render(<PlateaPicker />)
     const seat = libre()
@@ -53,7 +67,7 @@ describe('PlateaPicker', () => {
     const resumen = screen.getByRole('region', { name: /tu selección/i })
     expect(within(resumen).getAllByRole('listitem')).toHaveLength(MAX_SEATS)
     expect(
-      screen.getByText(new RegExp(`${MAX_SEATS} butacas`, 'i'), { ignore: '.sr-only' }),
+      within(resumen).getByText(new RegExp(`${MAX_SEATS} butacas`, 'i'), { ignore: '.sr-only' }),
     ).toBeInTheDocument()
   })
 

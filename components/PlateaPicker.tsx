@@ -3,6 +3,7 @@
 import { useMemo } from 'react'
 import { Legend } from '@/components/Legend'
 import { SeatMap } from '@/components/SeatMap'
+import { SelectionBar } from '@/components/SelectionBar'
 import { SelectionPanel } from '@/components/SelectionPanel'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { useSeatPicker } from '@/hooks/useSeatPicker'
@@ -18,7 +19,11 @@ export function PlateaPicker() {
   const picker = useSeatPicker(venue, occupied)
 
   return (
-    <div className="mx-auto flex w-full max-w-[var(--layout-stack)] flex-col gap-8 px-5 py-10">
+    <div
+      className={`mx-auto flex w-full max-w-[var(--layout-stack)] flex-col gap-8 px-5 py-10 ${
+        picker.selectedSeats.length > 0 ? 'pb-28' : ''
+      }`}
+    >
       <header className="flex items-center justify-between gap-4 border-b border-rule pb-5">
         <h1 className="text-hand-h2 font-bold">{venue.plan.name}</h1>
         <ThemeToggle />
@@ -56,6 +61,8 @@ export function PlateaPicker() {
           />
         </aside>
       </div>
+
+      <SelectionBar seats={picker.selectedSeats} total={picker.total} onContinue={() => {}} />
     </div>
   )
 }
