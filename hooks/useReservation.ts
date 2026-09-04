@@ -12,7 +12,7 @@ export interface Reservation {
   confirm: (seatIds: string[]) => void
 }
 
-export function useReservation(onSettled: () => void): Reservation {
+export function useReservation(onSuccess: () => void): Reservation {
   const router = useRouter()
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
@@ -22,12 +22,15 @@ export function useReservation(onSettled: () => void): Reservation {
       setErrorMessage(null)
       startTransition(async () => {
         const result = await reserveSeats(seatIds)
-        if (!result.ok) setErrorMessage(result.message)
+        if (!result.ok) {
+          setErrorMessage(result.message)
+        } else {
+          onSuccess()
+        }
         router.refresh()
-        onSettled()
       })
     },
-    [router, onSettled],
+    [router, onSuccess],
   )
 
   return {

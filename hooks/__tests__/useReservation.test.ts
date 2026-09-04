@@ -23,23 +23,23 @@ describe('useReservation', () => {
     expect(result.current.errorMessage).toBeNull()
   })
 
-  it('en éxito vuelve a idle, refresca y llama onSettled', async () => {
+  it('en éxito vuelve a idle, refresca y llama onSuccess', async () => {
     reserveSeats.mockResolvedValue({ ok: true })
-    const onSettled = vi.fn()
-    const { result } = renderHook(() => useReservation(onSettled))
+    const onSuccess = vi.fn()
+    const { result } = renderHook(() => useReservation(onSuccess))
 
     act(() => result.current.confirm(['platea-F07-12']))
 
     await waitFor(() => expect(result.current.status).toBe('idle'))
     expect(reserveSeats).toHaveBeenCalledWith(['platea-F07-12'])
     expect(refresh).toHaveBeenCalledTimes(1)
-    expect(onSettled).toHaveBeenCalledTimes(1)
+    expect(onSuccess).toHaveBeenCalledTimes(1)
   })
 
-  it('en conflicto queda en error con el mensaje, refresca y llama onSettled', async () => {
+  it('en conflicto queda en error con el mensaje, refresca y no llama onSuccess', async () => {
     reserveSeats.mockResolvedValue({ ok: false, message: 'Alguien reservó una de estas butacas justo antes que vos. Elegí otra.' })
-    const onSettled = vi.fn()
-    const { result } = renderHook(() => useReservation(onSettled))
+    const onSuccess = vi.fn()
+    const { result } = renderHook(() => useReservation(onSuccess))
 
     act(() => result.current.confirm(['platea-F07-12']))
 
@@ -48,6 +48,6 @@ describe('useReservation', () => {
       'Alguien reservó una de estas butacas justo antes que vos. Elegí otra.',
     )
     expect(refresh).toHaveBeenCalledTimes(1)
-    expect(onSettled).toHaveBeenCalledTimes(1)
+    expect(onSuccess).not.toHaveBeenCalled()
   })
 })
