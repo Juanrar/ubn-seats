@@ -37,13 +37,15 @@ El diseño y el plan originales viven en `docs/superpowers/` (untracked). El spe
 La forma del sistema es una **pipeline determinista y pura** en `lib/`, consumida por un árbol de React que sólo pinta:
 
 ```
-plans/teatro-del-globo.ts   ─►  venue/  buildVenue(plan) ─► Venue ─┬─► occupancy.ts buildOccupancy() ─► Set<id>
+plans/teatro-del-globo.ts   ─►  venue/  buildVenue(plan) ─► Venue ─┬─► app/page.tsx (sesión + fetchOccupiedSeatIds) ─► occupied: Set<id>
         (VenuePlan: dato)           (numbering + pricing           │
                                      + geometry + catalog          ├─► useSeatPicker(venue, occupied) ─► SeatPicker
                                      + labels, detrás del seam)    │        (usa navigation.ts nextSeatId)
                                                                    └─► PlateaPicker ─► SeatMap ─► SeatArc ─► SeatButton
                                                                                     └─► SelectionPanel / Legend
 ```
+
+`utils/supabase/` (clientes de browser y de server), `middleware.ts` (refresco de sesión), `app/actions.ts` (`reserveSeats`, el server action) y `app/auth/callback/route.ts` son la capa de I/O de autenticación y reservas: viven fuera de `lib/` a propósito, con la misma lógica que el resto de esta sección — `lib/` se mantiene puro, el I/O va en los bordes.
 
 Reglas que sostienen esa forma — respetalas:
 

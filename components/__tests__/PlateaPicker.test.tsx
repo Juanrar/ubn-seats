@@ -1,12 +1,16 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { PlateaPicker } from '@/components/PlateaPicker'
+import { reserveSeats } from '@/app/actions'
 import { TEATRO_DEL_GLOBO } from '@/lib/plans/teatro-del-globo'
 import { buildVenue } from '@/lib/venue'
 import { buildOccupancy } from '@/lib/occupancy'
 import { nextSeatId } from '@/lib/navigation'
 import { MAX_SEATS } from '@/lib/constants'
+
+vi.mock('@/app/actions', () => ({ reserveSeats: vi.fn() }))
+vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn() }) }))
 
 const seats = buildVenue(TEATRO_DEL_GLOBO).seats
 const occupied = buildOccupancy(seats)
@@ -18,9 +22,12 @@ const botonDe = (id: string) => {
   return screen.getAllByRole('button', { name: nombre })[0]
 }
 
+const renderPicker = () =>
+  render(<PlateaPicker occupied={occupied} email="juanchilorenzo@gmail.com" avatarUrl={null} />)
+
 describe('PlateaPicker', () => {
   it('al elegir una butaca aparece en el resumen y suma al total', async () => {
-    render(<PlateaPicker />)
+    renderPicker()
     const seat = libre()
     await userEvent.click(botonDe(seat.id))
 
@@ -30,7 +37,7 @@ describe('PlateaPicker', () => {
   })
 
   it('sin selección no muestra la barra inferior, y al elegir una butaca aparece con el botón Continuar', async () => {
-    render(<PlateaPicker />)
+    renderPicker()
     expect(
       screen.queryByRole('region', { name: /resumen de selección y continuar/i }),
     ).not.toBeInTheDocument()
@@ -44,7 +51,7 @@ describe('PlateaPicker', () => {
   })
 
   it('al volver a tocarla se deselecciona', async () => {
-    render(<PlateaPicker />)
+    renderPicker()
     const seat = libre()
     await userEvent.click(botonDe(seat.id))
     await userEvent.click(botonDe(seat.id))
@@ -52,7 +59,7 @@ describe('PlateaPicker', () => {
   })
 
   it('quitar desde el panel deselecciona en el mapa', async () => {
-    render(<PlateaPicker />)
+    renderPicker()
     const seat = libre()
     await userEvent.click(botonDe(seat.id))
     await userEvent.click(screen.getByRole('button', { name: /^quitar fila/i }))
@@ -60,7 +67,7 @@ describe('PlateaPicker', () => {
   })
 
   it('no deja pasar del tope y lo avisa', async () => {
-    render(<PlateaPicker />)
+    renderPicker()
     for (let i = 0; i < MAX_SEATS + 2; i++) {
       await userEvent.click(botonDe(libre(i).id))
     }
@@ -72,14 +79,14 @@ describe('PlateaPicker', () => {
   })
 
   it('no permite seleccionar una butaca ocupada', async () => {
-    render(<PlateaPicker />)
+    renderPicker()
     const ocupada = seats.find((s) => occupied.has(s.id))!
     await userEvent.click(botonDe(ocupada.id))
     expect(screen.getByText(/eleg[íi] tus butacas/i)).toBeInTheDocument()
   })
 
   it('mueve el foco real del DOM con las flechas', async () => {
-    render(<PlateaPicker />)
+    renderPicker()
     const inicial = screen.getAllByRole('button').find((b) => b.getAttribute('tabindex') === '0')!
     inicial.focus()
     const idInicial = inicial.getAttribute('data-seat-id')!
@@ -96,7 +103,7 @@ describe('PlateaPicker', () => {
   })
 
   it('selecciona con Enter la butaca a la que se llegó con la flecha, no la de partida', async () => {
-    render(<PlateaPicker />)
+    renderPicker()
     const inicial = screen.getAllByRole('button').find((b) => b.getAttribute('tabindex') === '0')!
     inicial.focus()
     const idInicial = inicial.getAttribute('data-seat-id')!
@@ -119,7 +126,7 @@ describe('PlateaPicker', () => {
   })
 
   it('mantiene una sola parada de tabulación después de navegar', async () => {
-    render(<PlateaPicker />)
+    renderPicker()
     const primera = screen.getAllByRole('button').find((b) => b.getAttribute('tabindex') === '0')!
     primera.focus()
     await userEvent.keyboard('{ArrowDown}{ArrowRight}')
@@ -130,8 +137,24 @@ describe('PlateaPicker', () => {
   })
 
   it('muestra la leyenda de estados', () => {
-    render(<PlateaPicker />)
+    renderPicker()
     expect(screen.getByText('Disponible')).toBeInTheDocument()
     expect(screen.getByText('Ocupada')).toBeInTheDocument()
+  })
+
+  it('en conflicto mantiene la selección visible con el mensaje de error', async () => {
+    vi.mocked(reserveSeats).mockResolvedValue({
+      ok: false,
+      message: 'Alguien reservó una de estas butacas justo antes que vos. Elegí otra.',
+    })
+    renderPicker()
+    const seat = libre()
+    await userEvent.click(botonDe(seat.id))
+    await userEvent.click(screen.getByRole('button', { name: /continuar/i }))
+
+    const alerta = await screen.findByRole('alert')
+    expect(alerta).toHaveTextContent(/alguien reservó/i)
+    const resumen = screen.getByRole('region', { name: /tu selección/i })
+    expect(within(resumen).getByText(new RegExp(`Fila ${seat.row}`))).toBeInTheDocument()
   })
 })

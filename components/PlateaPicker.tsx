@@ -5,18 +5,24 @@ import { Legend } from '@/components/Legend'
 import { SeatMap } from '@/components/SeatMap'
 import { SelectionBar } from '@/components/SelectionBar'
 import { SelectionPanel } from '@/components/SelectionPanel'
-import { ThemeToggle } from '@/components/ThemeToggle'
+import { UserMenu } from '@/components/UserMenu'
+import { useReservation } from '@/hooks/useReservation'
 import { useSeatPicker } from '@/hooks/useSeatPicker'
-import { buildOccupancy } from '@/lib/occupancy'
 import { TEATRO_DEL_GLOBO } from '@/lib/plans/teatro-del-globo'
 import { buildRevealDelays } from '@/lib/reveal'
 import { buildVenue } from '@/lib/venue'
 
-export function PlateaPicker() {
+export interface PlateaPickerProps {
+  occupied: Set<string>
+  email: string
+  avatarUrl: string | null
+}
+
+export function PlateaPicker({ occupied, email, avatarUrl }: PlateaPickerProps) {
   const venue = useMemo(() => buildVenue(TEATRO_DEL_GLOBO), [])
-  const occupied = useMemo(() => buildOccupancy(venue.seats), [venue])
   const revealDelays = useMemo(() => buildRevealDelays(venue.seats, venue.stage), [venue])
   const picker = useSeatPicker(venue, occupied)
+  const reservation = useReservation(picker.clear)
 
   return (
     <div
@@ -26,7 +32,7 @@ export function PlateaPicker() {
     >
       <header className="flex items-center justify-between gap-4 border-b border-rule pb-5">
         <h1 className="text-hand-h2 font-bold">{venue.plan.name}</h1>
-        <ThemeToggle />
+        <UserMenu email={email} avatarUrl={avatarUrl} />
       </header>
 
       <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
@@ -62,7 +68,13 @@ export function PlateaPicker() {
         </aside>
       </div>
 
-      <SelectionBar seats={picker.selectedSeats} total={picker.total} onContinue={() => {}} />
+      <SelectionBar
+        seats={picker.selectedSeats}
+        total={picker.total}
+        status={reservation.status}
+        errorMessage={reservation.errorMessage}
+        onContinue={() => reservation.confirm(picker.selectedSeats.map((seat) => seat.id))}
+      />
     </div>
   )
 }

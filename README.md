@@ -21,3 +21,7 @@ npm run typecheck     # tsc --noEmit
 npm test              # tests (watch)
 npm run test:run       # tests una sola vez
 ```
+
+## Variables de entorno
+
+Copiar `.env.example` a `.env.local` y completar con los valores del proyecto de Supabase (Settings → API en el dashboard): `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
