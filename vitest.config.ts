@@ -8,6 +8,7 @@ export default defineConfig({
     alias: { '@': fileURLToPath(new URL('./', import.meta.url)) },
   },
   test: {
+    exclude: ['**/node_modules/**', '**/dist/**', '.claude/**'],
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./vitest.setup.ts'],
