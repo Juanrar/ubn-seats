@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 const signOut = vi.fn()
@@ -21,6 +21,17 @@ describe('UserMenu', () => {
     render(<UserMenu email="juanchilorenzo@gmail.com" avatarUrl="https://example.com/foto.jpg" />)
     const boton = screen.getByRole('button', { name: /menú de usuario/i })
     expect(boton.querySelector('img')).toHaveAttribute('src', 'https://example.com/foto.jpg')
+  })
+
+  it('si la foto de avatar falla al cargar, muestra la inicial en su lugar', () => {
+    render(<UserMenu email="juanchilorenzo@gmail.com" avatarUrl="https://example.com/foto.jpg" />)
+    const boton = screen.getByRole('button', { name: /menú de usuario/i })
+    const img = boton.querySelector('img')!
+
+    fireEvent.error(img)
+
+    expect(boton.querySelector('img')).not.toBeInTheDocument()
+    expect(boton).toHaveTextContent('J')
   })
 
   it('el menú arranca cerrado y se abre al clickear el avatar', async () => {
@@ -47,6 +58,21 @@ describe('UserMenu', () => {
     await userEvent.keyboard('{Escape}')
 
     expect(screen.queryByRole('menu')).not.toBeInTheDocument()
+  })
+
+  it('ordena el menú: email, cerrar sesión, tema', async () => {
+    render(<UserMenu email="juanchilorenzo@gmail.com" avatarUrl={null} />)
+    await userEvent.click(screen.getByRole('button', { name: /menú de usuario/i }))
+
+    const menu = screen.getByRole('menu')
+    const email = screen.getByText('juanchilorenzo@gmail.com')
+    const logout = screen.getByRole('menuitem', { name: /cerrar sesión/i })
+    const tema = screen.getByRole('radiogroup', { name: /tema/i })
+    const posicion = (el: Element) =>
+      Array.from(menu.querySelectorAll('*')).indexOf(el)
+
+    expect(posicion(email)).toBeLessThan(posicion(logout))
+    expect(posicion(logout)).toBeLessThan(posicion(tema))
   })
 
   it('cerrar sesión llama a signOut y refresca', async () => {

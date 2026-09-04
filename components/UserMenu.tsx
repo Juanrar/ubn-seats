@@ -12,6 +12,7 @@ export interface UserMenuProps {
 
 export function UserMenu({ email, avatarUrl }: UserMenuProps) {
   const [open, setOpen] = useState(false)
+  const [avatarFailed, setAvatarFailed] = useState(false)
   const router = useRouter()
   const rootRef = useRef<HTMLDivElement>(null)
   const initial = email.charAt(0).toUpperCase()
@@ -50,9 +51,15 @@ export function UserMenu({ email, avatarUrl }: UserMenuProps) {
         onClick={() => setOpen((prev) => !prev)}
         className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full border border-rule bg-accent text-hand-sm text-paper"
       >
-        {avatarUrl ? (
+        {avatarUrl && !avatarFailed ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
+          <img
+            src={avatarUrl}
+            alt=""
+            referrerPolicy="no-referrer"
+            onError={() => setAvatarFailed(true)}
+            className="h-full w-full object-cover"
+          />
         ) : (
           initial
         )}
@@ -65,7 +72,6 @@ export function UserMenu({ email, avatarUrl }: UserMenuProps) {
           className="absolute right-0 top-10 z-10 flex w-56 flex-col gap-3 rounded-sm border border-rule bg-paper p-3 text-hand-sm"
         >
           <p className="truncate text-ink-mute">{email}</p>
-          <ThemeToggle />
           <button
             type="button"
             role="menuitem"
@@ -74,6 +80,9 @@ export function UserMenu({ email, avatarUrl }: UserMenuProps) {
           >
             Cerrar sesión
           </button>
+          <div className="border-t border-rule pt-3">
+            <ThemeToggle />
+          </div>
         </div>
       )}
     </div>

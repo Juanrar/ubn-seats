@@ -6,6 +6,7 @@ import {
   resolveTheme,
   THEME_COLORS,
   THEME_STORAGE_KEY,
+  type ResolvedTheme,
   type ThemePref,
 } from '@/lib/theme'
 
@@ -33,20 +34,9 @@ function MoonIcon() {
   )
 }
 
-function SystemIcon() {
-  return (
-    <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <rect x="2" y="3" width="12" height="8" rx="1" />
-      <line x1="6" y1="13" x2="10" y2="13" />
-      <line x1="8" y1="11" x2="8" y2="13" />
-    </svg>
-  )
-}
-
-const OPTIONS: { value: ThemePref; label: string; Icon: () => React.JSX.Element }[] = [
+const OPTIONS: { value: ResolvedTheme; label: string; Icon: () => React.JSX.Element }[] = [
   { value: 'light', label: 'Claro', Icon: SunIcon },
   { value: 'dark', label: 'Oscuro', Icon: MoonIcon },
-  { value: 'system', label: 'Sistema', Icon: SystemIcon },
 ]
 
 function apply(pref: ThemePref): void {
@@ -60,6 +50,7 @@ function apply(pref: ThemePref): void {
 
 export function ThemeToggle() {
   const [pref, setPref] = useState<ThemePref>('system')
+  const [prefersDark, setPrefersDark] = useState(false)
 
   useEffect(() => {
     try {
@@ -67,9 +58,10 @@ export function ThemeToggle() {
     } catch {
       setPref('system')
     }
+    setPrefersDark(window.matchMedia('(prefers-color-scheme: dark)').matches)
   }, [])
 
-  function choose(next: ThemePref) {
+  function choose(next: ResolvedTheme) {
     setPref(next)
     try {
       localStorage.setItem(THEME_STORAGE_KEY, next)
@@ -78,23 +70,25 @@ export function ThemeToggle() {
     apply(next)
   }
 
+  const resolved = resolveTheme(pref, prefersDark)
+
   return (
     <div
       role="radiogroup"
       aria-label="Tema"
-      className="flex items-center gap-px rounded-sm border border-rule"
+      className="flex w-fit items-center gap-px rounded-sm border border-rule"
     >
       {OPTIONS.map(({ value, label, Icon }) => (
         <button
           key={value}
           type="button"
           role="radio"
-          aria-checked={pref === value}
+          aria-checked={resolved === value}
           aria-label={label}
           title={label}
           onClick={() => choose(value)}
           className={`flex h-7 w-7 items-center justify-center transition-colors ${
-            pref === value ? 'bg-accent text-paper' : 'text-ink-mute hover:text-accent'
+            resolved === value ? 'bg-accent text-paper' : 'text-ink-mute hover:text-accent'
           }`}
         >
           <Icon />
