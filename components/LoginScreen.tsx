@@ -3,7 +3,8 @@
 import { createClient } from '@/utils/supabase/client'
 
 const RIPPLE_DELAYS_MS = [0, 1300, 2600, 3900]
-const RIPPLE_RISE = 138
+const RIPPLE_RISE = 140
+const RIPPLE_SHIFT_X = 7
 const RIPPLE_RADIUS = 230
 const RIPPLE_ARC = `M -218 75 A ${RIPPLE_RADIUS} ${RIPPLE_RADIUS} 0 0 1 218 75`
 
@@ -25,7 +26,12 @@ export function LoginScreen() {
           viewBox="-260 -260 520 520"
           className="pointer-events-none absolute w-[520px] max-w-none"
         >
-          <g fill="none" className="stroke-rule" strokeWidth={1} transform={`translate(0 -${RIPPLE_RISE})`}>
+          <g
+            fill="none"
+            className="stroke-rule"
+            strokeWidth={1}
+            transform={`translate(${RIPPLE_SHIFT_X} -${RIPPLE_RISE})`}
+          >
             {RIPPLE_DELAYS_MS.map((delay) => (
               <path
                 key={delay}
