@@ -95,3 +95,68 @@ g[data-seat-id]:focus-visible > rect {
     animation: none;
   }
 }
+
+@keyframes login-mark-reveal {
+  from {
+    clip-path: inset(100% 0 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.login-mark {
+  width: 300px;
+  aspect-ratio: 2178 / 2320;
+  background-color: var(--color-accent);
+  -webkit-mask: url('/ubn-logo.svg') no-repeat center / contain;
+  mask: url('/ubn-logo.svg') no-repeat center / contain;
+  animation: login-mark-reveal 1500ms cubic-bezier(0.22, 0.72, 0.16, 1) 260ms both;
+}
+
+@keyframes login-ripple {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  16% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.26);
+  }
+}
+
+.login-ripple {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: login-ripple 5200ms cubic-bezier(0.2, 0.6, 0.3, 1) 1500ms infinite both;
+}
+
+@keyframes login-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.login-rise {
+  animation: login-rise 800ms cubic-bezier(0.16, 0.8, 0.24, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-mark {
+    animation: none;
+    clip-path: none;
+  }
+
+  .login-ripple,
+  .login-rise {
+    animation: none;
+  }
+}

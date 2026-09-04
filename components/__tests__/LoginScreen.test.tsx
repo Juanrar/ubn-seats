@@ -23,4 +23,20 @@ describe('LoginScreen', () => {
       options: { redirectTo: `${window.location.origin}/auth/callback` },
     })
   })
+
+  it('muestra el logo de la compañía con nombre accesible', () => {
+    render(<LoginScreen />)
+    expect(screen.getByRole('img', { name: /logo de la compañía/i })).toBeInTheDocument()
+  })
+
+  it('encabeza la pantalla con la invitación a elegir butaca', () => {
+    render(<LoginScreen />)
+    expect(screen.getByRole('heading', { name: /una butaca a tu nombre/i })).toBeInTheDocument()
+  })
+
+  it('no le anuncia las ondas decorativas al lector de pantalla', () => {
+    const { container } = render(<LoginScreen />)
+    const ripples = container.querySelector('svg[data-login-ripples]')
+    expect(ripples).toHaveAttribute('aria-hidden', 'true')
+  })
 })
