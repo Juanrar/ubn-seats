@@ -76,7 +76,7 @@ begin
     return;
   end if;
 
-  update orders set status = 'cancelled' where id = p_order_id;
+  update orders set status = 'cancelled' where id = p_order_id and status = 'pending';
   update reservations set status = 'cancelled' where order_id = p_order_id and status = 'pending';
 end;
 $$;
