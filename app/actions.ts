@@ -2,10 +2,15 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/utils/supabase/server'
+import { MAX_SEATS } from '@/lib/constants'
+import { TEATRO_DEL_GLOBO } from '@/lib/plans/teatro-del-globo'
+import { buildVenue } from '@/lib/venue'
 
 export type ReserveSeatsResult = { ok: true } | { ok: false; message: string }
 
 const UNIQUE_VIOLATION = '23505'
+
+const VALID_SEAT_IDS = new Set(buildVenue(TEATRO_DEL_GLOBO).seats.map((seat) => seat.id))
 
 export async function reserveSeats(seatIds: string[]): Promise<ReserveSeatsResult> {
   const supabase = await createClient()
@@ -15,6 +20,13 @@ export async function reserveSeats(seatIds: string[]): Promise<ReserveSeatsResul
 
   if (!user) {
     return { ok: false, message: 'Iniciá sesión para reservar.' }
+  }
+
+  if (seatIds.length === 0 || seatIds.length > MAX_SEATS) {
+    return { ok: false, message: 'Selección inválida.' }
+  }
+  if (seatIds.some((seatId) => !VALID_SEAT_IDS.has(seatId))) {
+    return { ok: false, message: 'Selección inválida.' }
   }
 
   const rows = seatIds.map((seatId) => ({ seat_id: seatId, user_id: user.id }))
