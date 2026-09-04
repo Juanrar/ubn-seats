@@ -22,7 +22,8 @@ const botonDe = (id: string) => {
   return screen.getAllByRole('button', { name: nombre })[0]
 }
 
-const renderPicker = () => render(<PlateaPicker occupied={occupied} />)
+const renderPicker = () =>
+  render(<PlateaPicker occupied={occupied} email="juanchilorenzo@gmail.com" avatarUrl={null} />)
 
 describe('PlateaPicker', () => {
   it('al elegir una butaca aparece en el resumen y suma al total', async () => {

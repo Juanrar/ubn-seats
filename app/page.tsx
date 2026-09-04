@@ -21,7 +21,11 @@ export default async function Home() {
 
   return (
     <main>
-      <PlateaPicker occupied={occupied} />
+      <PlateaPicker
+        occupied={occupied}
+        email={user.email ?? ''}
+        avatarUrl={user.user_metadata?.avatar_url ?? null}
+      />
     </main>
   )
 }

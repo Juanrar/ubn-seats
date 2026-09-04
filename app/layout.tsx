@@ -33,7 +33,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="theme-color" content="#f1e8d3" />
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>
-      <body className="bg-paper text-ink">{children}</body>
+      <body className="bg-paper text-ink" suppressHydrationWarning>
+        {children}
+      </body>
     </html>
   )
 }

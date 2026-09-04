@@ -5,7 +5,7 @@ import { Legend } from '@/components/Legend'
 import { SeatMap } from '@/components/SeatMap'
 import { SelectionBar } from '@/components/SelectionBar'
 import { SelectionPanel } from '@/components/SelectionPanel'
-import { ThemeToggle } from '@/components/ThemeToggle'
+import { UserMenu } from '@/components/UserMenu'
 import { useReservation } from '@/hooks/useReservation'
 import { useSeatPicker } from '@/hooks/useSeatPicker'
 import { TEATRO_DEL_GLOBO } from '@/lib/plans/teatro-del-globo'
@@ -14,9 +14,11 @@ import { buildVenue } from '@/lib/venue'
 
 export interface PlateaPickerProps {
   occupied: Set<string>
+  email: string
+  avatarUrl: string | null
 }
 
-export function PlateaPicker({ occupied }: PlateaPickerProps) {
+export function PlateaPicker({ occupied, email, avatarUrl }: PlateaPickerProps) {
   const venue = useMemo(() => buildVenue(TEATRO_DEL_GLOBO), [])
   const revealDelays = useMemo(() => buildRevealDelays(venue.seats, venue.stage), [venue])
   const picker = useSeatPicker(venue, occupied)
@@ -30,7 +32,7 @@ export function PlateaPicker({ occupied }: PlateaPickerProps) {
     >
       <header className="flex items-center justify-between gap-4 border-b border-rule pb-5">
         <h1 className="text-hand-h2 font-bold">{venue.plan.name}</h1>
-        <ThemeToggle />
+        <UserMenu email={email} avatarUrl={avatarUrl} />
       </header>
 
       <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
