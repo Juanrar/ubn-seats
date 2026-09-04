@@ -60,7 +60,7 @@ Toda la aritmética del plano vive en `lib/geometry.ts` —pura y **parametrizad
 
 ## Selección y ocupación
 
-**Ocupación** (`buildOccupancy` → `Set<string>` de ids) — Qué butacas ya están tomadas. Hoy es **simulada y determinista**: un PRNG con semilla fija (`mulberry32`, semilla `20260820`) con una tasa del 35 %. Determinista a propósito — `Math.random` daría un mapa distinto en servidor y cliente y rompería la hidratación de Next.js. Es el punto por donde entrará una fuente real (API/DB) cuando exista.
+**Ocupación** (`Set<string>` de ids ocupados) — Qué butacas ya están tomadas. En producción viene de Supabase: `app/page.tsx` llama a `fetchOccupiedSeatIds` (`utils/occupancy.ts`), que invoca la función `active_reservation_seats()` (`supabase/migrations/0001_reservations.sql`, `security definer`, sólo para usuarios logueados) y arma el `Set` a partir de ahí. `buildOccupancy` (`lib/occupancy.ts`) sigue existiendo como generador de datos determinista para los tests: un PRNG con semilla fija (`mulberry32`, semilla `20260820`) con una tasa del 35 %, determinista a propósito porque `Math.random` rompería la hidratación de Next.js si todavía se usara en producción.
 
 **Selector** (`SeatPicker`, `hooks/useSeatPicker.ts`) — La máquina de estados de la elección, detrás de un seam: `useSeatPicker(venue, occupied)`. Concentra la selección, el tope, el foco lógico, el movimiento del foco real del DOM, el despacho de teclas (flechas, `Enter`, espacio), la selección ya ordenada (`selectedSeats`) y el `total`. `PlateaPicker` es sólo layout y `SelectionPanel` sólo pinta lo que recibe: ninguno de los dos ordena, suma ni maneja foco.
 
