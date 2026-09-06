@@ -15,7 +15,12 @@ export async function fetchOrderSummary(supabase: SupabaseClient, orderId: strin
 
   if (orderError || !order) return null
 
-  const { data: reservations } = await supabase.from('reservations').select('seat_id').eq('order_id', orderId)
+  const { data: reservations, error: reservationsError } = await supabase
+    .from('reservations')
+    .select('seat_id')
+    .eq('order_id', orderId)
+
+  if (reservationsError) return null
 
   return {
     status: order.status,

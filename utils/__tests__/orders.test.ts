@@ -5,10 +5,12 @@ function fakeSupabase({
   order,
   orderError = null,
   reservations = [],
+  reservationsError = null,
 }: {
   order: unknown
   orderError?: unknown
   reservations?: { seat_id: string }[]
+  reservationsError?: unknown
 }) {
   return {
     from(table: string) {
@@ -23,7 +25,7 @@ function fakeSupabase({
       }
       return {
         select: () => ({
-          eq: async () => ({ data: reservations, error: null }),
+          eq: async () => ({ data: reservations, error: reservationsError }),
         }),
       }
     },
@@ -50,6 +52,15 @@ describe('fetchOrderSummary', () => {
 
   it('devuelve null ante un error de la consulta', async () => {
     const supabase = fakeSupabase({ order: null, orderError: new Error('boom') })
+    const result = await fetchOrderSummary(supabase, 'order-1')
+    expect(result).toBeNull()
+  })
+
+  it('devuelve null ante un error en la consulta de reservations', async () => {
+    const supabase = fakeSupabase({
+      order: { status: 'confirmed', amount: 76000 },
+      reservationsError: new Error('boom'),
+    })
     const result = await fetchOrderSummary(supabase, 'order-1')
     expect(result).toBeNull()
   })
