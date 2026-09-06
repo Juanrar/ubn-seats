@@ -3,98 +3,107 @@ import { TEATRO_DEL_GLOBO } from '@/lib/plans/teatro-del-globo'
 import { buildVenue } from '@/lib/venue'
 import { MAX_SEATS } from '@/lib/constants'
 
-const { getUser, insert, revalidatePath } = vi.hoisted(() => ({
+const { getUser, rpc, createPreference } = vi.hoisted(() => ({
   getUser: vi.fn(),
-  insert: vi.fn(),
-  revalidatePath: vi.fn(),
+  rpc: vi.fn(),
+  createPreference: vi.fn(),
 }))
 
 vi.mock('@/utils/supabase/server', () => ({
   createClient: async () => ({
     auth: { getUser },
-    from: () => ({ insert }),
+    rpc,
   }),
 }))
-vi.mock('next/cache', () => ({ revalidatePath }))
+vi.mock('@/utils/mercadopago/client', () => ({ createPreference }))
 
-import { reserveSeats } from '@/app/actions'
+import { createOrder } from '@/app/actions'
 
 const seatIds = buildVenue(TEATRO_DEL_GLOBO).seats.map((seat) => seat.id)
 
 beforeEach(() => {
   getUser.mockReset()
-  insert.mockReset()
-  revalidatePath.mockReset()
+  rpc.mockReset()
+  createPreference.mockReset()
 })
 
-describe('reserveSeats', () => {
+describe('createOrder', () => {
   it('rechaza sin sesión', async () => {
     getUser.mockResolvedValue({ data: { user: null } })
-    const result = await reserveSeats(['platea-F07-12'])
+    const result = await createOrder(['platea-F07-12'])
     expect(result).toEqual({ ok: false, message: 'Iniciá sesión para reservar.' })
-    expect(insert).not.toHaveBeenCalled()
+    expect(rpc).not.toHaveBeenCalled()
   })
 
-  it('inserta una fila por butaca con el user_id de la sesión', async () => {
+  it('rechaza un array vacío sin llamar al RPC', async () => {
     getUser.mockResolvedValue({ data: { user: { id: 'user-1' } } })
-    insert.mockResolvedValue({ error: null })
-
-    const result = await reserveSeats(['platea-F07-12', 'platea-F07-13'])
-
-    expect(insert).toHaveBeenCalledWith([
-      { seat_id: 'platea-F07-12', user_id: 'user-1' },
-      { seat_id: 'platea-F07-13', user_id: 'user-1' },
-    ])
-    expect(result).toEqual({ ok: true })
-    expect(revalidatePath).toHaveBeenCalledWith('/')
+    const result = await createOrder([])
+    expect(result).toEqual({ ok: false, message: 'Selección inválida.' })
+    expect(rpc).not.toHaveBeenCalled()
   })
 
-  it('devuelve mensaje de conflicto si la butaca ya estaba tomada (23505)', async () => {
+  it('rechaza más butacas que MAX_SEATS sin llamar al RPC', async () => {
     getUser.mockResolvedValue({ data: { user: { id: 'user-1' } } })
-    insert.mockResolvedValue({ error: { code: '23505' } })
+    const result = await createOrder(seatIds.slice(0, MAX_SEATS + 1))
+    expect(result).toEqual({ ok: false, message: 'Selección inválida.' })
+    expect(rpc).not.toHaveBeenCalled()
+  })
 
-    const result = await reserveSeats(['platea-F07-12'])
+  it('rechaza una butaca que no existe en el catálogo sin llamar al RPC', async () => {
+    getUser.mockResolvedValue({ data: { user: { id: 'user-1' } } })
+    const result = await createOrder(['not-a-real-seat'])
+    expect(result).toEqual({ ok: false, message: 'Selección inválida.' })
+    expect(rpc).not.toHaveBeenCalled()
+  })
+
+  it('crea la orden, la preferencia, y devuelve el init_point como redirectUrl', async () => {
+    getUser.mockResolvedValue({ data: { user: { id: 'user-1' } } })
+    rpc.mockResolvedValueOnce({ data: 'order-1', error: null })
+    createPreference.mockResolvedValue({ initPoint: 'https://mp.example/checkout/abc' })
+
+    const result = await createOrder(['platea-F07-12'])
+
+    expect(rpc).toHaveBeenCalledWith('create_order', {
+      p_seat_ids: ['platea-F07-12'],
+      p_amount: expect.any(Number),
+    })
+    expect(createPreference).toHaveBeenCalledWith(
+      expect.objectContaining({ orderId: 'order-1' }),
+    )
+    expect(result).toEqual({ ok: true, redirectUrl: 'https://mp.example/checkout/abc' })
+  })
+
+  it('devuelve mensaje de conflicto si el RPC choca con el índice único (23505)', async () => {
+    getUser.mockResolvedValue({ data: { user: { id: 'user-1' } } })
+    rpc.mockResolvedValueOnce({ data: null, error: { code: '23505' } })
+
+    const result = await createOrder(['platea-F07-12'])
 
     expect(result).toEqual({
       ok: false,
       message: 'Alguien reservó una de estas butacas justo antes que vos. Elegí otra.',
     })
-    expect(revalidatePath).toHaveBeenCalledWith('/')
+    expect(createPreference).not.toHaveBeenCalled()
   })
 
-  it('devuelve mensaje genérico ante otros errores', async () => {
+  it('devuelve mensaje genérico ante otro error del RPC', async () => {
     getUser.mockResolvedValue({ data: { user: { id: 'user-1' } } })
-    insert.mockResolvedValue({ error: { code: '99999' } })
+    rpc.mockResolvedValueOnce({ data: null, error: { code: '99999' } })
 
-    const result = await reserveSeats(['platea-F07-12'])
+    const result = await createOrder(['platea-F07-12'])
 
-    expect(result).toEqual({ ok: false, message: 'No se pudo confirmar la reserva. Probá de nuevo.' })
+    expect(result).toEqual({ ok: false, message: 'No se pudo iniciar la reserva. Probá de nuevo.' })
   })
 
-  it('rechaza un array vacío sin llamar a insert', async () => {
+  it('si falla la creación de la preferencia, cancela la orden y avisa', async () => {
     getUser.mockResolvedValue({ data: { user: { id: 'user-1' } } })
+    rpc.mockResolvedValueOnce({ data: 'order-1', error: null })
+    createPreference.mockRejectedValue(new Error('Mercado Pago no respondió'))
+    rpc.mockResolvedValueOnce({ data: null, error: null })
 
-    const result = await reserveSeats([])
+    const result = await createOrder(['platea-F07-12'])
 
-    expect(result).toEqual({ ok: false, message: 'Selección inválida.' })
-    expect(insert).not.toHaveBeenCalled()
-  })
-
-  it('rechaza más butacas que MAX_SEATS sin llamar a insert', async () => {
-    getUser.mockResolvedValue({ data: { user: { id: 'user-1' } } })
-
-    const result = await reserveSeats(seatIds.slice(0, MAX_SEATS + 1))
-
-    expect(result).toEqual({ ok: false, message: 'Selección inválida.' })
-    expect(insert).not.toHaveBeenCalled()
-  })
-
-  it('rechaza una butaca que no existe en el catálogo sin llamar a insert', async () => {
-    getUser.mockResolvedValue({ data: { user: { id: 'user-1' } } })
-
-    const result = await reserveSeats(['not-a-real-seat'])
-
-    expect(result).toEqual({ ok: false, message: 'Selección inválida.' })
-    expect(insert).not.toHaveBeenCalled()
+    expect(rpc).toHaveBeenNthCalledWith(2, 'cancel_own_order', { p_order_id: 'order-1' })
+    expect(result).toEqual({ ok: false, message: 'No se pudo iniciar el pago. Probá de nuevo.' })
   })
 })
