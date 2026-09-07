@@ -53,8 +53,8 @@ export function LoginScreen() {
           TEATRO DEL GLOBO · PLATEA
         </p>
         <h1 className="login-rise text-hand-h1 font-bold" style={{ animationDelay: '1020ms' }}>
-          Una butaca
-          <br />a tu nombre
+          Muestra
+          <br />de fin de año
         </h1>
         <p
           className="login-rise max-w-[200px] text-hand-base text-pretty text-ink-mute"

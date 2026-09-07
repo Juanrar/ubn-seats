@@ -111,7 +111,7 @@ g[data-seat-id]:focus-visible > rect {
   background-color: var(--color-accent);
   -webkit-mask: url('/ubn-logo.svg') no-repeat center / contain;
   mask: url('/ubn-logo.svg') no-repeat center / contain;
-  animation: login-mark-reveal 1500ms cubic-bezier(0.22, 0.72, 0.16, 1) 260ms both;
+  animation: login-mark-reveal 2000ms cubic-bezier(0.22, 0.72, 0.16, 1) 260ms both;
 }
 
 @keyframes login-ripple {
