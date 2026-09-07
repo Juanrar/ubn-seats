@@ -106,7 +106,7 @@ g[data-seat-id]:focus-visible > rect {
 }
 
 .login-mark {
-  width: 300px;
+  width: 190px;
   aspect-ratio: 2178 / 2320;
   background-color: var(--color-accent);
   -webkit-mask: url('/ubn-logo.svg') no-repeat center / contain;

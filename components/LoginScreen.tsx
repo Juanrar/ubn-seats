@@ -18,13 +18,13 @@ export function LoginScreen() {
   }
 
   return (
-    <div className="grid min-h-screen grid-cols-1 items-center gap-8 overflow-hidden px-6 py-16 md:grid-cols-2 md:gap-0 md:px-0 md:py-0">
+    <div className="mx-auto flex min-h-screen max-w-[420px] flex-col items-center justify-center gap-6 overflow-hidden px-6 py-12 text-center">
       <div className="relative flex items-center justify-center">
         <svg
           data-login-ripples
           aria-hidden="true"
           viewBox="-260 -260 520 520"
-          className="pointer-events-none absolute w-[520px] max-w-none"
+          className="pointer-events-none absolute w-[340px] max-w-none"
         >
           <g
             fill="none"
@@ -45,7 +45,7 @@ export function LoginScreen() {
         <div role="img" aria-label="Logo de la compañía" className="login-mark relative" />
       </div>
 
-      <div className="flex flex-col items-start gap-5 md:pr-24">
+      <div className="flex flex-col items-center gap-4">
         <p
           className="login-rise font-mono text-[12px] tracking-[0.28em] text-ink-mute"
           style={{ animationDelay: '900ms' }}
@@ -57,7 +57,7 @@ export function LoginScreen() {
           <br />a tu nombre
         </h1>
         <p
-          className="login-rise max-w-[360px] text-hand-base text-pretty text-ink-mute"
+          className="login-rise max-w-[300px] text-hand-base text-pretty text-ink-mute"
           style={{ animationDelay: '1160ms' }}
         >
           Entrá con Google y guardá tu lugar en la platea.
@@ -65,7 +65,7 @@ export function LoginScreen() {
         <button
           type="button"
           onClick={handleLogin}
-          className="login-rise flex min-h-[52px] items-center gap-3 rounded-sm bg-accent px-6 text-hand-base text-paper transition-colors hover:bg-accent-soft"
+          className="login-rise flex min-h-[46px] items-center gap-3 rounded-sm bg-accent px-6 text-hand-base text-paper transition-colors hover:bg-accent-soft"
           style={{ animationDelay: '1300ms' }}
         >
           <svg
