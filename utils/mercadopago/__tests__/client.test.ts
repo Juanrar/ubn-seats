@@ -8,7 +8,7 @@ vi.mock('mercadopago', () => ({
   Payment: vi.fn().mockImplementation(() => ({ get })),
 }))
 
-import { createPreference, getPayment } from '@/utils/mercadopago/client'
+import { createPreference, getPayment, HOLD_MINUTES } from '@/utils/mercadopago/client'
 
 beforeEach(() => {
   create.mockReset()
@@ -16,8 +16,10 @@ beforeEach(() => {
 })
 
 describe('createPreference', () => {
-  it('arma el body de la preferencia y devuelve el init_point', async () => {
-    create.mockResolvedValue({ init_point: 'https://mp.example/checkout/abc' })
+  it('arma el body de la preferencia y devuelve el init_point y el id', async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-09-04T12:00:00.000Z'))
+    create.mockResolvedValue({ init_point: 'https://mp.example/checkout/abc', id: 'pref-1' })
 
     const result = await createPreference({
       orderId: 'order-1',
@@ -41,9 +43,31 @@ describe('createPreference', () => {
           failure: 'https://sitio.test/pago/error',
         },
         auto_return: 'approved',
+        expires: true,
+        expiration_date_to: '2026-09-04T12:20:00.000Z',
       },
     })
-    expect(result).toEqual({ initPoint: 'https://mp.example/checkout/abc' })
+    expect(result).toEqual({ initPoint: 'https://mp.example/checkout/abc', preferenceId: 'pref-1' })
+    vi.useRealTimers()
+  })
+
+  it('la preferencia vence junto con el hold de la base', async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-09-04T12:00:00.000Z'))
+    create.mockResolvedValue({ init_point: 'https://mp.example/checkout/abc', id: 'pref-1' })
+
+    await createPreference({
+      orderId: 'order-1',
+      items: [],
+      notificationUrl: 'https://sitio.test/api/mercadopago/webhook',
+      backUrls: { success: '', pending: '', failure: '' },
+    })
+
+    const body = create.mock.calls[0][0].body
+    const heldMinutes =
+      (new Date(body.expiration_date_to).getTime() - Date.now()) / (60 * 1000)
+    expect(heldMinutes).toBe(HOLD_MINUTES)
+    vi.useRealTimers()
   })
 
   it('tira un error si Mercado Pago no devuelve init_point', async () => {

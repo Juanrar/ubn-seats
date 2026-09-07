@@ -19,7 +19,13 @@ export interface CreatePreferenceParams {
   backUrls: { success: string; pending: string; failure: string }
 }
 
-export async function createPreference(params: CreatePreferenceParams): Promise<{ initPoint: string }> {
+export const HOLD_MINUTES = 20
+
+export async function createPreference(
+  params: CreatePreferenceParams,
+): Promise<{ initPoint: string; preferenceId: string }> {
+  const expiresAt = new Date(Date.now() + HOLD_MINUTES * 60 * 1000).toISOString()
+
   const response = await new Preference(config()).create({
     body: {
       items: params.items,
@@ -27,14 +33,16 @@ export async function createPreference(params: CreatePreferenceParams): Promise<
       notification_url: params.notificationUrl,
       back_urls: params.backUrls,
       auto_return: 'approved',
+      expires: true,
+      expiration_date_to: expiresAt,
     },
   })
 
-  if (!response.init_point) {
+  if (!response.init_point || !response.id) {
     throw new Error('Mercado Pago no devolvió init_point')
   }
 
-  return { initPoint: response.init_point }
+  return { initPoint: response.init_point, preferenceId: response.id }
 }
 
 export async function getPayment(
