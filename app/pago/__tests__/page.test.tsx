@@ -38,6 +38,19 @@ describe('PagoResultadoPage', () => {
     expect(screen.getByText('Estamos confirmando tu pago')).toBeInTheDocument()
   })
 
+  it('en /pago/exito sin una orden que lo respalde no anuncia la reserva confirmada', async () => {
+    fetchOrderSummary.mockResolvedValue(null)
+
+    const jsx = await PagoResultadoPage({
+      params: Promise.resolve({ resultado: 'exito' }),
+      searchParams: Promise.resolve({}),
+    })
+    render(jsx)
+
+    expect(screen.queryByText('¡Reserva confirmada!')).not.toBeInTheDocument()
+    expect(screen.getByText('Estamos confirmando tu pago')).toBeInTheDocument()
+  })
+
   it('muestra el heading de error', async () => {
     fetchOrderSummary.mockResolvedValue(null)
 

@@ -1,7 +1,12 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { formatTotal } from '@/lib/format'
-import { isPaymentResult, orderStatusCopy, paymentResultCopy } from '@/lib/paymentResultCopy'
+import {
+  isPaymentResult,
+  orderStatusCopy,
+  paymentResultCopy,
+  type PaymentResult,
+} from '@/lib/paymentResultCopy'
 import { TEATRO_DEL_GLOBO } from '@/lib/plans/teatro-del-globo'
 import { buildVenue } from '@/lib/venue'
 import { fetchOrderSummary } from '@/utils/orders'
@@ -12,6 +17,10 @@ interface PageProps {
   searchParams: Promise<{ external_reference?: string }>
 }
 
+function resultWithoutOrder(resultado: PaymentResult): PaymentResult {
+  return resultado === 'exito' ? 'pendiente' : resultado
+}
+
 export default async function PagoResultadoPage({ params, searchParams }: PageProps) {
   const { resultado } = await params
   if (!isPaymentResult(resultado)) notFound()
@@ -19,7 +28,7 @@ export default async function PagoResultadoPage({ params, searchParams }: PagePr
   const { external_reference: orderId } = await searchParams
   const supabase = await createClient()
   const order = orderId ? await fetchOrderSummary(supabase, orderId) : null
-  const copy = order ? orderStatusCopy(order.status) : paymentResultCopy(resultado)
+  const copy = order ? orderStatusCopy(order.status) : paymentResultCopy(resultWithoutOrder(resultado))
   const venue = buildVenue(TEATRO_DEL_GLOBO)
   const seatLabels = order?.seatIds.map((seatId) => venue.byId.get(seatId)?.label ?? seatId) ?? []
 
