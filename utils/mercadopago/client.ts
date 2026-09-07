@@ -38,8 +38,11 @@ export async function createPreference(
     },
   })
 
-  if (!response.init_point || !response.id) {
+  if (!response.init_point) {
     throw new Error('Mercado Pago no devolvió init_point')
+  }
+  if (!response.id) {
+    throw new Error('Mercado Pago no devolvió id')
   }
 
   return { initPoint: response.init_point, preferenceId: response.id }
