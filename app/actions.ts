@@ -14,7 +14,16 @@ const UNIQUE_VIOLATION = '23505'
 const VENUE = buildVenue(TEATRO_DEL_GLOBO)
 const VALID_SEAT_IDS = new Set(VENUE.seats.map((seat) => seat.id))
 
+function siteUrl(): string {
+  const origin = process.env.SITE_URL
+  if (!origin) {
+    throw new Error('Falta la variable de entorno SITE_URL')
+  }
+  return origin
+}
+
 export async function createOrder(seatIds: string[]): Promise<CreateOrderResult> {
+  const origin = siteUrl()
   const supabase = await createClient()
   const {
     data: { user },
@@ -49,10 +58,8 @@ export async function createOrder(seatIds: string[]): Promise<CreateOrderResult>
     return { ok: false, message: 'No se pudo iniciar la reserva. Probá de nuevo.' }
   }
 
-  const origin = process.env.SITE_URL ?? 'http://localhost:3000'
-
   try {
-    const { initPoint } = await createPreference({
+    const { initPoint, preferenceId } = await createPreference({
       orderId,
       items,
       notificationUrl: `${origin}/api/mercadopago/webhook`,
@@ -61,6 +68,10 @@ export async function createOrder(seatIds: string[]): Promise<CreateOrderResult>
         pending: `${origin}/pago/pendiente`,
         failure: `${origin}/pago/error`,
       },
+    })
+    await supabase.rpc('set_order_preference', {
+      p_order_id: orderId,
+      p_preference_id: preferenceId,
     })
     return { ok: true, redirectUrl: initPoint }
   } catch {
