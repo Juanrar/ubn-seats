@@ -55,7 +55,8 @@ export function PlateaPicker({ occupied, email, avatarUrl }: PlateaPickerProps) 
           </div>
           <Legend geometry={venue.plan.geometry} />
           <p className="text-hand-base text-ink-mute">
-            Sector {venue.plan.sectionName} · usá las flechas para moverte y Enter para elegir
+            Sector {venue.plan.sectionName} · elegí tocando una butaca; deslizá para ver toda la
+            sala
           </p>
         </div>
 
