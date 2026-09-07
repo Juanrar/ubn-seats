@@ -1,45 +1,47 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, act, waitFor } from '@testing-library/react'
 
-const { reserveSeats, refresh } = vi.hoisted(() => ({
-  reserveSeats: vi.fn(),
+const { createOrder, refresh } = vi.hoisted(() => ({
+  createOrder: vi.fn(),
   refresh: vi.fn(),
 }))
 
-vi.mock('@/app/actions', () => ({ reserveSeats }))
+vi.mock('@/app/actions', () => ({ createOrder }))
 vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh }) }))
 
 import { useReservation } from '@/hooks/useReservation'
 
 beforeEach(() => {
-  reserveSeats.mockReset()
+  createOrder.mockReset()
   refresh.mockReset()
+  delete (window as { location?: unknown }).location
+  ;(window as unknown as { location: Location }).location = { href: '' } as Location
 })
 
 describe('useReservation', () => {
   it('arranca en idle', () => {
-    const { result } = renderHook(() => useReservation(vi.fn()))
+    const { result } = renderHook(() => useReservation())
     expect(result.current.status).toBe('idle')
     expect(result.current.errorMessage).toBeNull()
   })
 
-  it('en éxito vuelve a idle, refresca y llama onSuccess', async () => {
-    reserveSeats.mockResolvedValue({ ok: true })
-    const onSuccess = vi.fn()
-    const { result } = renderHook(() => useReservation(onSuccess))
+  it('en éxito redirige a redirectUrl y no refresca', async () => {
+    createOrder.mockResolvedValue({ ok: true, redirectUrl: 'https://mp.example/checkout/abc' })
+    const { result } = renderHook(() => useReservation())
 
     act(() => result.current.confirm(['platea-F07-12']))
 
-    await waitFor(() => expect(result.current.status).toBe('idle'))
-    expect(reserveSeats).toHaveBeenCalledWith(['platea-F07-12'])
-    expect(refresh).toHaveBeenCalledTimes(1)
-    expect(onSuccess).toHaveBeenCalledTimes(1)
+    await waitFor(() => expect(window.location.href).toBe('https://mp.example/checkout/abc'))
+    expect(createOrder).toHaveBeenCalledWith(['platea-F07-12'])
+    expect(refresh).not.toHaveBeenCalled()
   })
 
-  it('en conflicto queda en error con el mensaje, refresca y no llama onSuccess', async () => {
-    reserveSeats.mockResolvedValue({ ok: false, message: 'Alguien reservó una de estas butacas justo antes que vos. Elegí otra.' })
-    const onSuccess = vi.fn()
-    const { result } = renderHook(() => useReservation(onSuccess))
+  it('en conflicto queda en error con el mensaje y refresca', async () => {
+    createOrder.mockResolvedValue({
+      ok: false,
+      message: 'Alguien reservó una de estas butacas justo antes que vos. Elegí otra.',
+    })
+    const { result } = renderHook(() => useReservation())
 
     act(() => result.current.confirm(['platea-F07-12']))
 
@@ -48,6 +50,5 @@ describe('useReservation', () => {
       'Alguien reservó una de estas butacas justo antes que vos. Elegí otra.',
     )
     expect(refresh).toHaveBeenCalledTimes(1)
-    expect(onSuccess).not.toHaveBeenCalled()
   })
 })

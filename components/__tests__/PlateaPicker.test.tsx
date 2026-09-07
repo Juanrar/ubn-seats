@@ -2,14 +2,14 @@ import { describe, it, expect, vi } from 'vitest'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { PlateaPicker } from '@/components/PlateaPicker'
-import { reserveSeats } from '@/app/actions'
+import { createOrder } from '@/app/actions'
 import { TEATRO_DEL_GLOBO } from '@/lib/plans/teatro-del-globo'
 import { buildVenue } from '@/lib/venue'
 import { buildOccupancy } from '@/lib/occupancy'
 import { nextSeatId } from '@/lib/navigation'
 import { MAX_SEATS } from '@/lib/constants'
 
-vi.mock('@/app/actions', () => ({ reserveSeats: vi.fn() }))
+vi.mock('@/app/actions', () => ({ createOrder: vi.fn() }))
 vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn() }) }))
 
 const seats = buildVenue(TEATRO_DEL_GLOBO).seats
@@ -143,7 +143,7 @@ describe('PlateaPicker', () => {
   })
 
   it('en conflicto mantiene la selección visible con el mensaje de error', async () => {
-    vi.mocked(reserveSeats).mockResolvedValue({
+    vi.mocked(createOrder).mockResolvedValue({
       ok: false,
       message: 'Alguien reservó una de estas butacas justo antes que vos. Elegí otra.',
     })

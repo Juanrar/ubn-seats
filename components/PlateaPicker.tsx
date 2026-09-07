@@ -22,7 +22,7 @@ export function PlateaPicker({ occupied, email, avatarUrl }: PlateaPickerProps) 
   const venue = useMemo(() => buildVenue(TEATRO_DEL_GLOBO), [])
   const revealDelays = useMemo(() => buildRevealDelays(venue.seats, venue.stage), [venue])
   const picker = useSeatPicker(venue, occupied)
-  const reservation = useReservation(picker.clear)
+  const reservation = useReservation()
 
   return (
     <div

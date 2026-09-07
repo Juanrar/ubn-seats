@@ -81,6 +81,15 @@ Requisitos del spec, no adornos:
 - **Ningún estado se comunica sólo por color**: la seleccionada cambia de relleno *y* aparece en la lista del panel.
 - Monocromático: el sector se distingue por posición y etiqueta, nunca por color.
 
+## Checkout con Mercado Pago
+
+El pago vive en los bordes: `utils/mercadopago/` (preferencia y consulta de pagos), `app/api/mercadopago/webhook/` (notificaciones), `utils/orders.ts` (lectura del resumen) y `supabase/migrations/0002_orders.sql` (el esquema y las funciones). Tres decisiones que hay que conocer antes de tocar algo:
+
+- **Toda escritura sobre `reservations` y `orders` pasa por las funciones `security definer`.** Las policies de RLS de escritura directa fueron revocadas a propósito: si el cliente pudiera hacer `insert`/`update` por su cuenta, podría reservar butacas sin orden, cambiar el precio o marcarse una orden como `confirmed`. `create_order_with_reservations`, `cancel_own_order` y `set_order_status` son la única puerta, y cada una valida adentro lo que el cliente no puede validar. No agregues una policy de escritura para "arreglar" un `permission denied`: falta un argumento o una función, no una policy.
+- **El hold de 20 minutos está definido en dos lugares y tiene que coincidir**: `HOLD_MINUTES` en `utils/mercadopago/client.ts` (arma el `expiration_date_to` de la preferencia) y tres `interval '20 minutes'` en `0002_orders.sql` (la expiración del lado de la base). No hay forma de derivar uno del otro: el SQL corre sin el bundle de TS y la preferencia se arma sin consultar la base. Si cambia el hold, se cambian los cuatro.
+- **El `check` del `seat_id` en `0002_orders.sql` es específico del Teatro del Globo** (`platea-F<fila>-<número>`) y contradice el "otra sala es otro `VenuePlan`, no código nuevo" de arriba. Se aceptó igual porque es la única defensa de la base contra un `seat_id` inventado, y la alternativa —una tabla de butacas poblada desde el `VenuePlan`— es trabajo que todavía no hace falta. Cuando aparezca la segunda sala, ese `check` se reemplaza por esa tabla; no se le agregan sectores a mano.
+- **El `external_reference` de un pago se valida como UUID antes de llegar al RPC.** `set_order_status` recibe un `uuid`, así que una referencia con otra forma —un pago de prueba hecho desde el panel de Mercado Pago, un link reusado de otra integración— haría fallar a Postgres con `22P02` para siempre. Ese caso es un no-op con 200; el 5xx queda reservado para fallas realmente transitorias, que son las que conviene que Mercado Pago reintente.
+
 ## Estilo
 
 Tailwind v4 con tokens declarados en `@theme` de `app/globals.css` (paleta `paper-bg`, `ink`, `ink-soft`, `ink-mute`, `rule`, `rule-soft`, `accent`, `highlight`; claro y oscuro). Tipografías vía `next/font/google`: **Caveat** es la voz de toda la UI (`--font-body` y `--font-hand` apuntan a ella), **JetBrains Mono** queda sólo para cifras donde la alineación en columna es funcional (precio por butaca y total) y **Lora** queda disponible como `--font-prose` para textos largos que todavía no existen.

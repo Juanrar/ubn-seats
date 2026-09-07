@@ -1,18 +1,29 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
 import { createClient } from '@/utils/supabase/server'
+import { createPreference } from '@/utils/mercadopago/client'
+import { buildOrderItems } from '@/lib/order'
 import { MAX_SEATS } from '@/lib/constants'
 import { TEATRO_DEL_GLOBO } from '@/lib/plans/teatro-del-globo'
 import { buildVenue } from '@/lib/venue'
 
-export type ReserveSeatsResult = { ok: true } | { ok: false; message: string }
+export type CreateOrderResult = { ok: true; redirectUrl: string } | { ok: false; message: string }
 
 const UNIQUE_VIOLATION = '23505'
 
-const VALID_SEAT_IDS = new Set(buildVenue(TEATRO_DEL_GLOBO).seats.map((seat) => seat.id))
+const VENUE = buildVenue(TEATRO_DEL_GLOBO)
+const VALID_SEAT_IDS = new Set(VENUE.seats.map((seat) => seat.id))
 
-export async function reserveSeats(seatIds: string[]): Promise<ReserveSeatsResult> {
+function siteUrl(): string {
+  const origin = process.env.SITE_URL
+  if (!origin) {
+    throw new Error('Falta la variable de entorno SITE_URL')
+  }
+  return origin
+}
+
+export async function createOrder(seatIds: string[]): Promise<CreateOrderResult> {
+  const origin = siteUrl()
   const supabase = await createClient()
   const {
     data: { user },
@@ -29,20 +40,42 @@ export async function reserveSeats(seatIds: string[]): Promise<ReserveSeatsResul
     return { ok: false, message: 'Selección inválida.' }
   }
 
-  const rows = seatIds.map((seatId) => ({ seat_id: seatId, user_id: user.id }))
-  const { error } = await supabase.from('reservations').insert(rows)
+  const seats = seatIds.map((seatId) => VENUE.byId.get(seatId)!)
+  const { items, amount } = buildOrderItems(seats)
 
-  if (error) {
-    revalidatePath('/')
-    if (error.code === UNIQUE_VIOLATION) {
+  const { data: orderId, error: rpcError } = await supabase.rpc('create_order', {
+    p_seat_ids: seatIds,
+    p_amount: amount,
+  })
+
+  if (rpcError) {
+    if (rpcError.code === UNIQUE_VIOLATION) {
       return {
         ok: false,
         message: 'Alguien reservó una de estas butacas justo antes que vos. Elegí otra.',
       }
     }
-    return { ok: false, message: 'No se pudo confirmar la reserva. Probá de nuevo.' }
+    return { ok: false, message: 'No se pudo iniciar la reserva. Probá de nuevo.' }
   }
 
-  revalidatePath('/')
-  return { ok: true }
+  try {
+    const { initPoint, preferenceId } = await createPreference({
+      orderId,
+      items,
+      notificationUrl: `${origin}/api/mercadopago/webhook`,
+      backUrls: {
+        success: `${origin}/pago/exito`,
+        pending: `${origin}/pago/pendiente`,
+        failure: `${origin}/pago/error`,
+      },
+    })
+    await supabase.rpc('set_order_preference', {
+      p_order_id: orderId,
+      p_preference_id: preferenceId,
+    })
+    return { ok: true, redirectUrl: initPoint }
+  } catch {
+    await supabase.rpc('cancel_own_order', { p_order_id: orderId })
+    return { ok: false, message: 'No se pudo iniciar el pago. Probá de nuevo.' }
+  }
 }
