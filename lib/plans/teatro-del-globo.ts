@@ -36,9 +36,9 @@ export const TEATRO_DEL_GLOBO: VenuePlan = {
   centerBlock: {
     sector: 'platea',
     tiers: [
-      { label: 'Platea A', price: 45000, throughRow: 5 },
-      { label: 'Platea B', price: 38000, throughRow: 10 },
-      { label: 'Platea C', price: 30000 },
+      { label: 'Platea A', price: 1, throughRow: 5 },
+      { label: 'Platea B', price: 2, throughRow: 10 },
+      { label: 'Platea C', price: 3 },
     ],
   },
   wings: {
