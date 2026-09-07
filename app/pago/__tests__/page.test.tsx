@@ -49,4 +49,40 @@ describe('PagoResultadoPage', () => {
 
     expect(screen.getByText('No se pudo procesar el pago')).toBeInTheDocument()
   })
+
+  it('con una orden pending redirigida a /pago/exito muestra el heading de pendiente, no el de éxito', async () => {
+    fetchOrderSummary.mockResolvedValue({ status: 'pending', amount: 38000, seatIds: ['platea-F07-12'] })
+
+    const jsx = await PagoResultadoPage({
+      params: Promise.resolve({ resultado: 'exito' }),
+      searchParams: Promise.resolve({ external_reference: 'order-1' }),
+    })
+    render(jsx)
+
+    expect(screen.getByText('Estamos confirmando tu pago')).toBeInTheDocument()
+    expect(screen.queryByText('¡Reserva confirmada!')).not.toBeInTheDocument()
+  })
+
+  it('con una orden confirmed muestra el heading de éxito', async () => {
+    fetchOrderSummary.mockResolvedValue({ status: 'confirmed', amount: 38000, seatIds: ['platea-F07-12'] })
+
+    const jsx = await PagoResultadoPage({
+      params: Promise.resolve({ resultado: 'pendiente' }),
+      searchParams: Promise.resolve({ external_reference: 'order-1' }),
+    })
+    render(jsx)
+
+    expect(screen.getByText('¡Reserva confirmada!')).toBeInTheDocument()
+  })
+
+  it('con un resultado desconocido en la URL llama a notFound', async () => {
+    await expect(
+      PagoResultadoPage({
+        params: Promise.resolve({ resultado: 'desconocido' }),
+        searchParams: Promise.resolve({}),
+      }),
+    ).rejects.toThrow('NEXT_HTTP_ERROR_FALLBACK;404')
+
+    expect(fetchOrderSummary).not.toHaveBeenCalled()
+  })
 })
