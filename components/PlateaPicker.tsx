@@ -30,9 +30,12 @@ export function PlateaPicker({ occupied, email, avatarUrl }: PlateaPickerProps) 
         picker.selectedSeats.length > 0 ? 'pb-28' : ''
       }`}
     >
-      <header className="flex items-center justify-between gap-4 border-b border-rule pb-5">
+      <header className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 border-b border-rule pb-5">
+        <div role="img" aria-label="Logo de la compañía" className="brand-mark justify-self-start" />
         <h1 className="text-hand-h2 font-bold">{venue.plan.name}</h1>
-        <UserMenu email={email} avatarUrl={avatarUrl} />
+        <div className="justify-self-end">
+          <UserMenu email={email} avatarUrl={avatarUrl} />
+        </div>
       </header>
 
       <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
