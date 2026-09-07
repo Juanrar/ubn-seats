@@ -2,7 +2,7 @@
 
 import { useCallback, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { reserveSeats } from '@/app/actions'
+import { createOrder } from '@/app/actions'
 
 export type ReservationStatus = 'idle' | 'pending' | 'error'
 
@@ -12,7 +12,7 @@ export interface Reservation {
   confirm: (seatIds: string[]) => void
 }
 
-export function useReservation(onSuccess: () => void): Reservation {
+export function useReservation(): Reservation {
   const router = useRouter()
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
@@ -21,16 +21,16 @@ export function useReservation(onSuccess: () => void): Reservation {
     (seatIds: string[]) => {
       setErrorMessage(null)
       startTransition(async () => {
-        const result = await reserveSeats(seatIds)
-        if (!result.ok) {
-          setErrorMessage(result.message)
-        } else {
-          onSuccess()
+        const result = await createOrder(seatIds)
+        if (result.ok) {
+          window.location.href = result.redirectUrl
+          return
         }
+        setErrorMessage(result.message)
         router.refresh()
       })
     },
-    [router, onSuccess],
+    [router],
   )
 
   return {
