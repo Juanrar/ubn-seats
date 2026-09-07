@@ -5,6 +5,7 @@ import { createServiceClient } from '@/utils/supabase/service'
 
 const CONFIRMED_STATUSES = new Set(['approved'])
 const CANCELLED_STATUSES = new Set(['rejected', 'cancelled'])
+const ORDER_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 export async function POST(request: NextRequest) {
   const type = request.nextUrl.searchParams.get('type')
@@ -30,7 +31,7 @@ export async function POST(request: NextRequest) {
   }
 
   const payment = await getPayment(dataId)
-  if (!payment.externalReference || !payment.status) {
+  if (!payment.externalReference || !payment.status || !ORDER_ID_PATTERN.test(payment.externalReference)) {
     return NextResponse.json({ ok: true })
   }
 
