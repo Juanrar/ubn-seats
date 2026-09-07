@@ -16,7 +16,8 @@ const COPY: Record<PaymentResult, PaymentResultCopy> = {
   },
   error: {
     heading: 'No se pudo procesar el pago',
-    description: 'No te cobramos nada. Volvé a intentar cuando quieras.',
+    description:
+      'Las butacas no quedaron reservadas. Si te llegó un cargo, escribinos y lo resolvemos.',
   },
 }
 
