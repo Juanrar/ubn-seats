@@ -1,5 +1,11 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import { fetchOrderSummary } from '@/utils/orders'
+
+const filters: { column: string; values: string[] }[] = []
+
+beforeEach(() => {
+  filters.length = 0
+})
 
 function fakeSupabase({
   order,
@@ -9,7 +15,7 @@ function fakeSupabase({
 }: {
   order: unknown
   orderError?: unknown
-  reservations?: { seat_id: string }[]
+  reservations?: { seat_id: string; status?: string }[]
   reservationsError?: unknown
 }) {
   return {
@@ -25,7 +31,15 @@ function fakeSupabase({
       }
       return {
         select: () => ({
-          eq: async () => ({ data: reservations, error: reservationsError }),
+          eq: () => ({
+            in: async (column: string, values: string[]) => {
+              filters.push({ column, values })
+              return {
+                data: reservations.filter((row) => !row.status || values.includes(row.status)),
+                error: reservationsError,
+              }
+            },
+          }),
         }),
       }
     },
@@ -42,6 +56,21 @@ describe('fetchOrderSummary', () => {
     const result = await fetchOrderSummary(supabase, 'order-1')
 
     expect(result).toEqual({ status: 'confirmed', amount: 76000, seatIds: ['platea-F07-12', 'platea-F07-13'] })
+  })
+
+  it('no devuelve las butacas de reservas canceladas', async () => {
+    const supabase = fakeSupabase({
+      order: { status: 'paid_without_seats', amount: 76000 },
+      reservations: [
+        { seat_id: 'platea-F07-12', status: 'cancelled' },
+        { seat_id: 'platea-F07-13', status: 'cancelled' },
+      ],
+    })
+
+    const result = await fetchOrderSummary(supabase, 'order-1')
+
+    expect(result?.seatIds).toEqual([])
+    expect(filters).toEqual([{ column: 'status', values: ['pending', 'confirmed'] }])
   })
 
   it('devuelve null si la orden no existe o no es del usuario', async () => {

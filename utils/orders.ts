@@ -1,5 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 
+const HELD_RESERVATION_STATUSES = ['pending', 'confirmed']
+
 export interface OrderSummary {
   status: string
   amount: number
@@ -19,6 +21,7 @@ export async function fetchOrderSummary(supabase: SupabaseClient, orderId: strin
     .from('reservations')
     .select('seat_id')
     .eq('order_id', orderId)
+    .in('status', HELD_RESERVATION_STATUSES)
 
   if (reservationsError) return null
 

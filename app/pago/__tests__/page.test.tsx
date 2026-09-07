@@ -75,6 +75,20 @@ describe('PagoResultadoPage', () => {
     expect(screen.getByText('¡Reserva confirmada!')).toBeInTheDocument()
   })
 
+  it('con una orden paid_without_seats no dice que el pago se está confirmando ni lista butacas', async () => {
+    fetchOrderSummary.mockResolvedValue({ status: 'paid_without_seats', amount: 38000, seatIds: [] })
+
+    const jsx = await PagoResultadoPage({
+      params: Promise.resolve({ resultado: 'exito' }),
+      searchParams: Promise.resolve({ external_reference: 'order-1' }),
+    })
+    render(jsx)
+
+    expect(screen.queryByText('Estamos confirmando tu pago')).not.toBeInTheDocument()
+    expect(screen.queryByText('Fila 7, butaca 12')).not.toBeInTheDocument()
+    expect(screen.getByText('Cobramos el pago, pero las butacas ya no estaban')).toBeInTheDocument()
+  })
+
   it('con un resultado desconocido en la URL llama a notFound', async () => {
     await expect(
       PagoResultadoPage({
