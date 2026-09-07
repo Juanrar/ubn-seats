@@ -26,7 +26,7 @@ export function PlateaPicker({ occupied, email, avatarUrl }: PlateaPickerProps) 
 
   return (
     <div
-      className={`mx-auto flex w-full max-w-[var(--layout-stack)] flex-col gap-8 px-5 py-10 ${
+      className={`mx-auto flex w-full max-w-[var(--layout-stack)] flex-col gap-6 px-5 py-3 ${
         picker.selectedSeats.length > 0 ? 'pb-28' : ''
       }`}
     >
