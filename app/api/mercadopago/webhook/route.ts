@@ -40,11 +40,15 @@ export async function POST(request: NextRequest) {
 
   if (status) {
     const supabase = createServiceClient()
-    await supabase.rpc('set_order_status', {
+    const { error } = await supabase.rpc('set_order_status', {
       p_order_id: payment.externalReference,
       p_status: status,
       p_mp_payment_id: dataId,
     })
+
+    if (error) {
+      return NextResponse.json({ ok: false }, { status: 500 })
+    }
   }
 
   return NextResponse.json({ ok: true })
