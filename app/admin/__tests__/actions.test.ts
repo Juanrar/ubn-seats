@@ -10,6 +10,8 @@ vi.mock('next/headers', () => ({
   cookies: async () => ({ set: cookieSet, delete: cookieDelete }),
 }))
 vi.mock('next/navigation', () => ({ redirect }))
+vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }))
+vi.mock('@/utils/mercadopago/account', () => ({ disconnect: vi.fn() }))
 
 import { signIn, signOut } from '@/app/admin/actions'
 import { ADMIN_COOKIE, verifySessionToken } from '@/lib/admin/session'

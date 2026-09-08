@@ -2,8 +2,10 @@
 
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
+import { revalidatePath } from 'next/cache'
 import { timingSafeEqual } from 'node:crypto'
 import { ADMIN_COOKIE, SESSION_HOURS, createSessionToken } from '@/lib/admin/session'
+import { disconnect } from '@/utils/mercadopago/account'
 
 export type SignInState = { error: string | null }
 
@@ -45,4 +47,9 @@ export async function signOut(): Promise<void> {
   const store = await cookies()
   store.delete(ADMIN_COOKIE)
   redirect('/admin/login')
+}
+
+export async function disconnectMercadoPago(): Promise<void> {
+  await disconnect()
+  revalidatePath('/admin')
 }
