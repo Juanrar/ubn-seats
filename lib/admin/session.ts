@@ -23,3 +23,6 @@ export function verifySessionToken(secret: string, token: string, now: number): 
 
   return now < Number(payload)
 }
+
+export const ADMIN_COOKIE = 'admin_session'
+export const SESSION_HOURS = 8
