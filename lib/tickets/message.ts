@@ -73,7 +73,6 @@ function buildText(seats: Seat[], amount: number): string {
     '',
     `Total pagado: ${formatTotal(amount)}`,
     '',
-    SHOW.doorsNote,
     single
       ? 'Mostrá la entrada adjunta en la puerta, impresa o desde el celular.'
       : 'Mostrá las entradas adjuntas en la puerta, impresas o desde el celular.',
@@ -133,7 +132,6 @@ function buildHtml(seats: Seat[], amount: number): string {
         </tr>
         <tr>
           <td style="padding:24px 28px 28px 28px;">
-            <p style="margin:0;font-family:${HAND_STACK};font-size:19px;line-height:1.3;color:${INK_SOFT};">${escapeHtml(SHOW.doorsNote)}</p>
             <p style="margin:6px 0 0 0;font-family:${HAND_STACK};font-size:19px;line-height:1.3;color:${INK_SOFT};">${single ? 'Mostrá la entrada adjunta en la puerta, impresa o desde el celular.' : 'Mostrá las entradas adjuntas en la puerta, impresas o desde el celular.'}</p>
           </td>
         </tr>
