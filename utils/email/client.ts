@@ -9,6 +9,7 @@ export interface TicketEmailParams {
   to: string
   subject: string
   text: string
+  html: string
   attachments: EmailAttachment[]
 }
 
@@ -20,7 +21,7 @@ function required(name: string): string {
   return value
 }
 
-export async function sendTicketEmail({ to, subject, text, attachments }: TicketEmailParams): Promise<void> {
+export async function sendTicketEmail({ to, subject, text, html, attachments }: TicketEmailParams): Promise<void> {
   const apiKey = required('BREVO_API_KEY')
   const senderEmail = required('TICKET_FROM_EMAIL')
   const senderName = required('TICKET_FROM_NAME')
@@ -37,6 +38,7 @@ export async function sendTicketEmail({ to, subject, text, attachments }: Ticket
       to: [{ email: to }],
       subject,
       textContent: text,
+      htmlContent: html,
       attachment: attachments.map((attachment) => ({
         name: attachment.name,
         content: attachment.contentBase64,

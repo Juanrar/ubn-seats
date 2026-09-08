@@ -32,4 +32,17 @@ describe('buildTicketEmail', () => {
     expect(text).toContain('butaca 12')
     expect(text).not.toContain('F99')
   })
+
+  it('arma una versión html con la paleta y la tipografía de la página', () => {
+    const { html } = buildTicketEmail({ seatIds: SEAT_IDS, amount: 5 })
+    expect(html).toContain('#f1e8d3')
+    expect(html).toContain('Caveat')
+    expect(html).toContain('Fila 7, butaca 11, Platea B')
+    expect(html).toContain('Total pagado')
+  })
+
+  it('escapa el html de los datos de la función', () => {
+    const { html } = buildTicketEmail({ seatIds: SEAT_IDS, amount: 5 })
+    expect(html).not.toMatch(/<script/i)
+  })
 })

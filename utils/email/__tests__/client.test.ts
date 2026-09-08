@@ -8,6 +8,7 @@ function params() {
     to: 'compradora@correo.test',
     subject: 'Tu entrada',
     text: 'Fila 7, butaca 12',
+    html: '<p>Fila 7, butaca 12</p>',
     attachments: [ATTACHMENT],
   }
 }
@@ -42,6 +43,7 @@ describe('sendTicketEmail', () => {
     expect(body.to).toEqual([{ email: 'compradora@correo.test' }])
     expect(body.subject).toBe('Tu entrada')
     expect(body.textContent).toBe('Fila 7, butaca 12')
+    expect(body.htmlContent).toBe('<p>Fila 7, butaca 12</p>')
   })
 
   it('adjunta los archivos en base64', async () => {

@@ -38,9 +38,9 @@ export async function deliverTicketEmail(supabase: SupabaseClient, orderId: stri
     }
 
     const [to, attachment] = await Promise.all([buyerEmail(supabase, orderId), readTicketAttachment()])
-    const { subject, text } = buildTicketEmail({ seatIds: summary.seatIds, amount: summary.amount })
+    const { subject, text, html } = buildTicketEmail({ seatIds: summary.seatIds, amount: summary.amount })
 
-    await sendTicketEmail({ to, subject, text, attachments: [attachment] })
+    await sendTicketEmail({ to, subject, text, html, attachments: [attachment] })
   } catch (error) {
     await supabase.rpc('release_ticket_delivery', { p_order_id: orderId })
     throw error
