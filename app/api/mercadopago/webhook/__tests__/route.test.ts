@@ -1,15 +1,21 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { NextRequest } from 'next/server'
 
-const { getPayment, rpc, validate, deliverTicketEmail, FakeInvalidWebhookSignatureError } = vi.hoisted(() => ({
-  getPayment: vi.fn(),
-  rpc: vi.fn(),
-  validate: vi.fn(),
-  deliverTicketEmail: vi.fn(),
-  FakeInvalidWebhookSignatureError: class FakeInvalidWebhookSignatureError extends Error {},
-}))
+const { getPayment, rpc, validate, deliverTicketEmail, requireAccessToken, FakeInvalidWebhookSignatureError } =
+  vi.hoisted(() => ({
+    getPayment: vi.fn(),
+    rpc: vi.fn(),
+    validate: vi.fn(),
+    deliverTicketEmail: vi.fn(),
+    requireAccessToken: vi.fn(),
+    FakeInvalidWebhookSignatureError: class FakeInvalidWebhookSignatureError extends Error {},
+  }))
 
 vi.mock('@/utils/mercadopago/client', () => ({ getPayment }))
+vi.mock('@/utils/mercadopago/account', () => ({
+  requireAccessToken,
+  NoConnectedAccountError: class NoConnectedAccountError extends Error {},
+}))
 vi.mock('@/utils/tickets/deliver', () => ({ deliverTicketEmail }))
 vi.mock('@/utils/supabase/service', () => ({ createServiceClient: () => ({ rpc }) }))
 vi.mock('mercadopago', () => ({
@@ -25,11 +31,19 @@ function request(url: string, headers: Record<string, string> = {}) {
   return new NextRequest(url, { method: 'POST', headers })
 }
 
+function requestValida() {
+  return request('https://sitio.test/api/mercadopago/webhook?type=payment&data.id=123', {
+    'x-signature': 'ts=1,v1=deadbeef',
+    'x-request-id': 'req-1',
+  })
+}
+
 beforeEach(() => {
   getPayment.mockReset()
   rpc.mockReset()
   validate.mockReset()
   deliverTicketEmail.mockReset().mockResolvedValue(undefined)
+  requireAccessToken.mockReset().mockResolvedValue('APP_USR-token')
 })
 
 describe('POST /api/mercadopago/webhook', () => {
@@ -44,15 +58,33 @@ describe('POST /api/mercadopago/webhook', () => {
       throw new FakeInvalidWebhookSignatureError('mala firma')
     })
 
-    const res = await POST(
-      request('https://sitio.test/api/mercadopago/webhook?type=payment&data.id=123', {
-        'x-signature': 'ts=1,v1=deadbeef',
-        'x-request-id': 'req-1',
-      }),
-    )
+    const res = await POST(requestValida())
 
     expect(res.status).toBe(401)
     expect(getPayment).not.toHaveBeenCalled()
+  })
+
+  it('responde 200 sin tocar nada si no hay cuenta vinculada', async () => {
+    validate.mockReturnValue(undefined)
+    const { NoConnectedAccountError } = await import('@/utils/mercadopago/account')
+    requireAccessToken.mockRejectedValue(new NoConnectedAccountError())
+
+    const response = await POST(requestValida())
+
+    expect(response.status).toBe(200)
+    expect(getPayment).not.toHaveBeenCalled()
+    expect(rpc).not.toHaveBeenCalled()
+  })
+
+  it('devuelve 500 si falla el refresco del token por una razón transitoria, para que Mercado Pago reintente', async () => {
+    validate.mockReturnValue(undefined)
+    requireAccessToken.mockRejectedValue(new Error('la red se cayó'))
+
+    const response = await POST(requestValida())
+
+    expect(response.status).toBe(500)
+    expect(getPayment).not.toHaveBeenCalled()
+    expect(rpc).not.toHaveBeenCalled()
   })
 
   it('pago approved: confirma la orden', async () => {
@@ -60,12 +92,7 @@ describe('POST /api/mercadopago/webhook', () => {
     getPayment.mockResolvedValue({ status: 'approved', externalReference: ORDER_ID })
     rpc.mockResolvedValue({ data: null, error: null })
 
-    const res = await POST(
-      request('https://sitio.test/api/mercadopago/webhook?type=payment&data.id=123', {
-        'x-signature': 'ts=1,v1=deadbeef',
-        'x-request-id': 'req-1',
-      }),
-    )
+    const res = await POST(requestValida())
 
     expect(rpc).toHaveBeenCalledWith('set_order_status', {
       p_order_id: ORDER_ID,
@@ -80,12 +107,7 @@ describe('POST /api/mercadopago/webhook', () => {
     getPayment.mockResolvedValue({ status: 'rejected', externalReference: ORDER_ID })
     rpc.mockResolvedValue({ data: null, error: null })
 
-    await POST(
-      request('https://sitio.test/api/mercadopago/webhook?type=payment&data.id=123', {
-        'x-signature': 'ts=1,v1=deadbeef',
-        'x-request-id': 'req-1',
-      }),
-    )
+    await POST(requestValida())
 
     expect(rpc).toHaveBeenCalledWith('set_order_status', {
       p_order_id: ORDER_ID,
@@ -98,12 +120,7 @@ describe('POST /api/mercadopago/webhook', () => {
     validate.mockReturnValue(undefined)
     getPayment.mockResolvedValue({ status: 'pending', externalReference: ORDER_ID })
 
-    const res = await POST(
-      request('https://sitio.test/api/mercadopago/webhook?type=payment&data.id=123', {
-        'x-signature': 'ts=1,v1=deadbeef',
-        'x-request-id': 'req-1',
-      }),
-    )
+    const res = await POST(requestValida())
 
     expect(rpc).not.toHaveBeenCalled()
     expect(res.status).toBe(200)
@@ -113,12 +130,7 @@ describe('POST /api/mercadopago/webhook', () => {
     validate.mockReturnValue(undefined)
     getPayment.mockResolvedValue({ status: 'approved', externalReference: 'pago-de-prueba' })
 
-    const res = await POST(
-      request('https://sitio.test/api/mercadopago/webhook?type=payment&data.id=123', {
-        'x-signature': 'ts=1,v1=deadbeef',
-        'x-request-id': 'req-1',
-      }),
-    )
+    const res = await POST(requestValida())
 
     expect(rpc).not.toHaveBeenCalled()
     expect(res.status).toBe(200)
@@ -129,12 +141,7 @@ describe('POST /api/mercadopago/webhook', () => {
     getPayment.mockResolvedValue({ status: 'approved', externalReference: ORDER_ID })
     rpc.mockResolvedValue({ data: null, error: { message: 'la base no respondió' } })
 
-    const res = await POST(
-      request('https://sitio.test/api/mercadopago/webhook?type=payment&data.id=123', {
-        'x-signature': 'ts=1,v1=deadbeef',
-        'x-request-id': 'req-1',
-      }),
-    )
+    const res = await POST(requestValida())
 
     expect(res.status).toBe(500)
   })
@@ -144,13 +151,7 @@ describe('POST /api/mercadopago/webhook', () => {
     getPayment.mockResolvedValue({ status: 'approved', externalReference: ORDER_ID })
     rpc.mockResolvedValue({ data: null, error: null })
 
-    const notification = () =>
-      POST(
-        request('https://sitio.test/api/mercadopago/webhook?type=payment&data.id=123', {
-          'x-signature': 'ts=1,v1=deadbeef',
-          'x-request-id': 'req-1',
-        }),
-      )
+    const notification = () => POST(requestValida())
 
     const first = await notification()
     const second = await notification()
@@ -169,12 +170,7 @@ describe('POST /api/mercadopago/webhook', () => {
     getPayment.mockResolvedValue({ status: 'approved', externalReference: ORDER_ID })
     rpc.mockResolvedValue({ data: null, error: null })
 
-    await POST(
-      request('https://sitio.test/api/mercadopago/webhook?type=payment&data.id=123', {
-        'x-signature': 'ts=1,v1=deadbeef',
-        'x-request-id': 'req-1',
-      }),
-    )
+    await POST(requestValida())
 
     expect(deliverTicketEmail).toHaveBeenCalledTimes(1)
     expect(deliverTicketEmail.mock.calls[0][1]).toBe(ORDER_ID)
@@ -185,12 +181,7 @@ describe('POST /api/mercadopago/webhook', () => {
     getPayment.mockResolvedValue({ status: 'rejected', externalReference: ORDER_ID })
     rpc.mockResolvedValue({ data: null, error: null })
 
-    await POST(
-      request('https://sitio.test/api/mercadopago/webhook?type=payment&data.id=123', {
-        'x-signature': 'ts=1,v1=deadbeef',
-        'x-request-id': 'req-1',
-      }),
-    )
+    await POST(requestValida())
 
     expect(deliverTicketEmail).not.toHaveBeenCalled()
   })
@@ -201,12 +192,7 @@ describe('POST /api/mercadopago/webhook', () => {
     rpc.mockResolvedValue({ data: null, error: null })
     deliverTicketEmail.mockRejectedValue(new Error('Brevo caído'))
 
-    const res = await POST(
-      request('https://sitio.test/api/mercadopago/webhook?type=payment&data.id=123', {
-        'x-signature': 'ts=1,v1=deadbeef',
-        'x-request-id': 'req-1',
-      }),
-    )
+    const res = await POST(requestValida())
 
     expect(res.status).toBe(200)
   })
@@ -216,12 +202,7 @@ describe('POST /api/mercadopago/webhook', () => {
     getPayment.mockResolvedValue({ status: 'approved', externalReference: ORDER_ID })
     rpc.mockResolvedValue({ data: null, error: { message: 'la base no respondió' } })
 
-    await POST(
-      request('https://sitio.test/api/mercadopago/webhook?type=payment&data.id=123', {
-        'x-signature': 'ts=1,v1=deadbeef',
-        'x-request-id': 'req-1',
-      }),
-    )
+    await POST(requestValida())
 
     expect(deliverTicketEmail).not.toHaveBeenCalled()
   })

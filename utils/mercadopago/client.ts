@@ -1,7 +1,7 @@
 import { MercadoPagoConfig, Preference, Payment } from 'mercadopago'
 
-function config() {
-  return new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN! })
+function config(accessToken: string) {
+  return new MercadoPagoConfig({ accessToken })
 }
 
 export interface PreferenceItem {
@@ -17,6 +17,7 @@ export interface CreatePreferenceParams {
   items: PreferenceItem[]
   notificationUrl: string
   backUrls: { success: string; pending: string; failure: string }
+  accessToken: string
 }
 
 export const HOLD_MINUTES = 20
@@ -26,7 +27,7 @@ export async function createPreference(
 ): Promise<{ initPoint: string; preferenceId: string }> {
   const expiresAt = new Date(Date.now() + HOLD_MINUTES * 60 * 1000).toISOString()
 
-  const response = await new Preference(config()).create({
+  const response = await new Preference(config(params.accessToken)).create({
     body: {
       items: params.items,
       external_reference: params.orderId,
@@ -50,7 +51,8 @@ export async function createPreference(
 
 export async function getPayment(
   paymentId: string,
+  accessToken: string,
 ): Promise<{ status: string | undefined; externalReference: string | undefined }> {
-  const response = await new Payment(config()).get({ id: paymentId })
+  const response = await new Payment(config(accessToken)).get({ id: paymentId })
   return { status: response.status, externalReference: response.external_reference }
 }

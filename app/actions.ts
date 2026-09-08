@@ -2,6 +2,7 @@
 
 import { createClient } from '@/utils/supabase/server'
 import { createPreference } from '@/utils/mercadopago/client'
+import { requireAccessToken, NoConnectedAccountError } from '@/utils/mercadopago/account'
 import { buildOrderItems } from '@/lib/order'
 import { MAX_SEATS } from '@/lib/constants'
 import { TEATRO_DEL_GLOBO } from '@/lib/plans/teatro-del-globo'
@@ -40,6 +41,16 @@ export async function createOrder(seatIds: string[]): Promise<CreateOrderResult>
     return { ok: false, message: 'Selección inválida.' }
   }
 
+  let accessToken: string
+  try {
+    accessToken = await requireAccessToken()
+  } catch (error) {
+    if (error instanceof NoConnectedAccountError) {
+      return { ok: false, message: 'La venta no está habilitada todavía.' }
+    }
+    return { ok: false, message: 'No se pudo iniciar el pago. Probá de nuevo.' }
+  }
+
   const seats = seatIds.map((seatId) => VENUE.byId.get(seatId)!)
   const { items, amount } = buildOrderItems(seats)
 
@@ -68,6 +79,7 @@ export async function createOrder(seatIds: string[]): Promise<CreateOrderResult>
         pending: `${origin}/pago/pendiente`,
         failure: `${origin}/pago/error`,
       },
+      accessToken,
     })
     await supabase.rpc('set_order_preference', {
       p_order_id: orderId,

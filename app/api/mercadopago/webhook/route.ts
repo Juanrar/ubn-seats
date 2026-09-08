@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { WebhookSignatureValidator, InvalidWebhookSignatureError } from 'mercadopago'
 import { getPayment } from '@/utils/mercadopago/client'
+import { requireAccessToken, NoConnectedAccountError } from '@/utils/mercadopago/account'
 import { createServiceClient } from '@/utils/supabase/service'
 import { deliverTicketEmail } from '@/utils/tickets/deliver'
 
@@ -31,7 +32,17 @@ export async function POST(request: NextRequest) {
     throw error
   }
 
-  const payment = await getPayment(dataId)
+  let accessToken: string
+  try {
+    accessToken = await requireAccessToken()
+  } catch (error) {
+    if (error instanceof NoConnectedAccountError) {
+      return NextResponse.json({ ok: true })
+    }
+    return NextResponse.json({ ok: false }, { status: 500 })
+  }
+
+  const payment = await getPayment(dataId, accessToken)
   if (!payment.externalReference || !payment.status || !ORDER_ID_PATTERN.test(payment.externalReference)) {
     return NextResponse.json({ ok: true })
   }

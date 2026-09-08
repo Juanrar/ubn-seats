@@ -3,10 +3,11 @@ import { TEATRO_DEL_GLOBO } from '@/lib/plans/teatro-del-globo'
 import { buildVenue } from '@/lib/venue'
 import { MAX_SEATS } from '@/lib/constants'
 
-const { getUser, rpc, createPreference } = vi.hoisted(() => ({
+const { getUser, rpc, createPreference, requireAccessToken } = vi.hoisted(() => ({
   getUser: vi.fn(),
   rpc: vi.fn(),
   createPreference: vi.fn(),
+  requireAccessToken: vi.fn(),
 }))
 
 vi.mock('@/utils/supabase/server', () => ({
@@ -16,6 +17,10 @@ vi.mock('@/utils/supabase/server', () => ({
   }),
 }))
 vi.mock('@/utils/mercadopago/client', () => ({ createPreference }))
+vi.mock('@/utils/mercadopago/account', () => ({
+  requireAccessToken,
+  NoConnectedAccountError: class NoConnectedAccountError extends Error {},
+}))
 
 import { createOrder } from '@/app/actions'
 
@@ -27,6 +32,8 @@ beforeEach(() => {
   getUser.mockReset()
   rpc.mockReset()
   createPreference.mockReset()
+  requireAccessToken.mockReset()
+  requireAccessToken.mockResolvedValue('APP_USR-token')
   process.env.SITE_URL = SITE_URL
 })
 
@@ -57,6 +64,29 @@ describe('createOrder', () => {
     const result = await createOrder(['not-a-real-seat'])
     expect(result).toEqual({ ok: false, message: 'Selección inválida.' })
     expect(rpc).not.toHaveBeenCalled()
+  })
+
+  it('no crea la orden si no hay una cuenta de Mercado Pago vinculada', async () => {
+    getUser.mockResolvedValue({ data: { user: { id: 'user-1' } } })
+    const { NoConnectedAccountError } = await import('@/utils/mercadopago/account')
+    requireAccessToken.mockRejectedValue(new NoConnectedAccountError())
+
+    const result = await createOrder(['platea-F07-12'])
+
+    expect(result).toEqual({ ok: false, message: 'La venta no está habilitada todavía.' })
+    expect(rpc).not.toHaveBeenCalled()
+    expect(createPreference).not.toHaveBeenCalled()
+  })
+
+  it('devuelve mensaje genérico si falla la resolución del token por otra razón', async () => {
+    getUser.mockResolvedValue({ data: { user: { id: 'user-1' } } })
+    requireAccessToken.mockRejectedValue(new Error('la base no respondió'))
+
+    const result = await createOrder(['platea-F07-12'])
+
+    expect(result).toEqual({ ok: false, message: 'No se pudo iniciar el pago. Probá de nuevo.' })
+    expect(rpc).not.toHaveBeenCalled()
+    expect(createPreference).not.toHaveBeenCalled()
   })
 
   it('cobra el total exacto del catálogo, no lo que mande el cliente', async () => {
@@ -114,6 +144,7 @@ describe('createOrder', () => {
         pending: `${SITE_URL}/pago/pendiente`,
         failure: `${SITE_URL}/pago/error`,
       },
+      accessToken: 'APP_USR-token',
     })
     expect(result).toEqual({ ok: true, redirectUrl: 'https://mp.example/checkout/abc' })
   })
