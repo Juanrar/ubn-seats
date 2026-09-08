@@ -3,7 +3,7 @@ import { cookies } from 'next/headers'
 import { timingSafeEqual } from 'node:crypto'
 import { exchangeCodeForTokens } from '@/utils/mercadopago/oauth'
 import { saveAccount } from '@/utils/mercadopago/account'
-import { OAUTH_STATE_COOKIE, verifySessionToken } from '@/lib/admin/session'
+import { OAUTH_STATE_COOKIE, verifySessionToken } from '@/utils/admin/session'
 
 function backToAdmin(error?: string): NextResponse {
   const url = new URL('/admin', process.env.SITE_URL!)

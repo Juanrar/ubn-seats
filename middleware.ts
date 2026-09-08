@@ -1,6 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
-import { ADMIN_COOKIE, verifySessionToken } from '@/lib/admin/session'
+import { ADMIN_COOKIE, verifySessionToken } from '@/utils/admin/session'
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -44,3 +44,5 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
 }
+
+export const runtime = 'nodejs'

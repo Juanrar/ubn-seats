@@ -15,7 +15,7 @@ vi.mock('next/headers', () => ({
 }))
 
 import { GET } from '@/app/admin/mercadopago/callback/route'
-import { createSessionToken, STATE_MINUTES } from '@/lib/admin/session'
+import { createSessionToken, STATE_MINUTES } from '@/utils/admin/session'
 
 const SECRET = 'secreto-de-prueba'
 

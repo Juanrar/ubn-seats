@@ -14,7 +14,7 @@ vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }))
 vi.mock('@/utils/mercadopago/account', () => ({ disconnect: vi.fn() }))
 
 import { signIn, signOut } from '@/app/admin/actions'
-import { ADMIN_COOKIE, verifySessionToken } from '@/lib/admin/session'
+import { ADMIN_COOKIE, verifySessionToken } from '@/utils/admin/session'
 
 const SECRET = 'secreto-de-prueba'
 

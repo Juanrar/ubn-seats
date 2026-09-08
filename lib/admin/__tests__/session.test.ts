@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { createSessionToken, verifySessionToken } from '@/lib/admin/session'
+import { createSessionToken, verifySessionToken } from '@/utils/admin/session'
 
 const SECRET = 'secreto-de-prueba'
 const NOW = 1_757_000_000_000

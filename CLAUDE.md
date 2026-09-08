@@ -100,6 +100,36 @@ Cuando Mercado Pago aprueba un pago, el webhook manda un mail al comprador con l
 - **La función es una constante, no una tabla.** `lib/show.ts` guarda obra, sala, dirección y horario. Hay una sola función; cuando haya cartelera, esto pasa a ser una tabla con `orders.event_id` y el selector filtra la ocupación por función.
 - El proveedor de mail está detrás de un único módulo a propósito: pasar de Brevo a Resend cuando el teatro tenga dominio propio es tocar `utils/email/client.ts` y nada más.
 
+## Panel de administración y vinculación de Mercado Pago
+
+`/admin` se abre con una contraseña (`ADMIN_PASSWORD`) y de ahí en más sostiene una cookie
+firmada de 8 horas. La firma es `utils/admin/session.ts` (puro: recibe el secreto y el `now`
+por parámetro); el gate vive en `middleware.ts`, que cubre también los route handlers del
+OAuth porque cuelgan de `/admin/`.
+
+- **La cuenta de Mercado Pago del cliente se vincula por OAuth, y es la única fuente del
+  access token.** `MP_ACCESS_TOKEN` ya no existe: `utils/mercadopago/account.ts` es el único
+  lugar que resuelve un token, y sin cuenta vinculada `createOrder` no crea la orden y el
+  webhook responde 200 sin hacer nada. Un fallback al `.env` significaría plata cayendo en la
+  cuenta equivocada sin que nadie se entere.
+- **La tabla `mercadopago_account` tiene una sola fila** (`id boolean primary key default true
+  check (id)`), con RLS habilitado y **sin ninguna policy**. A diferencia de `orders` no hace
+  falta una función `security definer`: el browser nunca la escribe, sólo el callback de OAuth,
+  que ya está detrás del gate de admin. Los tokens se guardan en claro; es el mismo nivel de
+  exposición que tenía `MP_ACCESS_TOKEN` en el `.env`.
+- **El access token se refresca preventivamente con 5 minutos de margen**, no al vencer.
+  El `refresh_token` de Mercado Pago dura ~180 días: si el sitio queda mucho tiempo sin vender,
+  hay que volver a vincular, y el panel lo muestra como desconectada.
+- **El `state` del OAuth se firma con el mismo HMAC de la sesión y vence a los 10 minutos**,
+  además de cotejarse contra una cookie. No hay PKCE: es un cliente confidencial y el
+  `client_secret` nunca sale del servidor.
+- La `redirect_uri` es `${SITE_URL}/admin/mercadopago/callback` y tiene que estar registrada en
+  la aplicación de Mercado Pago. MP exige **https**: en `localhost` el callback no funciona, se
+  prueba con un túnel o en un deploy de preview. El `MP_WEBHOOK_SECRET` sigue siendo el de la
+  aplicación, no el del cliente.
+
+Variables: `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`, `MP_CLIENT_ID`, `MP_CLIENT_SECRET`.
+
 ## Estilo
 
 Tailwind v4 con tokens declarados en `@theme` de `app/globals.css` (paleta `paper-bg`, `ink`, `ink-soft`, `ink-mute`, `rule`, `rule-soft`, `accent`, `highlight`; claro y oscuro). Tipografías vía `next/font/google`: **Caveat** es la voz de toda la UI (`--font-body` y `--font-hand` apuntan a ella), **JetBrains Mono** queda sólo para cifras donde la alineación en columna es funcional (precio por butaca y total) y **Lora** queda disponible como `--font-prose` para textos largos que todavía no existen.

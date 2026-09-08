@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { buildAuthorizationUrl } from '@/lib/mercadopago/oauth'
-import { createSessionToken, OAUTH_STATE_COOKIE, STATE_MINUTES } from '@/lib/admin/session'
+import { createSessionToken, OAUTH_STATE_COOKIE, STATE_MINUTES } from '@/utils/admin/session'
 
 const STATE_MS = STATE_MINUTES * 60 * 1000
 

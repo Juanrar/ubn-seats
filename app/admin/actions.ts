@@ -4,7 +4,7 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { timingSafeEqual } from 'node:crypto'
-import { ADMIN_COOKIE, SESSION_HOURS, createSessionToken } from '@/lib/admin/session'
+import { ADMIN_COOKIE, SESSION_HOURS, createSessionToken } from '@/utils/admin/session'
 import { disconnect } from '@/utils/mercadopago/account'
 
 export type SignInState = { error: string | null }
