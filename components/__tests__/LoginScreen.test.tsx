@@ -31,7 +31,7 @@ describe('LoginScreen', () => {
 
   it('encabeza la pantalla con la invitación a elegir butaca', () => {
     render(<LoginScreen />)
-    expect(screen.getByRole('heading', { name: /una butaca a tu nombre/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /de fin de año/i })).toBeInTheDocument()
   })
 
   it('no le anuncia las ondas decorativas al lector de pantalla', () => {

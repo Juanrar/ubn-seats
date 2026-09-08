@@ -62,7 +62,7 @@ describe('TEATRO_DEL_GLOBO — franjas', () => {
   it('describe las tres franjas del bloque central en orden creciente de fila', () => {
     const tiers = plan.centerBlock.tiers
     expect(tiers.map((t) => t.label)).toEqual(['Platea A', 'Platea B', 'Platea C'])
-    expect(tiers.map((t) => t.price)).toEqual([45000, 38000, 30000])
+    expect(tiers.map((t) => t.price)).toEqual([1, 2, 3])
     const bounded = tiers.slice(0, -1).map((t) => t.throughRow!)
     expect(bounded).toEqual([...bounded].sort((a, b) => a - b))
   })

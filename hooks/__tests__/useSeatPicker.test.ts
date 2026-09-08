@@ -93,7 +93,7 @@ describe('useSeatPicker — resumen', () => {
     const { result } = picker()
     act(() => result.current.toggle(pick(2, 1)))
     act(() => result.current.toggle(pick(12, 4)))
-    expect(result.current.total).toBe(75000)
+    expect(result.current.total).toBe(4)
   })
 })
 

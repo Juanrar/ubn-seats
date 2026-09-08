@@ -32,7 +32,7 @@ describe('SeatButton', () => {
     renderSeat()
     const boton = screen.getByRole('button')
     expect(boton).toHaveAccessibleName(/Fila 7, butaca 12, Platea B/)
-    expect(boton).toHaveAccessibleName(/38\.000/)
+    expect(boton).toHaveAccessibleName(/, 2 pesos,/)
     expect(boton).toHaveAccessibleName(/disponible/i)
   })
 

@@ -107,21 +107,21 @@ describe('buildVenue — numeración', () => {
 describe('buildVenue — precios y franjas', () => {
   it('cobra Platea A en las filas 1 a 5 del bloque central', () => {
     for (const row of [1, 3, 5]) {
-      expect(pick(row, 1).price).toBe(45000)
+      expect(pick(row, 1).price).toBe(1)
       expect(pick(row, 1).tier).toBe('Platea A')
     }
   })
 
   it('cobra Platea B en las filas 6 a 10', () => {
     for (const row of [6, 8, 10]) {
-      expect(pick(row, 1).price).toBe(38000)
+      expect(pick(row, 1).price).toBe(2)
       expect(pick(row, 1).tier).toBe('Platea B')
     }
   })
 
   it('cobra Platea C en las filas 11 a 15', () => {
     for (const row of [11, 13, 15]) {
-      expect(pick(row, 1).price).toBe(30000)
+      expect(pick(row, 1).price).toBe(3)
       expect(pick(row, 1).tier).toBe('Platea C')
     }
   })

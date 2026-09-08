@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { SHOW } from '@/lib/show'
 
 const { sendTicketEmail, readTicketAttachment, fetchOrderSummary } = vi.hoisted(() => ({
   sendTicketEmail: vi.fn(),
@@ -48,7 +49,7 @@ describe('deliverTicketEmail', () => {
     expect(sendTicketEmail).toHaveBeenCalledTimes(1)
     const params = sendTicketEmail.mock.calls[0][0]
     expect(params.to).toBe('compradora@correo.test')
-    expect(params.subject).toBe('Tus 2 entradas para Función de prueba')
+    expect(params.subject).toBe(`Tus 2 entradas para ${SHOW.title}`)
     expect(params.text).toContain('Fila 7, butaca 11, Platea B')
     expect(params.attachments).toEqual([ATTACHMENT])
   })

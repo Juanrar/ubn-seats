@@ -72,7 +72,7 @@ describe('createOrder', () => {
 
     expect(rpc).toHaveBeenNthCalledWith(1, 'create_order', {
       p_seat_ids: selection,
-      p_amount: 113000,
+      p_amount: 6,
     })
   })
 
@@ -88,7 +88,7 @@ describe('createOrder', () => {
 
     expect(rpc).toHaveBeenNthCalledWith(1, 'create_order', {
       p_seat_ids: ['platea-F02-1', 'platea-F07-12'],
-      p_amount: 83000,
+      p_amount: 3,
     })
     expect(createPreference).toHaveBeenCalledWith({
       orderId: 'order-1',
@@ -97,14 +97,14 @@ describe('createOrder', () => {
           id: 'platea-F02-1',
           title: 'Fila 2, butaca 1, Platea A',
           quantity: 1,
-          unit_price: 45000,
+          unit_price: 1,
           currency_id: 'ARS',
         },
         {
           id: 'platea-F07-12',
           title: 'Fila 7, butaca 12, Platea B',
           quantity: 1,
-          unit_price: 38000,
+          unit_price: 2,
           currency_id: 'ARS',
         },
       ],

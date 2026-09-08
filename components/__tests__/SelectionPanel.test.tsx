@@ -54,15 +54,16 @@ describe('SelectionPanel', () => {
     render(
       <SelectionPanel
         seats={[pick(7, 12)]}
-        total={38000}
+        total={2}
         maxSeats={8}
         limitReached={false}
         onRemove={vi.fn()}
         onClear={vi.fn()}
       />,
     )
-    expect(screen.getByText('Platea B')).toBeInTheDocument()
-    expect(screen.getByText('38.000')).toBeInTheDocument()
+    const [fila] = screen.getAllByRole('listitem')
+    expect(within(fila).getByText('Platea B')).toBeInTheDocument()
+    expect(within(fila).getByText('2')).toBeInTheDocument()
   })
 
   it('permite quitar una butaca desde el panel', async () => {
