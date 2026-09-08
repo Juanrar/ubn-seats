@@ -11,12 +11,12 @@ describe('createSessionToken / verifySessionToken', () => {
     expect(verifySessionToken(SECRET, token, NOW)).toBe(true)
   })
 
-  it('rechaza un token signaturedo con otro secreto', () => {
+  it('rechaza un token firmado con otro secreto', () => {
     const token = createSessionToken('otro-secreto', EXPIRES)
     expect(verifySessionToken(SECRET, token, NOW)).toBe(false)
   })
 
-  it('rechaza un token con la signature tampered', () => {
+  it('rechaza un token con la firma alterada', () => {
     const [payload, signature] = createSessionToken(SECRET, EXPIRES).split('.')
     const tampered = signature.slice(0, -1) + (signature.endsWith('A') ? 'B' : 'A')
     expect(verifySessionToken(SECRET, `${payload}.${tampered}`, NOW)).toBe(false)
@@ -33,7 +33,7 @@ describe('createSessionToken / verifySessionToken', () => {
     expect(verifySessionToken(SECRET, token, EXPIRES)).toBe(false)
   })
 
-  it('rechaza garbage sin lanzar', () => {
+  it('rechaza basura sin lanzar', () => {
     for (const garbage of ['', '.', 'sin-punto', 'a.b.c', '123.']) {
       expect(verifySessionToken(SECRET, garbage, NOW)).toBe(false)
     }
