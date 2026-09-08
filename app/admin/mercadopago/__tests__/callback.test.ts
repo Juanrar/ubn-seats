@@ -15,7 +15,7 @@ vi.mock('next/headers', () => ({
 }))
 
 import { GET } from '@/app/admin/mercadopago/callback/route'
-import { createSessionToken, STATE_MINUTES } from '@/utils/admin/session'
+import { createSessionToken, OAUTH_STATE_COOKIE, STATE_MINUTES } from '@/lib/admin/session'
 
 const SECRET = 'secreto-de-prueba'
 
@@ -26,7 +26,7 @@ function request(params: Record<string, string>): NextRequest {
 }
 
 function validState(offsetMs = 0): Promise<string> {
-  return createSessionToken(SECRET, Date.now() + STATE_MINUTES * 60 * 1000 + offsetMs)
+  return createSessionToken(SECRET, 'oauth', Date.now() + STATE_MINUTES * 60 * 1000 + offsetMs)
 }
 
 beforeEach(() => {
@@ -58,6 +58,22 @@ describe('GET /admin/mercadopago/callback', () => {
     expect(response.headers.get('location')).toBe('https://entradas.test/admin')
   })
 
+  it('borra la cookie de state con el mismo path con el que se seteó', async () => {
+    const state = await validState()
+    cookieGet.mockReturnValue({ value: state })
+    exchangeCodeForTokens.mockResolvedValue({
+      mpUserId: '123456789',
+      accessToken: 'APP_USR-token',
+      refreshToken: 'TG-refresh',
+      publicKey: null,
+      expiresAt: Date.now() + 15_552_000_000,
+    })
+
+    await GET(request({ code: 'code-1', state }))
+
+    expect(cookieDelete).toHaveBeenCalledWith({ name: OAUTH_STATE_COOKIE, path: '/admin' })
+  })
+
   it('no vincula nada si el state no coincide con la cookie', async () => {
     cookieGet.mockReturnValue({ value: await validState() })
 
@@ -79,10 +95,31 @@ describe('GET /admin/mercadopago/callback', () => {
   })
 
   it('no vincula nada si el state venció', async () => {
-    const expired = await createSessionToken(SECRET, Date.now() - 1000)
+    const expired = await createSessionToken(SECRET, 'oauth', Date.now() - 1000)
     cookieGet.mockReturnValue({ value: expired })
 
     const response = await GET(request({ code: 'code-1', state: expired }))
+
+    expect(saveAccount).not.toHaveBeenCalled()
+    expect(response.headers.get('location')).toContain('error=state')
+  })
+
+  it('no vincula nada si el state es en realidad un token de sesión', async () => {
+    const sessionToken = await createSessionToken(SECRET, 'session', Date.now() + 60_000)
+    cookieGet.mockReturnValue({ value: sessionToken })
+
+    const response = await GET(request({ code: 'code-1', state: sessionToken }))
+
+    expect(saveAccount).not.toHaveBeenCalled()
+    expect(response.headers.get('location')).toContain('error=state')
+  })
+
+  it('no vincula nada sin ADMIN_SESSION_SECRET configurado', async () => {
+    const state = await validState()
+    cookieGet.mockReturnValue({ value: state })
+    delete process.env.ADMIN_SESSION_SECRET
+
+    const response = await GET(request({ code: 'code-1', state }))
 
     expect(saveAccount).not.toHaveBeenCalled()
     expect(response.headers.get('location')).toContain('error=state')

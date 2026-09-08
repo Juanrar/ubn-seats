@@ -4,7 +4,7 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { timingSafeEqual } from 'node:crypto'
-import { ADMIN_COOKIE, SESSION_HOURS, createSessionToken } from '@/utils/admin/session'
+import { ADMIN_COOKIE, SESSION_HOURS, createSessionToken, verifySessionToken } from '@/lib/admin/session'
 import { disconnect } from '@/utils/mercadopago/account'
 
 export type SignInState = { error: string | null }
@@ -15,6 +15,17 @@ function matches(received: string, expected: string): boolean {
   const a = Buffer.from(received)
   const b = Buffer.from(expected)
   return a.length === b.length && timingSafeEqual(a, b)
+}
+
+async function hasValidSession(): Promise<boolean> {
+  const secret = process.env.ADMIN_SESSION_SECRET
+  if (!secret) return false
+
+  const store = await cookies()
+  const token = store.get(ADMIN_COOKIE)?.value
+  if (!token) return false
+
+  return verifySessionToken(secret, 'session', token, Date.now())
 }
 
 export async function signIn(_prev: SignInState, formData: FormData): Promise<SignInState> {
@@ -30,7 +41,7 @@ export async function signIn(_prev: SignInState, formData: FormData): Promise<Si
   }
 
   const expiresAt = Date.now() + SESSION_MS
-  const token = await createSessionToken(secret, expiresAt)
+  const token = await createSessionToken(secret, 'session', expiresAt)
   const store = await cookies()
   store.set(ADMIN_COOKIE, token, {
     httpOnly: true,
@@ -45,11 +56,13 @@ export async function signIn(_prev: SignInState, formData: FormData): Promise<Si
 
 export async function signOut(): Promise<void> {
   const store = await cookies()
-  store.delete(ADMIN_COOKIE)
+  store.delete({ name: ADMIN_COOKIE, path: '/admin' })
   redirect('/admin/login')
 }
 
 export async function disconnectMercadoPago(): Promise<void> {
+  if (!(await hasValidSession())) return
+
   await disconnect()
   revalidatePath('/admin')
 }

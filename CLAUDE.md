@@ -103,7 +103,7 @@ Cuando Mercado Pago aprueba un pago, el webhook manda un mail al comprador con l
 ## Panel de administración y vinculación de Mercado Pago
 
 `/admin` se abre con una contraseña (`ADMIN_PASSWORD`) y de ahí en más sostiene una cookie
-firmada de 8 horas. La firma es `utils/admin/session.ts` (puro: recibe el secreto y el `now`
+firmada de 8 horas. La firma es `lib/admin/session.ts` (puro: recibe el secreto y el `now`
 por parámetro); el gate vive en `middleware.ts`, que cubre también los route handlers del
 OAuth porque cuelgan de `/admin/`.
 
@@ -120,9 +120,13 @@ OAuth porque cuelgan de `/admin/`.
 - **El access token se refresca preventivamente con 5 minutos de margen**, no al vencer.
   El `refresh_token` de Mercado Pago dura ~180 días: si el sitio queda mucho tiempo sin vender,
   hay que volver a vincular, y el panel lo muestra como desconectada.
-- **El `state` del OAuth se firma con el mismo HMAC de la sesión y vence a los 10 minutos**,
-  además de cotejarse contra una cookie. No hay PKCE: es un cliente confidencial y el
-  `client_secret` nunca sale del servidor.
+- **El `state` del OAuth se firma con la misma clave HMAC que la sesión pero con un propósito
+  distinto** (`createSessionToken`/`verifySessionToken` toman `'session'` u `'oauth'` como
+  parámetro y el payload firmado lleva ese prefijo), y vence a los 10 minutos, además de
+  cotejarse contra una cookie. Un token de sesión no verifica como `state` ni viceversa: sin
+  esa separación, el `state` —que viaja en una URL que Mercado Pago loguea y que queda en el
+  historial del navegador— sería una cookie de sesión válida disfrazada. No hay PKCE: es un
+  cliente confidencial y el `client_secret` nunca sale del servidor.
 - La `redirect_uri` es `${SITE_URL}/admin/mercadopago/callback` y tiene que estar registrada en
   la aplicación de Mercado Pago. MP exige **https**: en `localhost` el callback no funciona, se
   prueba con un túnel o en un deploy de preview. El `MP_WEBHOOK_SECRET` sigue siendo el de la

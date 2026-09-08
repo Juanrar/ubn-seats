@@ -29,13 +29,20 @@ async function sign(secret: string, payload: string): Promise<string> {
   return toBase64Url(signature)
 }
 
-export async function createSessionToken(secret: string, expiresAt: number): Promise<string> {
-  const payload = String(expiresAt)
+export type TokenPurpose = 'session' | 'oauth'
+
+export async function createSessionToken(
+  secret: string,
+  purpose: TokenPurpose,
+  expiresAt: number,
+): Promise<string> {
+  const payload = `${purpose}:${expiresAt}`
   return `${payload}.${await sign(secret, payload)}`
 }
 
 export async function verifySessionToken(
   secret: string,
+  purpose: TokenPurpose,
   token: string,
   now: number,
 ): Promise<boolean> {
@@ -43,7 +50,11 @@ export async function verifySessionToken(
   if (parts.length !== 2) return false
 
   const [payload, signature] = parts
-  if (!/^\d+$/.test(payload) || signature.length === 0) return false
+  const prefix = `${purpose}:`
+  if (!payload.startsWith(prefix) || signature.length === 0) return false
+
+  const expiresAt = payload.slice(prefix.length)
+  if (!/^\d+$/.test(expiresAt)) return false
 
   try {
     const key = await importKey(secret)
@@ -58,7 +69,7 @@ export async function verifySessionToken(
     return false
   }
 
-  return now < Number(payload)
+  return now < Number(expiresAt)
 }
 
 export const ADMIN_COOKIE = 'admin_session'

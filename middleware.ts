@@ -1,13 +1,13 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
-import { ADMIN_COOKIE, verifySessionToken } from '@/utils/admin/session'
+import { ADMIN_COOKIE, verifySessionToken } from '@/lib/admin/session'
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   if ((pathname === '/admin' || pathname.startsWith('/admin/')) && pathname !== '/admin/login') {
     const token = request.cookies.get(ADMIN_COOKIE)?.value
     const secret = process.env.ADMIN_SESSION_SECRET
-    if (!secret || !token || !(await verifySessionToken(secret, token, Date.now()))) {
+    if (!secret || !token || !(await verifySessionToken(secret, 'session', token, Date.now()))) {
       const login = request.nextUrl.clone()
       login.pathname = '/admin/login'
       login.search = ''

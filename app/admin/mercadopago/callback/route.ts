@@ -3,7 +3,7 @@ import { cookies } from 'next/headers'
 import { timingSafeEqual } from 'node:crypto'
 import { exchangeCodeForTokens } from '@/utils/mercadopago/oauth'
 import { saveAccount } from '@/utils/mercadopago/account'
-import { OAUTH_STATE_COOKIE, verifySessionToken } from '@/utils/admin/session'
+import { OAUTH_STATE_COOKIE, verifySessionToken } from '@/lib/admin/session'
 
 function backToAdmin(error?: string): NextResponse {
   const url = new URL('/admin', process.env.SITE_URL!)
@@ -21,14 +21,17 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const store = await cookies()
   const expected = store.get(OAUTH_STATE_COOKIE)?.value
   const received = request.nextUrl.searchParams.get('state')
-  const secret = process.env.ADMIN_SESSION_SECRET!
+  const secret = process.env.ADMIN_SESSION_SECRET
 
-  store.delete(OAUTH_STATE_COOKIE)
+  store.delete({ name: OAUTH_STATE_COOKIE, path: '/admin' })
 
+  if (!secret) {
+    return backToAdmin('state')
+  }
   if (!expected || !received || !statesMatch(expected, received)) {
     return backToAdmin('state')
   }
-  if (!(await verifySessionToken(secret, received, Date.now()))) {
+  if (!(await verifySessionToken(secret, 'oauth', received, Date.now()))) {
     return backToAdmin('state')
   }
   if (request.nextUrl.searchParams.get('error')) {
