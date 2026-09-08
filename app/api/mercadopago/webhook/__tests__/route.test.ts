@@ -1,14 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { NextRequest } from 'next/server'
 
-const { getPayment, rpc, validate, FakeInvalidWebhookSignatureError } = vi.hoisted(() => ({
+const { getPayment, rpc, validate, deliverTicketEmail, FakeInvalidWebhookSignatureError } = vi.hoisted(() => ({
   getPayment: vi.fn(),
   rpc: vi.fn(),
   validate: vi.fn(),
+  deliverTicketEmail: vi.fn(),
   FakeInvalidWebhookSignatureError: class FakeInvalidWebhookSignatureError extends Error {},
 }))
 
 vi.mock('@/utils/mercadopago/client', () => ({ getPayment }))
+vi.mock('@/utils/tickets/deliver', () => ({ deliverTicketEmail }))
 vi.mock('@/utils/supabase/service', () => ({ createServiceClient: () => ({ rpc }) }))
 vi.mock('mercadopago', () => ({
   WebhookSignatureValidator: { validate },
@@ -27,6 +29,7 @@ beforeEach(() => {
   getPayment.mockReset()
   rpc.mockReset()
   validate.mockReset()
+  deliverTicketEmail.mockReset().mockResolvedValue(undefined)
 })
 
 describe('POST /api/mercadopago/webhook', () => {
@@ -160,5 +163,66 @@ describe('POST /api/mercadopago/webhook', () => {
       p_status: 'confirmed',
       p_mp_payment_id: '123',
     })
+  })
+  it('pago approved: manda la entrada por mail', async () => {
+    validate.mockReturnValue(undefined)
+    getPayment.mockResolvedValue({ status: 'approved', externalReference: ORDER_ID })
+    rpc.mockResolvedValue({ data: null, error: null })
+
+    await POST(
+      request('https://sitio.test/api/mercadopago/webhook?type=payment&data.id=123', {
+        'x-signature': 'ts=1,v1=deadbeef',
+        'x-request-id': 'req-1',
+      }),
+    )
+
+    expect(deliverTicketEmail).toHaveBeenCalledTimes(1)
+    expect(deliverTicketEmail.mock.calls[0][1]).toBe(ORDER_ID)
+  })
+
+  it('pago rejected: no manda ninguna entrada', async () => {
+    validate.mockReturnValue(undefined)
+    getPayment.mockResolvedValue({ status: 'rejected', externalReference: ORDER_ID })
+    rpc.mockResolvedValue({ data: null, error: null })
+
+    await POST(
+      request('https://sitio.test/api/mercadopago/webhook?type=payment&data.id=123', {
+        'x-signature': 'ts=1,v1=deadbeef',
+        'x-request-id': 'req-1',
+      }),
+    )
+
+    expect(deliverTicketEmail).not.toHaveBeenCalled()
+  })
+
+  it('devuelve 200 aunque falle el envío del mail, para no reintentar el cobro', async () => {
+    validate.mockReturnValue(undefined)
+    getPayment.mockResolvedValue({ status: 'approved', externalReference: ORDER_ID })
+    rpc.mockResolvedValue({ data: null, error: null })
+    deliverTicketEmail.mockRejectedValue(new Error('Brevo caído'))
+
+    const res = await POST(
+      request('https://sitio.test/api/mercadopago/webhook?type=payment&data.id=123', {
+        'x-signature': 'ts=1,v1=deadbeef',
+        'x-request-id': 'req-1',
+      }),
+    )
+
+    expect(res.status).toBe(200)
+  })
+
+  it('no manda la entrada si no se pudo confirmar la orden', async () => {
+    validate.mockReturnValue(undefined)
+    getPayment.mockResolvedValue({ status: 'approved', externalReference: ORDER_ID })
+    rpc.mockResolvedValue({ data: null, error: { message: 'la base no respondió' } })
+
+    await POST(
+      request('https://sitio.test/api/mercadopago/webhook?type=payment&data.id=123', {
+        'x-signature': 'ts=1,v1=deadbeef',
+        'x-request-id': 'req-1',
+      }),
+    )
+
+    expect(deliverTicketEmail).not.toHaveBeenCalled()
   })
 })

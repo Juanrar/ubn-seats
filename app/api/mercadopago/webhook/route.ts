@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { WebhookSignatureValidator, InvalidWebhookSignatureError } from 'mercadopago'
 import { getPayment } from '@/utils/mercadopago/client'
 import { createServiceClient } from '@/utils/supabase/service'
+import { deliverTicketEmail } from '@/utils/tickets/deliver'
 
 const CONFIRMED_STATUSES = new Set(['approved'])
 const CANCELLED_STATUSES = new Set(['rejected', 'cancelled'])
@@ -49,6 +50,14 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       return NextResponse.json({ ok: false }, { status: 500 })
+    }
+
+    if (status === 'confirmed') {
+      try {
+        await deliverTicketEmail(supabase, payment.externalReference)
+      } catch {
+        return NextResponse.json({ ok: true, delivered: false })
+      }
     }
   }
 

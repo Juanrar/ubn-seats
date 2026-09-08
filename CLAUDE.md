@@ -90,6 +90,16 @@ El pago vive en los bordes: `utils/mercadopago/` (preferencia y consulta de pago
 - **El `check` del `seat_id` en `0002_orders.sql` es específico del Teatro del Globo** (`platea-F<fila>-<número>`) y contradice el "otra sala es otro `VenuePlan`, no código nuevo" de arriba. Se aceptó igual porque es la única defensa de la base contra un `seat_id` inventado, y la alternativa —una tabla de butacas poblada desde el `VenuePlan`— es trabajo que todavía no hace falta. Cuando aparezca la segunda sala, ese `check` se reemplaza por esa tabla; no se le agregan sectores a mano.
 - **El `external_reference` de un pago se valida como UUID antes de llegar al RPC.** `set_order_status` recibe un `uuid`, así que una referencia con otra forma —un pago de prueba hecho desde el panel de Mercado Pago, un link reusado de otra integración— haría fallar a Postgres con `22P02` para siempre. Ese caso es un no-op con 200; el 5xx queda reservado para fallas realmente transitorias, que son las que conviene que Mercado Pago reintente.
 
+## Envío de la entrada por mail
+
+Cuando Mercado Pago aprueba un pago, el webhook manda un mail al comprador con la entrada adjunta. Igual que el checkout, vive en los bordes: `lib/tickets/message.ts` (puro: arma asunto y cuerpo), `utils/email/client.ts` (Brevo), `utils/tickets/attachment.ts` (lee el archivo) y `utils/tickets/deliver.ts` (orquesta). Variables: `BREVO_API_KEY`, `TICKET_FROM_EMAIL`, `TICKET_FROM_NAME` y, opcional, `TICKET_IMAGE_PATH`.
+
+- **La entrega se reclama antes de mandar.** Mercado Pago reintenta las notificaciones y `set_order_status` es idempotente, pero el mail no: sin reclamo llegan dos. `claim_ticket_delivery` hace `update ... set ticket_sent_at = now() where ticket_sent_at is null and status = 'confirmed'` y devuelve si ganó la carrera; sólo el que gana manda. Si el envío falla, `release_ticket_delivery` devuelve la orden a la cola.
+- **Un mail que falla nunca devuelve 5xx.** El webhook responde 200 igual: el 5xx le dice a Mercado Pago que reintente *el cobro*, no el correo. La orden queda con `ticket_sent_at` en `null` y se puede reenviar.
+- **El adjunto es dato, no lógica.** Hoy es la imagen de `public/tickets/entrada.png`; cuando sea un PDF cambia sólo lo que produce el `EmailAttachment`. `sendTicketEmail` recibe `{ name, contentBase64 }` y no sabe de formatos. El archivo actual es un **placeholder**: se reemplaza por el que mande el cliente.
+- **La función es una constante, no una tabla.** `lib/show.ts` guarda obra, sala, dirección y horario. Hay una sola función; cuando haya cartelera, esto pasa a ser una tabla con `orders.event_id` y el selector filtra la ocupación por función.
+- El proveedor de mail está detrás de un único módulo a propósito: pasar de Brevo a Resend cuando el teatro tenga dominio propio es tocar `utils/email/client.ts` y nada más.
+
 ## Estilo
 
 Tailwind v4 con tokens declarados en `@theme` de `app/globals.css` (paleta `paper-bg`, `ink`, `ink-soft`, `ink-mute`, `rule`, `rule-soft`, `accent`, `highlight`; claro y oscuro). Tipografías vía `next/font/google`: **Caveat** es la voz de toda la UI (`--font-body` y `--font-hand` apuntan a ella), **JetBrains Mono** queda sólo para cifras donde la alineación en columna es funcional (precio por butaca y total) y **Lora** queda disponible como `--font-prose` para textos largos que todavía no existen.
