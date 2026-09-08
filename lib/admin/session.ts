@@ -26,3 +26,5 @@ export function verifySessionToken(secret: string, token: string, now: number): 
 
 export const ADMIN_COOKIE = 'admin_session'
 export const SESSION_HOURS = 8
+export const OAUTH_STATE_COOKIE = 'admin_mp_state'
+export const STATE_MINUTES = 10
