@@ -18,8 +18,9 @@ function matches(received: string, expected: string): boolean {
 export async function signIn(_prev: SignInState, formData: FormData): Promise<SignInState> {
   const password = String(formData.get('password') ?? '')
   const expected = process.env.ADMIN_PASSWORD
+  const secret = process.env.ADMIN_SESSION_SECRET
 
-  if (!expected) {
+  if (!expected || !secret) {
     return { error: 'El panel no está configurado.' }
   }
   if (!password || !matches(password, expected)) {
@@ -27,7 +28,7 @@ export async function signIn(_prev: SignInState, formData: FormData): Promise<Si
   }
 
   const expiresAt = Date.now() + SESSION_MS
-  const token = createSessionToken(process.env.ADMIN_SESSION_SECRET!, expiresAt)
+  const token = createSessionToken(secret, expiresAt)
   const store = await cookies()
   store.set(ADMIN_COOKIE, token, {
     httpOnly: true,

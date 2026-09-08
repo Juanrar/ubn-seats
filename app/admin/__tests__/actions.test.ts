@@ -42,6 +42,15 @@ describe('signIn', () => {
     expect(cookieSet).not.toHaveBeenCalled()
   })
 
+  it('con la contraseña correcta pero sin ADMIN_SESSION_SECRET devuelve error sin setear cookie', async () => {
+    delete process.env.ADMIN_SESSION_SECRET
+
+    const state = await signIn({ error: null }, form('la-contraseña'))
+    expect(state.error).toMatch(/no está configurado/i)
+    expect(cookieSet).not.toHaveBeenCalled()
+    expect(redirect).not.toHaveBeenCalled()
+  })
+
   it('con la contraseña correcta setea una cookie httpOnly válida y redirige', async () => {
     await signIn({ error: null }, form('la-contraseña'))
 
