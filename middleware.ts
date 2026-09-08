@@ -7,7 +7,7 @@ export async function middleware(request: NextRequest) {
   if ((pathname === '/admin' || pathname.startsWith('/admin/')) && pathname !== '/admin/login') {
     const token = request.cookies.get(ADMIN_COOKIE)?.value
     const secret = process.env.ADMIN_SESSION_SECRET
-    if (!secret || !token || !verifySessionToken(secret, token, Date.now())) {
+    if (!secret || !token || !(await verifySessionToken(secret, token, Date.now()))) {
       const login = request.nextUrl.clone()
       login.pathname = '/admin/login'
       login.search = ''
@@ -44,5 +44,3 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
 }
-
-export const runtime = 'nodejs'

@@ -7,7 +7,7 @@ const STATE_MS = STATE_MINUTES * 60 * 1000
 
 export async function GET() {
   const origin = process.env.SITE_URL!
-  const state = createSessionToken(process.env.ADMIN_SESSION_SECRET!, Date.now() + STATE_MS)
+  const state = await createSessionToken(process.env.ADMIN_SESSION_SECRET!, Date.now() + STATE_MS)
 
   const store = await cookies()
   store.set(OAUTH_STATE_COOKIE, state, {

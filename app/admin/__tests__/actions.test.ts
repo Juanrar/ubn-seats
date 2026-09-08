@@ -62,7 +62,7 @@ describe('signIn', () => {
     expect(opciones.httpOnly).toBe(true)
     expect(opciones.sameSite).toBe('lax')
     expect(opciones.path).toBe('/admin')
-    expect(verifySessionToken(SECRET, valor, Date.now())).toBe(true)
+    expect(await verifySessionToken(SECRET, valor, Date.now())).toBe(true)
     expect(redirect).toHaveBeenCalledWith('/admin')
   })
 })

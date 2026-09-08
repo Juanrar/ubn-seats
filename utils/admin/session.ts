@@ -1,25 +1,62 @@
-import { createHmac, timingSafeEqual } from 'node:crypto'
-
-function sign(secret: string, payload: string): string {
-  return createHmac('sha256', secret).update(payload).digest('base64url')
+function toBase64Url(bytes: ArrayBuffer): string {
+  const binary = String.fromCharCode(...new Uint8Array(bytes))
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
 }
 
-export function createSessionToken(secret: string, expiresAt: number): string {
+function fromBase64Url(value: string): Uint8Array<ArrayBuffer> {
+  const padded = value.replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(value.length / 4) * 4, '=')
+  const binary = atob(padded)
+  const bytes = new Uint8Array(new ArrayBuffer(binary.length))
+  for (let index = 0; index < binary.length; index += 1) {
+    bytes[index] = binary.charCodeAt(index)
+  }
+  return bytes
+}
+
+function importKey(secret: string): Promise<CryptoKey> {
+  return crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign', 'verify'],
+  )
+}
+
+async function sign(secret: string, payload: string): Promise<string> {
+  const key = await importKey(secret)
+  const signature = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(payload))
+  return toBase64Url(signature)
+}
+
+export async function createSessionToken(secret: string, expiresAt: number): Promise<string> {
   const payload = String(expiresAt)
-  return `${payload}.${sign(secret, payload)}`
+  return `${payload}.${await sign(secret, payload)}`
 }
 
-export function verifySessionToken(secret: string, token: string, now: number): boolean {
+export async function verifySessionToken(
+  secret: string,
+  token: string,
+  now: number,
+): Promise<boolean> {
   const parts = token.split('.')
   if (parts.length !== 2) return false
 
   const [payload, signature] = parts
   if (!/^\d+$/.test(payload) || signature.length === 0) return false
 
-  const expected = Buffer.from(sign(secret, payload))
-  const received = Buffer.from(signature)
-  if (expected.length !== received.length) return false
-  if (!timingSafeEqual(expected, received)) return false
+  try {
+    const key = await importKey(secret)
+    const valid = await crypto.subtle.verify(
+      'HMAC',
+      key,
+      fromBase64Url(signature),
+      new TextEncoder().encode(payload),
+    )
+    if (!valid) return false
+  } catch {
+    return false
+  }
 
   return now < Number(payload)
 }

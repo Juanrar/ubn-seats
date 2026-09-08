@@ -25,7 +25,7 @@ function request(params: Record<string, string>): NextRequest {
   return new NextRequest(url)
 }
 
-function validState(offsetMs = 0): string {
+function validState(offsetMs = 0): Promise<string> {
   return createSessionToken(SECRET, Date.now() + STATE_MINUTES * 60 * 1000 + offsetMs)
 }
 
@@ -37,7 +37,7 @@ beforeEach(() => {
 
 describe('GET /admin/mercadopago/callback', () => {
   it('vincula la cuenta y vuelve a /admin', async () => {
-    const state = validState()
+    const state = await validState()
     cookieGet.mockReturnValue({ value: state })
     exchangeCodeForTokens.mockResolvedValue({
       mpUserId: '123456789',
@@ -59,9 +59,9 @@ describe('GET /admin/mercadopago/callback', () => {
   })
 
   it('no vincula nada si el state no coincide con la cookie', async () => {
-    cookieGet.mockReturnValue({ value: validState() })
+    cookieGet.mockReturnValue({ value: await validState() })
 
-    const response = await GET(request({ code: 'code-1', state: validState(1000) }))
+    const response = await GET(request({ code: 'code-1', state: await validState(1000) }))
 
     expect(exchangeCodeForTokens).not.toHaveBeenCalled()
     expect(saveAccount).not.toHaveBeenCalled()
@@ -70,7 +70,7 @@ describe('GET /admin/mercadopago/callback', () => {
 
   it('no vincula nada si falta la cookie del state', async () => {
     cookieGet.mockReturnValue(undefined)
-    const state = validState()
+    const state = await validState()
 
     const response = await GET(request({ code: 'code-1', state }))
 
@@ -79,7 +79,7 @@ describe('GET /admin/mercadopago/callback', () => {
   })
 
   it('no vincula nada si el state venció', async () => {
-    const expired = createSessionToken(SECRET, Date.now() - 1000)
+    const expired = await createSessionToken(SECRET, Date.now() - 1000)
     cookieGet.mockReturnValue({ value: expired })
 
     const response = await GET(request({ code: 'code-1', state: expired }))
@@ -89,7 +89,7 @@ describe('GET /admin/mercadopago/callback', () => {
   })
 
   it('vuelve con error si Mercado Pago rechazó la autorización', async () => {
-    const state = validState()
+    const state = await validState()
     cookieGet.mockReturnValue({ value: state })
 
     const response = await GET(request({ error: 'access_denied', state }))
@@ -99,7 +99,7 @@ describe('GET /admin/mercadopago/callback', () => {
   })
 
   it('vuelve con error si el canje del código falla', async () => {
-    const state = validState()
+    const state = await validState()
     cookieGet.mockReturnValue({ value: state })
     exchangeCodeForTokens.mockRejectedValue(new Error('invalid_grant'))
 

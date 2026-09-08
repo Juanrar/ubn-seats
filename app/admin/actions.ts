@@ -30,7 +30,7 @@ export async function signIn(_prev: SignInState, formData: FormData): Promise<Si
   }
 
   const expiresAt = Date.now() + SESSION_MS
-  const token = createSessionToken(secret, expiresAt)
+  const token = await createSessionToken(secret, expiresAt)
   const store = await cookies()
   store.set(ADMIN_COOKIE, token, {
     httpOnly: true,

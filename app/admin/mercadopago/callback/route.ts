@@ -28,7 +28,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   if (!expected || !received || !statesMatch(expected, received)) {
     return backToAdmin('state')
   }
-  if (!verifySessionToken(secret, received, Date.now())) {
+  if (!(await verifySessionToken(secret, received, Date.now()))) {
     return backToAdmin('state')
   }
   if (request.nextUrl.searchParams.get('error')) {
