@@ -13,13 +13,13 @@ export function verifySessionToken(secret: string, token: string, now: number): 
   const parts = token.split('.')
   if (parts.length !== 2) return false
 
-  const [payload, firma] = parts
-  if (!/^\d+$/.test(payload) || firma.length === 0) return false
+  const [payload, signature] = parts
+  if (!/^\d+$/.test(payload) || signature.length === 0) return false
 
-  const esperada = Buffer.from(sign(secret, payload))
-  const recibida = Buffer.from(firma)
-  if (esperada.length !== recibida.length) return false
-  if (!timingSafeEqual(esperada, recibida)) return false
+  const expected = Buffer.from(sign(secret, payload))
+  const received = Buffer.from(signature)
+  if (expected.length !== received.length) return false
+  if (!timingSafeEqual(expected, received)) return false
 
   return now < Number(payload)
 }
