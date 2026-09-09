@@ -61,6 +61,11 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+button:not(:disabled),
+[role='button']:not([aria-disabled='true']) {
+  cursor: pointer;
+}
+
 /*
  * Anillo de foco de las butacas. Va en CSS y no en clases de Tailwind porque
  * el estado :focus-visible vive en el <g> y el trazo que hay que cambiar está
