@@ -15,6 +15,7 @@ const ORDER = {
 function clientWith({
   order = ORDER as Record<string, unknown> | null,
   seats = [{ seat_id: 'platea-F07-12' }, { seat_id: 'platea-F07-11' }],
+  seatsError = null as { message: string } | null,
   email = 'ana@mail.com' as string | null,
 }): SupabaseClient {
   return {
@@ -25,7 +26,7 @@ function clientWith({
         }
       }
       return {
-        select: () => ({ eq: () => ({ in: async () => ({ data: seats, error: null }) }) }),
+        select: () => ({ eq: () => ({ in: async () => ({ data: seats, error: seatsError }) }) }),
       }
     },
     auth: {
@@ -60,5 +61,23 @@ describe('fetchAdminOrder', () => {
     const order = await fetchAdminOrder(clientWith({ email: null }), 'o1')
     expect(order?.email).toBeNull()
     expect(order?.seatIds).toHaveLength(2)
+  })
+
+  it('si falla la consulta de reservas devuelve null en vez de una orden sin butacas', async () => {
+    expect(await fetchAdminOrder(clientWith({ seatsError: { message: 'roto' } }), 'o1')).toBeNull()
+  })
+
+  it('ordena las butacas por fila y número, no alfabéticamente', async () => {
+    const order = await fetchAdminOrder(
+      clientWith({
+        seats: [
+          { seat_id: 'platea-F07-10' },
+          { seat_id: 'platea-F07-2' },
+          { seat_id: 'platea-F03-11' },
+        ],
+      }),
+      'o1',
+    )
+    expect(order?.seatIds).toEqual(['platea-F03-11', 'platea-F07-2', 'platea-F07-10'])
   })
 })
