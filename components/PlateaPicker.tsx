@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react'
 import { Legend } from '@/components/Legend'
+import { SeatButton } from '@/components/Seat'
 import { SeatMap } from '@/components/SeatMap'
 import { SelectionBar } from '@/components/SelectionBar'
 import { SelectionPanel } from '@/components/SelectionPanel'
@@ -44,12 +45,18 @@ export function PlateaPicker({ occupied, email, avatarUrl }: PlateaPickerProps) 
             <div className="min-w-[560px]">
               <SeatMap
                 venue={venue}
-                statusOf={picker.statusOf}
-                focusedId={picker.focusedId}
-                onToggle={picker.toggle}
-                onFocus={picker.onSeatFocus}
                 onKeyDown={picker.onKeyDown}
-                revealDelayOf={(seat) => revealDelays.get(seat.id) ?? 0}
+                renderSeat={(seat, geometry) => (
+                  <SeatButton
+                    seat={seat}
+                    geometry={geometry}
+                    status={picker.statusOf(seat)}
+                    focused={seat.id === picker.focusedId}
+                    onToggle={picker.toggle}
+                    onFocus={picker.onSeatFocus}
+                    revealDelayMs={revealDelays.get(seat.id) ?? 0}
+                  />
+                )}
               />
             </div>
           </div>
