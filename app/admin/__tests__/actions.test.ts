@@ -1,15 +1,22 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { cookieSet, cookieDelete, cookieGet, redirect, disconnect, revalidatePath } = vi.hoisted(
-  () => ({
-    cookieSet: vi.fn(),
-    cookieDelete: vi.fn(),
-    cookieGet: vi.fn(),
-    redirect: vi.fn(),
-    disconnect: vi.fn(),
-    revalidatePath: vi.fn(),
-  }),
-)
+const {
+  cookieSet,
+  cookieDelete,
+  cookieGet,
+  redirect,
+  disconnect,
+  revalidatePath,
+  rpc,
+} = vi.hoisted(() => ({
+  cookieSet: vi.fn(),
+  cookieDelete: vi.fn(),
+  cookieGet: vi.fn(),
+  redirect: vi.fn(),
+  disconnect: vi.fn(),
+  revalidatePath: vi.fn(),
+  rpc: vi.fn(),
+}))
 
 vi.mock('next/headers', () => ({
   cookies: async () => ({ set: cookieSet, delete: cookieDelete, get: cookieGet }),
@@ -17,8 +24,16 @@ vi.mock('next/headers', () => ({
 vi.mock('next/navigation', () => ({ redirect }))
 vi.mock('next/cache', () => ({ revalidatePath }))
 vi.mock('@/utils/mercadopago/account', () => ({ disconnect }))
+vi.mock('@/utils/supabase/service', () => ({ createServiceClient: () => ({ rpc }) }))
 
-import { signIn, signOut, disconnectMercadoPago } from '@/app/admin/actions'
+import {
+  signIn,
+  signOut,
+  disconnectMercadoPago,
+  blockSeats,
+  unblockSeats,
+  cancelOrder,
+} from '@/app/admin/actions'
 import { ADMIN_COOKIE, createSessionToken, verifySessionToken } from '@/lib/admin/session'
 
 const SECRET = 'secreto-de-prueba'
@@ -124,5 +139,134 @@ describe('disconnectMercadoPago', () => {
     await disconnectMercadoPago()
     expect(disconnect).toHaveBeenCalledTimes(1)
     expect(revalidatePath).toHaveBeenCalledWith('/admin')
+  })
+})
+
+async function withSession(): Promise<void> {
+  process.env.ADMIN_SESSION_SECRET = SECRET
+  const token = await createSessionToken(SECRET, 'session', Date.now() + 60_000)
+  cookieGet.mockReturnValue({ value: token })
+}
+
+function withoutSession(): void {
+  process.env.ADMIN_SESSION_SECRET = SECRET
+  cookieGet.mockReturnValue(undefined)
+}
+
+describe('blockSeats', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('sin sesión válida no toca la base', async () => {
+    withoutSession()
+    const result = await blockSeats(['platea-F01-01'])
+
+    expect(rpc).not.toHaveBeenCalled()
+    expect(revalidatePath).not.toHaveBeenCalled()
+    expect(result.ok).toBe(false)
+  })
+
+  it('con sesión llama a la función y revalida', async () => {
+    await withSession()
+    rpc.mockResolvedValue({ data: 2, error: null })
+
+    const result = await blockSeats(['platea-F01-01', 'platea-F01-02'])
+
+    expect(rpc).toHaveBeenCalledWith('admin_block_seats', {
+      p_seat_ids: ['platea-F01-01', 'platea-F01-02'],
+    })
+    expect(revalidatePath).toHaveBeenCalledWith('/admin')
+    expect(result).toMatchObject({ ok: true, count: 2 })
+    expect(result.message).toMatch(/2/)
+  })
+
+  it('avisa cuando bloqueó menos de las pedidas', async () => {
+    await withSession()
+    rpc.mockResolvedValue({ data: 1, error: null })
+
+    const result = await blockSeats(['platea-F01-01', 'platea-F01-02'])
+
+    expect(result.ok).toBe(true)
+    expect(result.message).toMatch(/1 de 2/)
+  })
+
+  it('con error de la base no revalida y avisa', async () => {
+    await withSession()
+    rpc.mockResolvedValue({ data: null, error: { message: 'roto' } })
+
+    const result = await blockSeats(['platea-F01-01'])
+
+    expect(result.ok).toBe(false)
+    expect(revalidatePath).not.toHaveBeenCalled()
+  })
+
+  it('con una selección vacía no llama a la base', async () => {
+    await withSession()
+    const result = await blockSeats([])
+
+    expect(rpc).not.toHaveBeenCalled()
+    expect(result.ok).toBe(false)
+  })
+})
+
+describe('unblockSeats', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('sin sesión válida no toca la base', async () => {
+    withoutSession()
+    await unblockSeats(['platea-F01-01'])
+    expect(rpc).not.toHaveBeenCalled()
+  })
+
+  it('con sesión llama a la función y revalida', async () => {
+    await withSession()
+    rpc.mockResolvedValue({ data: 3, error: null })
+
+    const result = await unblockSeats(['platea-F01-01'])
+
+    expect(rpc).toHaveBeenCalledWith('admin_unblock_seats', {
+      p_seat_ids: ['platea-F01-01'],
+    })
+    expect(revalidatePath).toHaveBeenCalledWith('/admin')
+    expect(result).toMatchObject({ ok: true, count: 3 })
+  })
+})
+
+describe('cancelOrder', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('sin sesión válida no toca la base', async () => {
+    withoutSession()
+    await cancelOrder('11111111-1111-1111-1111-111111111111')
+    expect(rpc).not.toHaveBeenCalled()
+  })
+
+  it('con sesión cancela y revalida', async () => {
+    await withSession()
+    rpc.mockResolvedValue({ data: 3, error: null })
+
+    const result = await cancelOrder('11111111-1111-1111-1111-111111111111')
+
+    expect(rpc).toHaveBeenCalledWith('admin_cancel_order', {
+      p_order_id: '11111111-1111-1111-1111-111111111111',
+    })
+    expect(revalidatePath).toHaveBeenCalledWith('/admin')
+    expect(result).toMatchObject({ ok: true, count: 3 })
+  })
+
+  it('una orden que ya no se puede cancelar devuelve cero butacas', async () => {
+    await withSession()
+    rpc.mockResolvedValue({ data: 0, error: null })
+
+    const result = await cancelOrder('11111111-1111-1111-1111-111111111111')
+
+    expect(result.ok).toBe(true)
+    expect(result.count).toBe(0)
+    expect(result.message).toMatch(/no/i)
   })
 })
