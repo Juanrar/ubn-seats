@@ -46,6 +46,11 @@ describe('adminSeatStatus', () => {
     const map = occupancy([['platea-F01-01', { status: 'confirmed', orderId: 'o1' }]])
     expect(adminSeatStatus('platea-F01-01', map, new Set(['platea-F01-01']))).toBe('sold')
   })
+
+  it('una reservada no se vuelve seleccionada aunque esté en la selección', () => {
+    const map = occupancy([['platea-F01-01', { status: 'pending', orderId: 'o1' }]])
+    expect(adminSeatStatus('platea-F01-01', map, new Set(['platea-F01-01']))).toBe('pending')
+  })
 })
 
 describe('isSelectable', () => {
@@ -103,6 +108,11 @@ describe('selectionAction', () => {
 
   it('mezclar libres con bloqueadas no es una acción válida', () => {
     const map = occupancy([['platea-F01-02', { status: 'blocked', orderId: null }]])
+    expect(selectionAction(new Set(['platea-F01-01', 'platea-F01-02']), map)).toBe('mixed')
+  })
+
+  it('una butaca que se vendió mientras estaba elegida invalida la acción', () => {
+    const map = occupancy([['platea-F01-01', { status: 'confirmed', orderId: 'o1' }]])
     expect(selectionAction(new Set(['platea-F01-01', 'platea-F01-02']), map)).toBe('mixed')
   })
 })

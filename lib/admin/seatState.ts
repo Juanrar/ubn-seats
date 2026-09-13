@@ -42,6 +42,7 @@ export function selectionAction(
   let free = 0
   let blocked = 0
   for (const id of selectedIds) {
+    if (!isSelectable(id, occupancy)) return 'mixed'
     if (occupancy.get(id)?.status === 'blocked') blocked += 1
     else free += 1
   }
