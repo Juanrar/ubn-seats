@@ -1,6 +1,9 @@
 import { getConnectedAccount } from '@/utils/mercadopago/account'
 import { ConnectionCard } from '@/components/admin/ConnectionCard'
+import { AdminSeatMap } from '@/components/admin/AdminSeatMap'
 import { signOut } from '@/app/admin/actions'
+import { fetchAdminSeatMap } from '@/utils/admin/seats'
+import { createServiceClient } from '@/utils/supabase/service'
 
 export const dynamic = 'force-dynamic'
 
@@ -11,9 +14,10 @@ export default async function AdminPage({
 }) {
   const { error } = await searchParams
   const account = await getConnectedAccount()
+  const occupancy = await fetchAdminSeatMap(createServiceClient())
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-xl flex-col gap-8 px-6 py-12">
+    <main className="mx-auto flex min-h-dvh max-w-3xl flex-col gap-8 px-6 py-12">
       <header className="flex items-baseline justify-between">
         <h1 className="text-hand-h1 font-bold">Panel</h1>
         <form action={signOut}>
@@ -29,6 +33,8 @@ export default async function AdminPage({
         }
         error={error ?? null}
       />
+
+      <AdminSeatMap occupancy={occupancy} />
     </main>
   )
 }

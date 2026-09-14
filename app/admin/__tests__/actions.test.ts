@@ -33,6 +33,7 @@ import {
   blockSeats,
   unblockSeats,
   cancelOrder,
+  loadOrder,
 } from '@/app/admin/actions'
 import { ADMIN_COOKIE, createSessionToken, verifySessionToken } from '@/lib/admin/session'
 
@@ -268,5 +269,16 @@ describe('cancelOrder', () => {
     expect(result.ok).toBe(true)
     expect(result.count).toBe(0)
     expect(result.message).toMatch(/no/i)
+  })
+})
+
+describe('loadOrder', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('sin sesión válida no lee la orden', async () => {
+    withoutSession()
+    expect(await loadOrder('11111111-1111-1111-1111-111111111111')).toBeNull()
   })
 })

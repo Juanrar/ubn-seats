@@ -7,6 +7,7 @@ import { timingSafeEqual } from 'node:crypto'
 import { ADMIN_COOKIE, SESSION_HOURS, createSessionToken, verifySessionToken } from '@/lib/admin/session'
 import { disconnect } from '@/utils/mercadopago/account'
 import { createServiceClient } from '@/utils/supabase/service'
+import { fetchAdminOrder, type AdminOrder } from '@/utils/admin/orders'
 
 export type SignInState = { error: string | null }
 
@@ -147,4 +148,9 @@ export async function cancelOrder(orderId: string): Promise<AdminActionResult> {
   }
 
   return { ok: true, count, message: `Cancelaste la orden y liberaste ${seatCount(count)}.` }
+}
+
+export async function loadOrder(orderId: string): Promise<AdminOrder | null> {
+  if (!(await hasValidSession())) return null
+  return fetchAdminOrder(createServiceClient(), orderId)
 }
