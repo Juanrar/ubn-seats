@@ -45,7 +45,8 @@ export function SeatActionPanel({
   onCancelOrder,
   onCloseOrder,
 }: SeatActionPanelProps) {
-  const [confirming, setConfirming] = useState(false)
+  const [confirmingOrderId, setConfirmingOrderId] = useState<string | null>(null)
+  const confirming = order !== null && confirmingOrderId === order.id
 
   return (
     <section className="flex flex-col gap-4 border-t border-rule pt-4">
@@ -81,7 +82,7 @@ export function SeatActionPanel({
                   type="button"
                   disabled={pending}
                   onClick={() => {
-                    setConfirming(false)
+                    setConfirmingOrderId(null)
                     onCancelOrder()
                   }}
                   className="text-hand-base font-medium text-ink underline"
@@ -90,7 +91,7 @@ export function SeatActionPanel({
                 </button>
                 <button
                   type="button"
-                  onClick={() => setConfirming(false)}
+                  onClick={() => setConfirmingOrderId(null)}
                   className="text-hand-base font-medium text-ink-mute underline"
                 >
                   Mejor no
@@ -102,7 +103,7 @@ export function SeatActionPanel({
               <button
                 type="button"
                 disabled={pending}
-                onClick={() => setConfirming(true)}
+                onClick={() => setConfirmingOrderId(order.id)}
                 className="text-hand-base font-medium text-ink underline"
               >
                 Cancelar la orden

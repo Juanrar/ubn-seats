@@ -104,4 +104,37 @@ describe('SeatActionPanel', () => {
     setup({ action: 'block', selectedCount: 2, pending: true })
     expect(screen.getByRole('button', { name: /bloquear 2 butacas/i })).toBeDisabled()
   })
+
+  it('abrir otra orden no hereda la confirmación de la anterior', async () => {
+    const handlers = {
+      onBlock: vi.fn(),
+      onUnblock: vi.fn(),
+      onClear: vi.fn(),
+      onCancelOrder: vi.fn(),
+      onCloseOrder: vi.fn(),
+    }
+    const props = { action: 'none' as const, selectedCount: 0, message: null, pending: false, ...handlers }
+    const { rerender } = render(<SeatActionPanel {...props} order={ORDER} />)
+
+    await userEvent.click(screen.getByRole('button', { name: /^cancelar la orden$/i }))
+    expect(screen.getByRole('button', { name: /confirmar/i })).toBeInTheDocument()
+
+    rerender(<SeatActionPanel {...props} order={{ ...ORDER, id: '22222222-2222-2222-2222-222222222222' }} />)
+
+    expect(screen.queryByRole('button', { name: /confirmar/i })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^cancelar la orden$/i })).toBeInTheDocument()
+  })
+
+  it('mientras hay una acción en curso no se puede confirmar la cancelación', async () => {
+    const { rerender } = render(
+      <SeatActionPanel action="none" selectedCount={0} order={ORDER} message={null} pending={false}
+        onBlock={vi.fn()} onUnblock={vi.fn()} onClear={vi.fn()} onCancelOrder={vi.fn()} onCloseOrder={vi.fn()} />,
+    )
+    await userEvent.click(screen.getByRole('button', { name: /^cancelar la orden$/i }))
+    rerender(
+      <SeatActionPanel action="none" selectedCount={0} order={ORDER} message={null} pending
+        onBlock={vi.fn()} onUnblock={vi.fn()} onClear={vi.fn()} onCancelOrder={vi.fn()} onCloseOrder={vi.fn()} />,
+    )
+    expect(screen.getByRole('button', { name: /confirmar/i })).toBeDisabled()
+  })
 })
