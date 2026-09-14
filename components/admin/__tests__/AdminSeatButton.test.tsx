@@ -89,4 +89,38 @@ describe('AdminSeatButton', () => {
     await userEvent.click(screen.getByRole('button'))
     expect(onActivate).toHaveBeenCalledWith(seat)
   })
+
+  it('sólo la bloqueada lleva aspa', () => {
+    for (const status of ['sold', 'pending', 'selected'] as const) {
+      const { container, unmount } = render(
+        <svg>
+          <AdminSeatButton seat={seat} geometry={venue.plan.geometry} status={status} focused onActivate={vi.fn()} onFocus={vi.fn()} />
+        </svg>,
+      )
+      expect(container.querySelectorAll('line').length).toBe(0)
+      unmount()
+    }
+  })
+
+  it('la reservada se distingue de la libre por el trazo punteado', () => {
+    const { container, unmount } = render(
+      <svg>
+        <AdminSeatButton seat={seat} geometry={venue.plan.geometry} status="pending" focused onActivate={vi.fn()} onFocus={vi.fn()} />
+      </svg>,
+    )
+    expect(container.querySelector('rect')).toHaveAttribute('stroke-dasharray')
+    unmount()
+
+    const libre = render(
+      <svg>
+        <AdminSeatButton seat={seat} geometry={venue.plan.geometry} status="free" focused onActivate={vi.fn()} onFocus={vi.fn()} />
+      </svg>,
+    )
+    expect(libre.container.querySelector('rect')).not.toHaveAttribute('stroke-dasharray')
+  })
+
+  it('las vendidas no se anuncian como alternables', () => {
+    renderSeat('sold')
+    expect(screen.getByRole('button')).not.toHaveAttribute('aria-pressed')
+  })
 })

@@ -16,7 +16,7 @@ const SHAPE_CLASS: Record<AdminSeatStatus, string> = {
   selected: 'fill-accent stroke-accent',
   blocked: 'fill-transparent stroke-ink',
   sold: 'fill-rule-soft stroke-none',
-  pending: 'fill-transparent stroke-rule',
+  pending: 'fill-transparent stroke-ink-mute',
 }
 
 export interface AdminSeatButtonProps {
@@ -44,7 +44,7 @@ export function AdminSeatButton({
     <g
       role="button"
       aria-label={label}
-      aria-pressed={status === 'selected'}
+      aria-pressed={status === 'sold' || status === 'pending' ? undefined : status === 'selected'}
       tabIndex={focused ? 0 : -1}
       data-seat-id={seat.id}
       transform={`translate(${seat.x} ${seat.y}) rotate(${seat.angle})`}
@@ -59,6 +59,7 @@ export function AdminSeatButton({
         height={geometry.seatHeight}
         rx={1}
         strokeWidth={1}
+        strokeDasharray={status === 'pending' ? '1.5 1' : undefined}
         className={`${SHAPE_CLASS[status]} transition-colors hover:stroke-accent`}
       />
       {status === 'blocked' ? (
