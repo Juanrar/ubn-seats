@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 const { blockSeats, unblockSeats, cancelOrder, loadOrder } = vi.hoisted(() => ({
@@ -107,6 +107,26 @@ describe('AdminSeatMap', () => {
 
     await userEvent.click(screen.getByRole('button', { name: labelPattern(otherSold.label) }))
     expect(screen.queryByText(/ana@mail.com/)).not.toBeInTheDocument()
-    resolveSecond(null)
+    await act(async () => resolveSecond(null))
+  })
+
+  it('una vendida cuya orden no carga avisa en el panel', async () => {
+    loadOrder.mockResolvedValue(null)
+    renderMap([[soldSeat.id, { status: 'confirmed', orderId: 'o1' }]])
+
+    await userEvent.click(screen.getByRole('button', { name: labelPattern(soldSeat.label) }))
+
+    expect(await screen.findByText(/no se pudo cargar la orden/i)).toBeInTheDocument()
+  })
+
+  it('una acción que falla avisa en el panel', async () => {
+    blockSeats.mockRejectedValue(new Error('x'))
+    renderMap()
+    await userEvent.click(screen.getByRole('button', { name: labelPattern(firstSeat.label) }))
+
+    const boton = await screen.findByRole('button', { name: /bloquear 1 butaca/i })
+    await userEvent.click(boton)
+
+    expect(await screen.findByText(/algo falló/i)).toBeInTheDocument()
   })
 })

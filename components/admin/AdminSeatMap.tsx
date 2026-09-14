@@ -26,9 +26,21 @@ export function AdminSeatMap({ occupancy }: AdminSeatMapProps) {
     setOrder(null)
     if (!map.openOrderId) return
     let cancelled = false
-    loadOrder(map.openOrderId).then((loaded) => {
-      if (!cancelled) setOrder(loaded)
-    })
+    loadOrder(map.openOrderId)
+      .then((loaded) => {
+        if (cancelled) return
+        if (loaded === null) {
+          setMessage('No se pudo cargar la orden. Probá de nuevo.')
+          map.closeOrder()
+          return
+        }
+        setOrder(loaded)
+      })
+      .catch(() => {
+        if (cancelled) return
+        setMessage('No se pudo cargar la orden. Probá de nuevo.')
+        map.closeOrder()
+      })
     return () => {
       cancelled = true
     }
@@ -36,10 +48,14 @@ export function AdminSeatMap({ occupancy }: AdminSeatMapProps) {
 
   const run = (action: () => Promise<{ message: string }>) => {
     startTransition(async () => {
-      const result = await action()
-      setMessage(result.message)
-      map.clear()
-      map.closeOrder()
+      try {
+        const result = await action()
+        setMessage(result.message)
+        map.clear()
+        map.closeOrder()
+      } catch {
+        setMessage('Algo falló. Probá de nuevo.')
+      }
     })
   }
 
