@@ -105,7 +105,7 @@ export async function blockSeats(seatIds: string[]): Promise<AdminActionResult> 
     return {
       ok: true,
       count,
-      message: `Bloqueaste ${count} de ${seatIds.length}: alguna se vendió recién.`,
+      message: `Bloqueaste ${count} de ${seatIds.length}: las demás ya no estaban libres.`,
     }
   }
 
@@ -144,7 +144,12 @@ export async function cancelOrder(orderId: string): Promise<AdminActionResult> {
   const count = Number(data ?? 0)
 
   if (count === 0) {
-    return { ok: true, count, message: 'La orden no se puede cancelar: ya estaba cerrada.' }
+    return {
+      ok: true,
+      count,
+      message:
+        'No se puede cancelar: la orden ya estaba cerrada o todavía está dentro de los 20 minutos para pagar.',
+    }
   }
 
   return { ok: true, count, message: `Cancelaste la orden y liberaste ${seatCount(count)}.` }
