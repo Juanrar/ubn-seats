@@ -109,11 +109,16 @@ set search_path = public
 as $$
 declare
   v_status text;
+  v_created_at timestamptz;
   v_freed integer;
 begin
-  select status into v_status from orders where id = p_order_id for update;
+  select status, created_at into v_status, v_created_at from orders where id = p_order_id for update;
 
   if v_status is null or v_status not in ('pending', 'confirmed') then
+    return 0;
+  end if;
+
+  if v_status = 'pending' and v_created_at > now() - interval '20 minutes' then
     return 0;
   end if;
 
