@@ -1,15 +1,16 @@
 'use client'
 
-import { SeatArc, type SeatArcProps } from '@/components/SeatArc'
+import { SeatArc, type SeatRenderer } from '@/components/SeatArc'
 import { Stage } from '@/components/Stage'
 import type { Venue } from '@/lib/venue'
 
-export interface SeatMapProps extends Omit<SeatArcProps, 'seats' | 'geometry'> {
+export interface SeatMapProps {
   venue: Venue
+  renderSeat: SeatRenderer
   onKeyDown?: (event: React.KeyboardEvent<SVGSVGElement>) => void
 }
 
-export function SeatMap({ venue, onKeyDown, ...arcProps }: SeatMapProps) {
+export function SeatMap({ venue, renderSeat, onKeyDown }: SeatMapProps) {
   return (
     <svg
       role="group"
@@ -24,7 +25,7 @@ export function SeatMap({ venue, onKeyDown, ...arcProps }: SeatMapProps) {
           key={row.row}
           seats={row.seats}
           geometry={venue.plan.geometry}
-          {...arcProps}
+          renderSeat={renderSeat}
         />
       ))}
     </svg>

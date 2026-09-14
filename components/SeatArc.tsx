@@ -1,40 +1,21 @@
 'use client'
 
-import { SeatButton } from '@/components/Seat'
-import type { GeometryPlan, Seat, SeatStatus } from '@/lib/types'
+import { Fragment, type ReactNode } from 'react'
+import type { GeometryPlan, Seat } from '@/lib/types'
+
+export type SeatRenderer = (seat: Seat, geometry: GeometryPlan) => ReactNode
 
 export interface SeatArcProps {
   seats: Seat[]
   geometry: GeometryPlan
-  statusOf: (seat: Seat) => SeatStatus
-  focusedId: string | null
-  onToggle: (seat: Seat) => void
-  onFocus: (id: string) => void
-  revealDelayOf?: (seat: Seat) => number
+  renderSeat: SeatRenderer
 }
 
-export function SeatArc({
-  seats,
-  geometry,
-  statusOf,
-  focusedId,
-  onToggle,
-  onFocus,
-  revealDelayOf = () => 0,
-}: SeatArcProps) {
+export function SeatArc({ seats, geometry, renderSeat }: SeatArcProps) {
   return (
     <g>
       {seats.map((seat) => (
-        <SeatButton
-          key={seat.id}
-          seat={seat}
-          geometry={geometry}
-          status={statusOf(seat)}
-          focused={seat.id === focusedId}
-          onToggle={onToggle}
-          onFocus={onFocus}
-          revealDelayMs={revealDelayOf(seat)}
-        />
+        <Fragment key={seat.id}>{renderSeat(seat, geometry)}</Fragment>
       ))}
     </g>
   )

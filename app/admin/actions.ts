@@ -6,6 +6,8 @@ import { revalidatePath } from 'next/cache'
 import { timingSafeEqual } from 'node:crypto'
 import { ADMIN_COOKIE, SESSION_HOURS, createSessionToken, verifySessionToken } from '@/lib/admin/session'
 import { disconnect } from '@/utils/mercadopago/account'
+import { createServiceClient } from '@/utils/supabase/service'
+import { fetchAdminOrder, type AdminOrder } from '@/utils/admin/orders'
 
 export type SignInState = { error: string | null }
 
@@ -65,4 +67,95 @@ export async function disconnectMercadoPago(): Promise<void> {
 
   await disconnect()
   revalidatePath('/admin')
+}
+
+export interface AdminActionResult {
+  ok: boolean
+  count: number
+  message: string
+}
+
+const NO_SESSION: AdminActionResult = {
+  ok: false,
+  count: 0,
+  message: 'La sesión venció. Volvé a entrar.',
+}
+
+function seatCount(count: number): string {
+  return count === 1 ? '1 butaca' : `${count} butacas`
+}
+
+export async function blockSeats(seatIds: string[]): Promise<AdminActionResult> {
+  if (!(await hasValidSession())) return NO_SESSION
+  if (seatIds.length === 0) {
+    return { ok: false, count: 0, message: 'No hay butacas elegidas.' }
+  }
+
+  const supabase = createServiceClient()
+  const { data, error } = await supabase.rpc('admin_block_seats', { p_seat_ids: seatIds })
+
+  if (error) {
+    return { ok: false, count: 0, message: 'No se pudieron bloquear las butacas.' }
+  }
+
+  revalidatePath('/admin')
+  const count = Number(data ?? 0)
+
+  if (count < seatIds.length) {
+    return {
+      ok: true,
+      count,
+      message: `Bloqueaste ${count} de ${seatIds.length}: las demás ya no estaban libres.`,
+    }
+  }
+
+  return { ok: true, count, message: `Bloqueaste ${seatCount(count)}.` }
+}
+
+export async function unblockSeats(seatIds: string[]): Promise<AdminActionResult> {
+  if (!(await hasValidSession())) return NO_SESSION
+  if (seatIds.length === 0) {
+    return { ok: false, count: 0, message: 'No hay butacas elegidas.' }
+  }
+
+  const supabase = createServiceClient()
+  const { data, error } = await supabase.rpc('admin_unblock_seats', { p_seat_ids: seatIds })
+
+  if (error) {
+    return { ok: false, count: 0, message: 'No se pudieron liberar las butacas.' }
+  }
+
+  revalidatePath('/admin')
+  const count = Number(data ?? 0)
+  return { ok: true, count, message: `Liberaste ${seatCount(count)}.` }
+}
+
+export async function cancelOrder(orderId: string): Promise<AdminActionResult> {
+  if (!(await hasValidSession())) return NO_SESSION
+
+  const supabase = createServiceClient()
+  const { data, error } = await supabase.rpc('admin_cancel_order', { p_order_id: orderId })
+
+  if (error) {
+    return { ok: false, count: 0, message: 'No se pudo cancelar la orden.' }
+  }
+
+  revalidatePath('/admin')
+  const count = Number(data ?? 0)
+
+  if (count === 0) {
+    return {
+      ok: true,
+      count,
+      message:
+        'No se puede cancelar: la orden ya estaba cerrada o todavía está dentro de los 20 minutos para pagar.',
+    }
+  }
+
+  return { ok: true, count, message: `Cancelaste la orden y liberaste ${seatCount(count)}.` }
+}
+
+export async function loadOrder(orderId: string): Promise<AdminOrder | null> {
+  if (!(await hasValidSession())) return null
+  return fetchAdminOrder(createServiceClient(), orderId)
 }

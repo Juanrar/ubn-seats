@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
+import { SeatButton } from '@/components/Seat'
 import { SeatMap } from '@/components/SeatMap'
 import { TEATRO_DEL_GLOBO } from '@/lib/plans/teatro-del-globo'
 import { buildVenue } from '@/lib/venue'
@@ -13,10 +14,16 @@ function renderMap(statusOf: (s: Seat) => SeatStatus = () => 'available') {
   render(
     <SeatMap
       venue={venue}
-      statusOf={statusOf}
-      focusedId={seats[0].id}
-      onToggle={onToggle}
-      onFocus={vi.fn()}
+      renderSeat={(seat, geometry) => (
+        <SeatButton
+          seat={seat}
+          geometry={geometry}
+          status={statusOf(seat)}
+          focused={seat.id === seats[0].id}
+          onToggle={onToggle}
+          onFocus={vi.fn()}
+        />
+      )}
     />,
   )
   return { onToggle }

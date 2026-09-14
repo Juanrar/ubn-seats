@@ -86,7 +86,7 @@ Requisitos del spec, no adornos:
 El pago vive en los bordes: `utils/mercadopago/` (preferencia y consulta de pagos), `app/api/mercadopago/webhook/` (notificaciones), `utils/orders.ts` (lectura del resumen) y `supabase/migrations/0002_orders.sql` (el esquema y las funciones). Tres decisiones que hay que conocer antes de tocar algo:
 
 - **Toda escritura sobre `reservations` y `orders` pasa por las funciones `security definer`.** Las policies de RLS de escritura directa fueron revocadas a propósito: si el cliente pudiera hacer `insert`/`update` por su cuenta, podría reservar butacas sin orden, cambiar el precio o marcarse una orden como `confirmed`. `create_order_with_reservations`, `cancel_own_order` y `set_order_status` son la única puerta, y cada una valida adentro lo que el cliente no puede validar. No agregues una policy de escritura para "arreglar" un `permission denied`: falta un argumento o una función, no una policy.
-- **El hold de 20 minutos está definido en dos lugares y tiene que coincidir**: `HOLD_MINUTES` en `utils/mercadopago/client.ts` (arma el `expiration_date_to` de la preferencia) y tres `interval '20 minutes'` en `0002_orders.sql` (la expiración del lado de la base). No hay forma de derivar uno del otro: el SQL corre sin el bundle de TS y la preferencia se arma sin consultar la base. Si cambia el hold, se cambian los cuatro.
+- **El hold de 20 minutos está definido en cinco lugares y tienen que coincidir**: `HOLD_MINUTES` en `utils/mercadopago/client.ts` (arma el `expiration_date_to` de la preferencia), el `interval '20 minutes'` de `create_order` en `0002_orders.sql`, y los de `active_reservation_seats`, `admin_block_seats` y `admin_cancel_order` en `0005_seat_blocks.sql`. **Ojo**: `0002_orders.sql` también tiene un `interval '20 minutes'` dentro de `active_reservation_seats`, pero esa versión de la función ya no corre — `0005` la reemplaza. Editar ahí no cambia nada. No hay forma de derivar uno del otro: el SQL corre sin el bundle de TS y la preferencia se arma sin consultar la base. Si cambia el hold, se cambian los cinco que sí corren.
 - **El `check` del `seat_id` en `0002_orders.sql` es específico del Teatro del Globo** (`platea-F<fila>-<número>`) y contradice el "otra sala es otro `VenuePlan`, no código nuevo" de arriba. Se aceptó igual porque es la única defensa de la base contra un `seat_id` inventado, y la alternativa —una tabla de butacas poblada desde el `VenuePlan`— es trabajo que todavía no hace falta. Cuando aparezca la segunda sala, ese `check` se reemplaza por esa tabla; no se le agregan sectores a mano.
 - **El `external_reference` de un pago se valida como UUID antes de llegar al RPC.** `set_order_status` recibe un `uuid`, así que una referencia con otra forma —un pago de prueba hecho desde el panel de Mercado Pago, un link reusado de otra integración— haría fallar a Postgres con `22P02` para siempre. Ese caso es un no-op con 200; el 5xx queda reservado para fallas realmente transitorias, que son las que conviene que Mercado Pago reintente.
 
@@ -133,6 +133,44 @@ OAuth porque cuelgan de `/admin/`.
   aplicación, no el del cliente.
 
 Variables: `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`, `MP_CLIENT_ID`, `MP_CLIENT_SECRET`.
+
+## Administración de butacas y órdenes
+
+El mapa de `/admin` bloquea butacas para que no se vendan (invitados, prensa, butacas
+rotas) y cancela órdenes liberando sus butacas. La lógica pura está en
+`lib/admin/seatState.ts`, la máquina de estados en `hooks/useAdminMap.ts`, las lecturas
+en `utils/admin/` y las escrituras son server actions en `app/admin/actions.ts`.
+
+- **Un bloqueo es una fila de `reservations` con `status = 'blocked'`, sin usuario y sin
+  orden.** No es una tabla aparte a propósito: el índice único parcial sobre `seat_id` es
+  lo único que impide la doble venta, y Postgres no puede validar unicidad entre dos
+  tablas. Metiendo `blocked` adentro de ese índice, la base impide bloquear una butaca
+  vendida y vender una bloqueada sin una línea de código. El costo es que `user_id` dejó
+  de ser `not null`; el check `(status = 'blocked') = (user_id is null)` lo compensa.
+- **El selector público no sabe que existen los bloqueos.** `active_reservation_seats()`
+  los devuelve junto con las vendidas, así que una butaca bloqueada se ve igual que una
+  vendida para el que compra. Esa función devuelve `(seat_id, status, order_id)`: la
+  tercera columna es para el panel, el selector la ignora.
+- **El panel no reembolsa.** Cancelar una orden cobrada libera las butacas y muestra el
+  `mp_payment_id` para devolver a mano desde Mercado Pago. Integrar la API de refunds es
+  un módulo nuevo con refunds parciales y fallidos, y un bug ahí se ve en la cuenta del
+  cliente.
+- **Un bloqueo no guarda motivo.** Ni categoría, ni nota, ni quién lo hizo. Cuando exista
+  la lista para la puerta y haya dónde mostrarlo, se agrega con el caso de uso adelante.
+- **La selección del admin no tiene tope.** `MAX_SEATS` es una regla de venta, no de la
+  sala: bloquear la fila de prensa son veinte butacas.
+- **`SeatMap` y `SeatArc` no saben pintar una butaca.** Reciben un `renderSeat` y pintan
+  el encuadre y la geometría. El selector público les pasa `SeatButton`; el panel le pasa
+  `AdminSeatButton`, que tiene cinco estados y donde todas las butacas son clickeables
+  porque una vendida abre su orden. El admin no arma su propio `<svg>`: el `viewBox` sale
+  del Recinto y duplicarlo se desincroniza.
+- **Una orden pendiente no se cancela mientras se puede pagar.** `admin_cancel_order` devuelve `0`
+  para una orden `pending` creada hace menos de 20 minutos. Si se cancelara, un pago que entra
+  después encuentra la orden cerrada y `set_order_status` no lo registra: se cobra y nadie se entera.
+  Pasado el hold, Mercado Pago ya no acepta el pago de esa preferencia y cancelar es seguro.
+- **`active_reservation_seats()` le devuelve a cualquier usuario logueado el `order_id` y el estado
+  `blocked`.** Se aceptó: los `order_id` son UUID sin uso posible desde el cliente (`cancel_own_order`
+  exige ser el dueño), y separar una función para el panel sumaría otro literal del hold.
 
 ## Estilo
 
