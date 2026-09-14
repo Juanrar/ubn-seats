@@ -127,9 +127,21 @@ export function SeatActionPanel({
       ) : null}
 
       {!order && action === 'mixed' ? (
-        <p role="alert" className="text-hand-base text-ink">
-          La selección mezcla butacas libres con bloqueadas. Dejá unas o las otras.
-        </p>
+        <div className="flex flex-col gap-3">
+          <p role="alert" className="text-hand-base text-ink">
+            Esta selección no se puede usar: mezcla libres con bloqueadas o tiene butacas
+            que ya no están disponibles. Deshacé la selección y elegí de nuevo.
+          </p>
+          <div className="flex gap-4">
+            <button
+              type="button"
+              onClick={onClear}
+              className="text-hand-base font-medium text-ink-mute underline"
+            >
+              Deshacer la selección
+            </button>
+          </div>
+        </div>
       ) : null}
 
       {!order && (action === 'block' || action === 'unblock') ? (

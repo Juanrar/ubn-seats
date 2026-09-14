@@ -63,6 +63,12 @@ describe('SeatActionPanel', () => {
     expect(screen.queryByRole('button', { name: /liberar/i })).not.toBeInTheDocument()
   })
 
+  it('con una selección mezclada deshacer la selección llama a onClear', async () => {
+    const { onClear } = setup({ action: 'mixed', selectedCount: 3 })
+    await userEvent.click(screen.getByRole('button', { name: /deshacer la selección/i }))
+    expect(onClear).toHaveBeenCalled()
+  })
+
   it('con una orden abierta muestra comprador, monto y butacas', () => {
     setup({ order: ORDER })
     expect(screen.getByText(/ana@mail.com/)).toBeInTheDocument()
