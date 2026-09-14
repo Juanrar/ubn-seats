@@ -22,7 +22,8 @@ describe('PagoResultadoPage', () => {
     })
     render(jsx)
 
-    expect(screen.getByText('¡Reserva confirmada!')).toBeInTheDocument()
+    expect(screen.getByText('¡Compra confirmada!')).toBeInTheDocument()
+    expect(screen.getByText('Tu pago se acreditó y te enviamos las entradas a tu mail.')).toBeInTheDocument()
     expect(screen.getByText('$ 38.000')).toBeInTheDocument()
   })
 
@@ -47,7 +48,7 @@ describe('PagoResultadoPage', () => {
     })
     render(jsx)
 
-    expect(screen.queryByText('¡Reserva confirmada!')).not.toBeInTheDocument()
+    expect(screen.queryByText('¡Compra confirmada!')).not.toBeInTheDocument()
     expect(screen.getByText('Estamos confirmando tu pago')).toBeInTheDocument()
   })
 
@@ -73,7 +74,7 @@ describe('PagoResultadoPage', () => {
     render(jsx)
 
     expect(screen.getByText('Estamos confirmando tu pago')).toBeInTheDocument()
-    expect(screen.queryByText('¡Reserva confirmada!')).not.toBeInTheDocument()
+    expect(screen.queryByText('¡Compra confirmada!')).not.toBeInTheDocument()
   })
 
   it('con una orden confirmed muestra el heading de éxito', async () => {
@@ -85,7 +86,7 @@ describe('PagoResultadoPage', () => {
     })
     render(jsx)
 
-    expect(screen.getByText('¡Reserva confirmada!')).toBeInTheDocument()
+    expect(screen.getByText('¡Compra confirmada!')).toBeInTheDocument()
   })
 
   it('con una orden paid_without_seats no dice que el pago se está confirmando ni lista butacas', async () => {

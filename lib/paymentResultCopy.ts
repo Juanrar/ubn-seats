@@ -7,8 +7,8 @@ export interface PaymentResultCopy {
 
 const COPY: Record<PaymentResult, PaymentResultCopy> = {
   exito: {
-    heading: '¡Reserva confirmada!',
-    description: 'Tu pago se acreditó y las butacas quedaron a tu nombre.',
+    heading: '¡Compra confirmada!',
+    description: 'Tu pago se acreditó y te enviamos tus entradas a tu mail.',
   },
   pendiente: {
     heading: 'Estamos confirmando tu pago',
