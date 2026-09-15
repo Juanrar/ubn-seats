@@ -60,11 +60,9 @@ export function AdminSeatMap({ occupancy }: AdminSeatMapProps) {
   }
 
   return (
-    <section className="flex flex-col gap-5 border-t border-rule pt-4">
-      <h2 className="text-hand-h2 font-bold">Butacas</h2>
-
-      <div className="-mx-6 overflow-x-auto px-6">
-        <div className="min-w-[560px]">
+    <section className="flex flex-col gap-3">
+      <div className="-mx-4 overflow-x-auto px-4">
+        <div className="min-w-[480px]">
           <SeatMap
             venue={venue}
             onKeyDown={map.onKeyDown}
@@ -82,18 +80,20 @@ export function AdminSeatMap({ occupancy }: AdminSeatMapProps) {
         </div>
       </div>
 
-      <SeatActionPanel
-        action={map.action}
-        selectedCount={map.selectedCount}
-        order={order}
-        message={message}
-        pending={pending}
-        onBlock={() => run(() => blockSeats([...map.selectedIds]))}
-        onUnblock={() => run(() => unblockSeats([...map.selectedIds]))}
-        onClear={map.clear}
-        onCancelOrder={() => run(() => cancelOrder(order!.id))}
-        onCloseOrder={map.closeOrder}
-      />
+      <div className="sticky bottom-[calc(3.5rem+env(safe-area-inset-bottom))] -mx-4 border-t border-rule bg-paper-2 px-4 py-3">
+        <SeatActionPanel
+          action={map.action}
+          selectedCount={map.selectedCount}
+          order={order}
+          message={message}
+          pending={pending}
+          onBlock={() => run(() => blockSeats([...map.selectedIds]))}
+          onUnblock={() => run(() => unblockSeats([...map.selectedIds]))}
+          onClear={map.clear}
+          onCancelOrder={() => run(() => cancelOrder(order!.id))}
+          onCloseOrder={map.closeOrder}
+        />
+      </div>
     </section>
   )
 }
