@@ -67,6 +67,7 @@ export async function disconnectMercadoPago(): Promise<void> {
 
   await disconnect()
   revalidatePath('/admin')
+  revalidatePath('/admin/cuenta')
 }
 
 export interface AdminActionResult {

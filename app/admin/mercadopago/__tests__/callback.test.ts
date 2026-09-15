@@ -36,7 +36,7 @@ beforeEach(() => {
 })
 
 describe('GET /admin/mercadopago/callback', () => {
-  it('vincula la cuenta y vuelve a /admin', async () => {
+  it('vincula la cuenta y vuelve a /admin/cuenta', async () => {
     const state = await validState()
     cookieGet.mockReturnValue({ value: state })
     exchangeCodeForTokens.mockResolvedValue({
@@ -55,7 +55,7 @@ describe('GET /admin/mercadopago/callback', () => {
     )
     expect(saveAccount).toHaveBeenCalledTimes(1)
     expect(response.status).toBe(307)
-    expect(response.headers.get('location')).toBe('https://entradas.test/admin')
+    expect(response.headers.get('location')).toBe('https://entradas.test/admin/cuenta')
   })
 
   it('borra la cookie de state con el mismo path con el que se seteó', async () => {
