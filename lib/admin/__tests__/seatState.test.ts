@@ -4,6 +4,7 @@ import {
   isSelectable,
   orderIdAt,
   selectionAction,
+  summarizeSeats,
   type SeatOccupancy,
 } from '@/lib/admin/seatState'
 
@@ -114,5 +115,27 @@ describe('selectionAction', () => {
   it('una butaca que se vendió mientras estaba elegida invalida la acción', () => {
     const map = occupancy([['platea-F01-01', { status: 'confirmed', orderId: 'o1' }]])
     expect(selectionAction(new Set(['platea-F01-01', 'platea-F01-02']), map)).toBe('mixed')
+  })
+})
+
+describe('summarizeSeats', () => {
+  it('cuenta vendidas, bloqueadas y libres, con las pendientes como vendidas', () => {
+    const occupancy_map = occupancy([
+      ['a', { status: 'confirmed', orderId: 'o1' }],
+      ['b', { status: 'pending', orderId: 'o2' }],
+      ['c', { status: 'blocked', orderId: null }],
+    ])
+    expect(summarizeSeats(['a', 'b', 'c', 'd', 'e'], occupancy_map)).toEqual({
+      sold: 2,
+      blocked: 1,
+      free: 2,
+    })
+  })
+
+  it('ignora reservas de butacas que no están en la sala', () => {
+    const occupancy_map = occupancy([
+      ['fantasma', { status: 'confirmed', orderId: 'o1' }],
+    ])
+    expect(summarizeSeats(['a'], occupancy_map)).toEqual({ sold: 0, blocked: 0, free: 1 })
   })
 })
