@@ -82,6 +82,14 @@ describe('SeatActionPanel', () => {
     expect(region).toHaveAttribute('aria-live', 'polite')
   })
 
+  it('la región de estado sigue en el árbol de accesibilidad sin mensaje', () => {
+    setup({ message: null })
+    const region = screen.getByRole('status')
+    expect(region).toBeInTheDocument()
+    expect(region).not.toHaveAttribute('hidden')
+    expect(region.className).not.toMatch(/empty:hidden/)
+  })
+
   it('mientras hay una acción en curso los botones no se pueden apretar', () => {
     setup({ action: 'block', selectedCount: 2, pending: true })
     expect(screen.getByRole('button', { name: /bloquear 2 butacas/i })).toBeDisabled()

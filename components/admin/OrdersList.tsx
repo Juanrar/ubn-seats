@@ -30,7 +30,11 @@ export function OrdersList({ orders }: { orders: AdminOrder[] }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <div role="status" aria-live="polite" className="text-hand-sm text-ink-mute empty:hidden">
+      <div
+        role="status"
+        aria-live="polite"
+        className="text-hand-sm text-ink-mute empty:absolute empty:h-px empty:w-px empty:overflow-hidden empty:whitespace-nowrap"
+      >
         {message}
       </div>
 

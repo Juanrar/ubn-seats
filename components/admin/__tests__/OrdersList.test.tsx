@@ -66,4 +66,12 @@ describe('OrdersList', () => {
     render(<OrdersList orders={[]} />)
     expect(screen.getByText(/todavía no hay órdenes/i)).toBeInTheDocument()
   })
+
+  it('la región de estado sigue en el árbol de accesibilidad sin mensaje', () => {
+    render(<OrdersList orders={ORDERS} />)
+    const region = screen.getByRole('status')
+    expect(region).toBeInTheDocument()
+    expect(region).not.toHaveAttribute('hidden')
+    expect(region.className).not.toMatch(/empty:hidden/)
+  })
 })

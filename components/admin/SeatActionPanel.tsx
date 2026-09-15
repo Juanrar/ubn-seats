@@ -32,7 +32,11 @@ export function SeatActionPanel({
 }: SeatActionPanelProps) {
   return (
     <section className="flex flex-col gap-3">
-      <div role="status" aria-live="polite" className="text-hand-sm text-ink-mute empty:hidden">
+      <div
+        role="status"
+        aria-live="polite"
+        className="text-hand-sm text-ink-mute empty:absolute empty:h-px empty:w-px empty:overflow-hidden empty:whitespace-nowrap"
+      >
         {message}
       </div>
 
