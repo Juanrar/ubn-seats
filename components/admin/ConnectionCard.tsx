@@ -1,4 +1,5 @@
 import { disconnectMercadoPago } from '@/app/admin/actions'
+import { PRIMARY_BUTTON, SECONDARY_BUTTON } from '@/components/admin/buttons'
 
 export interface ConnectionCardAccount {
   mpUserId: string
@@ -44,10 +45,7 @@ export function ConnectionCard({
             })}
           </p>
           <form action={disconnectMercadoPago}>
-            <button
-              type="submit"
-              className="border border-rule px-4 py-2 text-hand-base font-medium"
-            >
+            <button type="submit" className={SECONDARY_BUTTON}>
               Desconectar cuenta
             </button>
           </form>
@@ -57,10 +55,7 @@ export function ConnectionCard({
           <p className="text-hand-base font-medium">
             No hay ninguna cuenta vinculada, así que la venta está deshabilitada.
           </p>
-          <a
-            href="/admin/mercadopago/start"
-            className="self-start border border-rule px-4 py-2 text-hand-base font-medium"
-          >
+          <a href="/admin/mercadopago/start" className={PRIMARY_BUTTON}>
             Conectar Mercado Pago
           </a>
         </>

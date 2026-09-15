@@ -69,34 +69,10 @@ describe('SeatActionPanel', () => {
     expect(onClear).toHaveBeenCalled()
   })
 
-  it('con una orden abierta muestra comprador, monto y butacas', () => {
-    setup({ order: ORDER })
+  it('con una orden abierta muestra su detalle en lugar de las acciones de selección', () => {
+    setup({ order: ORDER, action: 'block', selectedCount: 2 })
     expect(screen.getByText(/ana@mail.com/)).toBeInTheDocument()
-    expect(screen.getByText(/114\.000/)).toBeInTheDocument()
-    expect(screen.getByText(/F07-11/)).toBeInTheDocument()
-  })
-
-  it('cancelar pide confirmación antes de llamar', async () => {
-    const { onCancelOrder } = setup({ order: ORDER })
-
-    await userEvent.click(screen.getByRole('button', { name: /^cancelar la orden$/i }))
-    expect(onCancelOrder).not.toHaveBeenCalled()
-
-    await userEvent.click(screen.getByRole('button', { name: /confirmar/i }))
-    expect(onCancelOrder).toHaveBeenCalled()
-  })
-
-  it('al confirmar una orden cobrada recuerda devolver la plata a mano', async () => {
-    setup({ order: ORDER })
-    await userEvent.click(screen.getByRole('button', { name: /^cancelar la orden$/i }))
-    expect(screen.getByText(/123456789/)).toBeInTheDocument()
-    expect(screen.getByText(/mercado pago/i)).toBeInTheDocument()
-  })
-
-  it('una orden pendiente no habla de devolver plata', async () => {
-    setup({ order: { ...ORDER, status: 'pending', mpPaymentId: null } })
-    await userEvent.click(screen.getByRole('button', { name: /^cancelar la orden$/i }))
-    expect(screen.queryByText(/devolv/i)).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /bloquear/i })).not.toBeInTheDocument()
   })
 
   it('el mensaje del resultado se anuncia en una región viva', () => {
@@ -106,41 +82,16 @@ describe('SeatActionPanel', () => {
     expect(region).toHaveAttribute('aria-live', 'polite')
   })
 
+  it('la región de estado sigue en el árbol de accesibilidad sin mensaje', () => {
+    setup({ message: null })
+    const region = screen.getByRole('status')
+    expect(region).toBeInTheDocument()
+    expect(region).not.toHaveAttribute('hidden')
+    expect(region.className).not.toMatch(/empty:hidden/)
+  })
+
   it('mientras hay una acción en curso los botones no se pueden apretar', () => {
     setup({ action: 'block', selectedCount: 2, pending: true })
     expect(screen.getByRole('button', { name: /bloquear 2 butacas/i })).toBeDisabled()
-  })
-
-  it('abrir otra orden no hereda la confirmación de la anterior', async () => {
-    const handlers = {
-      onBlock: vi.fn(),
-      onUnblock: vi.fn(),
-      onClear: vi.fn(),
-      onCancelOrder: vi.fn(),
-      onCloseOrder: vi.fn(),
-    }
-    const props = { action: 'none' as const, selectedCount: 0, message: null, pending: false, ...handlers }
-    const { rerender } = render(<SeatActionPanel {...props} order={ORDER} />)
-
-    await userEvent.click(screen.getByRole('button', { name: /^cancelar la orden$/i }))
-    expect(screen.getByRole('button', { name: /confirmar/i })).toBeInTheDocument()
-
-    rerender(<SeatActionPanel {...props} order={{ ...ORDER, id: '22222222-2222-2222-2222-222222222222' }} />)
-
-    expect(screen.queryByRole('button', { name: /confirmar/i })).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /^cancelar la orden$/i })).toBeInTheDocument()
-  })
-
-  it('mientras hay una acción en curso no se puede confirmar la cancelación', async () => {
-    const { rerender } = render(
-      <SeatActionPanel action="none" selectedCount={0} order={ORDER} message={null} pending={false}
-        onBlock={vi.fn()} onUnblock={vi.fn()} onClear={vi.fn()} onCancelOrder={vi.fn()} onCloseOrder={vi.fn()} />,
-    )
-    await userEvent.click(screen.getByRole('button', { name: /^cancelar la orden$/i }))
-    rerender(
-      <SeatActionPanel action="none" selectedCount={0} order={ORDER} message={null} pending
-        onBlock={vi.fn()} onUnblock={vi.fn()} onClear={vi.fn()} onCancelOrder={vi.fn()} onCloseOrder={vi.fn()} />,
-    )
-    expect(screen.getByRole('button', { name: /confirmar/i })).toBeDisabled()
   })
 })

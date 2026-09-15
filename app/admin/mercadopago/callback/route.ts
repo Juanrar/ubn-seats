@@ -5,8 +5,8 @@ import { exchangeCodeForTokens } from '@/utils/mercadopago/oauth'
 import { saveAccount } from '@/utils/mercadopago/account'
 import { OAUTH_STATE_COOKIE, verifySessionToken } from '@/lib/admin/session'
 
-function backToAdmin(error?: string): NextResponse {
-  const url = new URL('/admin', process.env.SITE_URL!)
+function backToAccount(error?: string): NextResponse {
+  const url = new URL('/admin/cuenta', process.env.SITE_URL!)
   if (error) url.searchParams.set('error', error)
   return NextResponse.redirect(url)
 }
@@ -26,21 +26,21 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   store.delete({ name: OAUTH_STATE_COOKIE, path: '/admin' })
 
   if (!secret) {
-    return backToAdmin('state')
+    return backToAccount('state')
   }
   if (!expected || !received || !statesMatch(expected, received)) {
-    return backToAdmin('state')
+    return backToAccount('state')
   }
   if (!(await verifySessionToken(secret, 'oauth', received, Date.now()))) {
-    return backToAdmin('state')
+    return backToAccount('state')
   }
   if (request.nextUrl.searchParams.get('error')) {
-    return backToAdmin('denied')
+    return backToAccount('denied')
   }
 
   const code = request.nextUrl.searchParams.get('code')
   if (!code) {
-    return backToAdmin('exchange')
+    return backToAccount('exchange')
   }
 
   try {
@@ -50,8 +50,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     )
     await saveAccount(account)
   } catch {
-    return backToAdmin('exchange')
+    return backToAccount('exchange')
   }
 
-  return backToAdmin()
+  return backToAccount()
 }

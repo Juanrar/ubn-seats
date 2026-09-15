@@ -67,6 +67,7 @@ export async function disconnectMercadoPago(): Promise<void> {
 
   await disconnect()
   revalidatePath('/admin')
+  revalidatePath('/admin/cuenta')
 }
 
 export interface AdminActionResult {
@@ -141,6 +142,7 @@ export async function cancelOrder(orderId: string): Promise<AdminActionResult> {
   }
 
   revalidatePath('/admin')
+  revalidatePath('/admin/ordenes')
   const count = Number(data ?? 0)
 
   if (count === 0) {

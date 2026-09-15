@@ -50,3 +50,23 @@ export function selectionAction(
   if (free > 0 && blocked > 0) return 'mixed'
   return blocked > 0 ? 'unblock' : 'block'
 }
+
+export interface SeatSummary {
+  sold: number
+  blocked: number
+  free: number
+}
+
+export function summarizeSeats(
+  seatIds: string[],
+  occupancy: Map<string, SeatOccupancy>,
+): SeatSummary {
+  const summary: SeatSummary = { sold: 0, blocked: 0, free: 0 }
+  for (const id of seatIds) {
+    const status = occupancy.get(id)?.status
+    if (status === 'blocked') summary.blocked += 1
+    else if (status) summary.sold += 1
+    else summary.free += 1
+  }
+  return summary
+}
