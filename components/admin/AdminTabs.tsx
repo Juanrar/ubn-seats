@@ -25,7 +25,7 @@ export function AdminTabs() {
               <Link
                 href={tab.href}
                 aria-current={active ? 'page' : undefined}
-                className={`-mt-px flex min-h-12 items-center justify-center border-t-2 text-hand-base ${
+                className={`-mt-px flex h-14 items-center justify-center border-t-2 text-hand-base ${
                   active ? 'border-ink font-bold text-ink' : 'border-transparent font-medium text-ink-mute'
                 }`}
               >
