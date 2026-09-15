@@ -142,6 +142,7 @@ export async function cancelOrder(orderId: string): Promise<AdminActionResult> {
   }
 
   revalidatePath('/admin')
+  revalidatePath('/admin/ordenes')
   const count = Number(data ?? 0)
 
   if (count === 0) {
