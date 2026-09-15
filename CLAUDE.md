@@ -171,6 +171,13 @@ en `utils/admin/` y las escrituras son server actions en `app/admin/actions.ts`.
 - **`active_reservation_seats()` le devuelve a cualquier usuario logueado el `order_id` y el estado
   `blocked`.** Se aceptó: los `order_id` son UUID sin uso posible desde el cliente (`cancel_own_order`
   exige ser el dueño), y separar una función para el panel sumaría otro literal del hold.
+- **El panel son tres pestañas y cada una es una ruta** del route group `app/admin/(panel)/`:
+  Butacas (`/admin`), Órdenes (`/admin/ordenes`) y Cuenta (`/admin/cuenta`). `/admin/login`
+  queda fuera del grupo para no mostrar la barra, y `middleware.ts` no cambia porque las URLs
+  no cambian. El callback de OAuth vuelve a `/admin/cuenta`.
+- **La lista de órdenes trae las últimas 200 y filtra por mail en el cliente.** Los mails
+  viven en `auth.users`, así que `fetchAdminOrders` los lee con `auth.admin.listUsers` y los
+  cruza por `user_id`. Si esa lectura falla, las órdenes se muestran igual, sin mail.
 
 ## Estilo
 
