@@ -41,6 +41,6 @@ describe('GET /admin/mercadopago/start', () => {
 
     expect(cookieSet).not.toHaveBeenCalled()
     const location = response.headers.get('location')!
-    expect(location).toBe('https://entradas.test/admin?error=config')
+    expect(location).toBe('https://entradas.test/admin/cuenta?error=config')
   })
 })

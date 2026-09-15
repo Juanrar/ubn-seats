@@ -10,7 +10,7 @@ export async function GET() {
   const origin = process.env.SITE_URL!
 
   if (!secret) {
-    return NextResponse.redirect(new URL('/admin?error=config', origin))
+    return NextResponse.redirect(new URL('/admin/cuenta?error=config', origin))
   }
 
   const state = await createSessionToken(secret, 'oauth', Date.now() + STATE_MS)
