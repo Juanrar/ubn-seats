@@ -31,6 +31,8 @@ describe('GET /api/entradas/[orderId]', () => {
 
     const response = await GET(new Request('http://localhost'), params('o1'))
     expect(response.status).toBe(401)
+    expect(fetchOwnPaidOrder).not.toHaveBeenCalled()
+    expect(readTicketAttachment).not.toHaveBeenCalled()
   })
 
   it('devuelve 404 si la orden no es del usuario o no está pagada', async () => {
