@@ -72,7 +72,7 @@ export function TicketCard({ ticket }: TicketCardProps) {
       </ul>
 
       <div className="mt-4 flex flex-wrap items-baseline justify-between gap-3 border-t border-rule pt-3">
-        <span className="font-mono text-hand-xs text-accent">{ticket.total}</span>
+        <span className="font-mono text-hand-base text-accent">{ticket.total}</span>
         <div className="flex flex-wrap items-baseline gap-4">
           <a
             href={`/api/entradas/${ticket.orderId}`}
