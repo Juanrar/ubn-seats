@@ -14,8 +14,12 @@ export async function resendTicket(orderId: string): Promise<ResendResult> {
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (!user?.email) {
+  if (!user) {
     return { ok: false, message: 'Iniciá sesión para ver tus entradas.' }
+  }
+
+  if (!user.email) {
+    return { ok: false, message: 'Tu cuenta no tiene un mail donde enviarla.' }
   }
 
   const order = await fetchOwnPaidOrder(supabase, orderId)
