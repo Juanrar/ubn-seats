@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { SHOW } from '@/lib/show'
 import { resendTicket } from '@/app/mis-entradas/actions'
 import type { TicketView } from '@/lib/tickets/myTicketsView'
@@ -21,6 +21,15 @@ export function TicketCard({ ticket }: TicketCardProps) {
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
   const [message, setMessage] = useState('')
+  const resetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (resetTimeoutRef.current) {
+        clearTimeout(resetTimeoutRef.current)
+      }
+    }
+  }, [])
 
   async function handleResend() {
     setSending(true)
@@ -31,7 +40,7 @@ export function TicketCard({ ticket }: TicketCardProps) {
     if (result.ok) {
       setSent(true)
       setMessage('Listo, te lo enviamos por mail.')
-      setTimeout(() => setSent(false), RESEND_COOLDOWN_MS)
+      resetTimeoutRef.current = setTimeout(() => setSent(false), RESEND_COOLDOWN_MS)
       return
     }
 
