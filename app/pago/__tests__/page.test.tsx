@@ -23,7 +23,7 @@ describe('PagoResultadoPage', () => {
     render(jsx)
 
     expect(screen.getByText('¡Compra confirmada!')).toBeInTheDocument()
-    expect(screen.getByText('Tu pago se acreditó y te enviamos las entradas a tu mail.')).toBeInTheDocument()
+    expect(screen.getByText('Tu pago se acreditó y te enviamos tus entradas a tu mail.')).toBeInTheDocument()
     expect(screen.getByText('$ 38.000')).toBeInTheDocument()
   })
 
