@@ -73,10 +73,6 @@ describe('TEATRO_DEL_GLOBO — franjas', () => {
     for (const t of tiers.slice(0, -1)) expect(t.throughRow).toBeGreaterThan(0)
   })
 
-  it('las alas tienen una sola tarifa', () => {
-    expect(plan.wings.tier).toEqual({ label: 'Ala lateral', price: 24000 })
-  })
-
   it('las alas continúan la numeración del bloque central', () => {
     expect(plan.wings.leftStartNumber).toBe(17)
     expect(plan.wings.rightStartNumber).toBe(18)

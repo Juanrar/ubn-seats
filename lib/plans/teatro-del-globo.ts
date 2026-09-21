@@ -46,7 +46,7 @@ export const TEATRO_DEL_GLOBO: VenuePlan = {
     rightSector: 'platea-ala-der',
     leftStartNumber: 17,
     rightStartNumber: 18,
-    tier: { label: 'Ala lateral', price: 24000 },
+    tier: { label: 'Ala lateral', price: 1 },
   },
   framePadding: 24,
 }

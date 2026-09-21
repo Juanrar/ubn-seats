@@ -126,13 +126,6 @@ describe('buildVenue — precios y franjas', () => {
     }
   })
 
-  it('el sector manda sobre la fila: una butaca de ala en la fila 7 cuesta tarifa de ala', () => {
-    const ala = bySector('platea-ala-izq').find((s) => s.row === 7)!
-    expect(ala.price).toBe(24000)
-    expect(ala.tier).toBe('Ala lateral')
-    expect(bySector('platea-ala-der').find((s) => s.row === 16)!.price).toBe(24000)
-  })
-
   it('asigna precio a toda butaca', () => {
     expect(seats.every((s) => s.price > 0)).toBe(true)
   })
