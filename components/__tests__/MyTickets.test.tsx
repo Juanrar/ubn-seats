@@ -25,6 +25,12 @@ describe('MyTickets', () => {
     expect(screen.getAllByRole('article')).toHaveLength(2)
   })
 
+  it('con entradas, ofrece volver al mapa', () => {
+    render(<MyTickets tickets={[TICKET]} />)
+
+    expect(screen.getByRole('link', { name: /volver al mapa/i })).toHaveAttribute('href', '/')
+  })
+
   it('tiene el título de la página', () => {
     render(<MyTickets tickets={[]} />)
 
