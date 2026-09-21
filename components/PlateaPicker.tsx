@@ -15,14 +15,15 @@ import { buildVenue } from '@/lib/venue'
 
 export interface PlateaPickerProps {
   occupied: Set<string>
+  owned?: ReadonlySet<string>
   email: string
   avatarUrl: string | null
 }
 
-export function PlateaPicker({ occupied, email, avatarUrl }: PlateaPickerProps) {
+export function PlateaPicker({ occupied, owned, email, avatarUrl }: PlateaPickerProps) {
   const venue = useMemo(() => buildVenue(TEATRO_DEL_GLOBO), [])
   const revealDelays = useMemo(() => buildRevealDelays(venue.seats, venue.stage), [venue])
-  const picker = useSeatPicker(venue, occupied)
+  const picker = useSeatPicker(venue, occupied, owned)
   const reservation = useReservation()
 
   return (
@@ -61,6 +62,9 @@ export function PlateaPicker({ occupied, email, avatarUrl }: PlateaPickerProps) 
             </div>
           </div>
           <Legend geometry={venue.plan.geometry} />
+          {owned && owned.size > 0 && (
+            <p className="text-hand-base">Ya tenés {owned.size} entradas para esta función.</p>
+          )}
           <p className="text-hand-base text-ink-mute">
             Sector {venue.plan.sectionName} · elegí tocando una butaca; deslizá para ver toda la
             sala

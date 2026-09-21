@@ -24,7 +24,13 @@ export interface SeatPicker {
   onKeyDown: (event: React.KeyboardEvent<SVGSVGElement>) => void
 }
 
-export function useSeatPicker(venue: Venue, occupied: Set<string>): SeatPicker {
+const NO_OWNED_SEATS: ReadonlySet<string> = new Set()
+
+export function useSeatPicker(
+  venue: Venue,
+  occupied: Set<string>,
+  owned: ReadonlySet<string> = NO_OWNED_SEATS,
+): SeatPicker {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set())
   const [focusedId, setFocusedId] = useState<string>(() => venue.seats[0].id)
   const pendingFocus = useRef<string | null>(null)
@@ -40,7 +46,7 @@ export function useSeatPicker(venue: Venue, occupied: Set<string>): SeatPicker {
 
   const toggle = useCallback(
     (seat: Seat) => {
-      if (occupied.has(seat.id)) return
+      if (occupied.has(seat.id) || owned.has(seat.id)) return
       setSelectedIds((prev) => {
         const next = new Set(prev)
         if (next.has(seat.id)) {
@@ -52,17 +58,18 @@ export function useSeatPicker(venue: Venue, occupied: Set<string>): SeatPicker {
         return next
       })
     },
-    [occupied, venue],
+    [occupied, owned, venue],
   )
 
   const clear = useCallback(() => setSelectedIds(new Set()), [])
 
   const statusOf = useCallback(
     (seat: Seat): SeatStatus => {
+      if (owned.has(seat.id)) return 'owned'
       if (occupied.has(seat.id)) return 'occupied'
       return selectedIds.has(seat.id) ? 'selected' : 'available'
     },
-    [occupied, selectedIds],
+    [occupied, owned, selectedIds],
   )
 
   const onKeyDown = useCallback(

@@ -70,4 +70,12 @@ describe('SeatButton', () => {
     expect(screen.getByRole('button')).toHaveAttribute('tabindex', '0')
   })
 
+  it('avisa cuando la butaca ya es del usuario y la deshabilita', async () => {
+    const { onToggle } = renderSeat({ status: 'owned' })
+    const boton = screen.getByRole('button')
+    expect(boton).toHaveAccessibleName(/ya es tuya/i)
+    expect(boton).toHaveAttribute('aria-disabled', 'true')
+    await userEvent.click(boton)
+    expect(onToggle).not.toHaveBeenCalled()
+  })
 })

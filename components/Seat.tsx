@@ -7,11 +7,13 @@ const STATUS_TEXT: Record<SeatStatus, string> = {
   available: 'disponible',
   selected: 'seleccionada',
   occupied: 'ocupada',
+  owned: 'ya es tuya',
 }
 
 function shapeClass(status: SeatStatus): string {
   if (status === 'occupied') return 'fill-rule-soft stroke-none'
   if (status === 'selected') return 'fill-accent stroke-accent'
+  if (status === 'owned') return 'fill-ink stroke-ink'
   return 'fill-transparent stroke-ink-mute'
 }
 
@@ -24,14 +26,27 @@ export interface SeatShapeProps {
 
 export function SeatShape({ status, width, height, className = '' }: SeatShapeProps) {
   return (
-    <rect
-      x={-width / 2}
-      y={-height / 2}
-      width={width}
-      height={height}
-      rx={1}
-      strokeWidth={1}
-      className={`${shapeClass(status)} ${className}`}
+    <>
+      <rect
+        x={-width / 2}
+        y={-height / 2}
+        width={width}
+        height={height}
+        rx={1}
+        strokeWidth={1}
+        className={`${shapeClass(status)} ${className}`}
+      />
+      {status === 'owned' && <OwnedMark width={width} height={height} />}
+    </>
+  )
+}
+
+function OwnedMark({ width, height }: { width: number; height: number }) {
+  return (
+    <path
+      d={`M ${-width / 4} 0 L ${-width / 12} ${height / 4} L ${width / 4} ${-height / 4}`}
+      strokeWidth={1.2}
+      className="fill-none stroke-paper-bg"
     />
   )
 }
@@ -55,7 +70,7 @@ export function SeatButton({
   onFocus,
   revealDelayMs = 0,
 }: SeatButtonProps) {
-  const occupied = status === 'occupied'
+  const occupied = status === 'occupied' || status === 'owned'
   const label = `${seat.label}, ${formatPrice(seat.price)} pesos, ${STATUS_TEXT[status]}`
 
   return (

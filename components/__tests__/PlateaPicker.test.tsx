@@ -157,4 +157,23 @@ describe('PlateaPicker', () => {
     const resumen = screen.getByRole('region', { name: /tu selección/i })
     expect(within(resumen).getByText(new RegExp(`Fila ${seat.row}`))).toBeInTheDocument()
   })
+
+  it('muestra cuántas entradas ya tiene el usuario y las marca como suyas', () => {
+    const propias = seats.filter((s) => occupied.has(s.id)).slice(0, 2)
+    render(
+      <PlateaPicker
+        occupied={occupied}
+        owned={new Set(propias.map((s) => s.id))}
+        email="juanchilorenzo@gmail.com"
+        avatarUrl={null}
+      />,
+    )
+    expect(screen.getByText('Ya tenés 2 entradas para esta función.')).toBeInTheDocument()
+    expect(botonDe(propias[0].id)).toHaveAccessibleName(/ya es tuya/i)
+  })
+
+  it('sin entradas propias no muestra el aviso', () => {
+    renderPicker()
+    expect(screen.queryByText(/Ya tenés/)).not.toBeInTheDocument()
+  })
 })

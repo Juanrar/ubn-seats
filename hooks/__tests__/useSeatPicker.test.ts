@@ -13,8 +13,8 @@ const ocupada = seats.find((s) => s.sector === 'platea' && s.row === 3)!
 const pick = (row: number, number: number) =>
   seats.find((s) => s.sector === 'platea' && s.row === row && s.number === number)!
 
-const picker = (occupied: Set<string> = new Set()) =>
-  renderHook(() => useSeatPicker(venue, occupied))
+const picker = (occupied: Set<string> = new Set(), owned: Set<string> = new Set()) =>
+  renderHook(() => useSeatPicker(venue, occupied, owned))
 
 const key = (k: string) =>
   ({ key: k, preventDefault: () => {} }) as React.KeyboardEvent<SVGSVGElement>
@@ -104,6 +104,17 @@ describe('useSeatPicker — estado de plaza', () => {
     expect(result.current.statusOf(ocupada)).toBe('occupied')
     act(() => result.current.toggle(libres[0]))
     expect(result.current.statusOf(libres[0])).toBe('selected')
+  })
+
+  it('marca como owned las butacas que el usuario ya compró', () => {
+    const { result } = picker(new Set([ocupada.id]), new Set([ocupada.id]))
+    expect(result.current.statusOf(ocupada)).toBe('owned')
+  })
+
+  it('no deja seleccionar una butaca propia', () => {
+    const { result } = picker(new Set([ocupada.id]), new Set([ocupada.id]))
+    act(() => result.current.toggle(ocupada))
+    expect(result.current.selectedSeats).toHaveLength(0)
   })
 })
 

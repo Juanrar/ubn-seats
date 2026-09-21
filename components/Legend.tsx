@@ -4,6 +4,7 @@ import type { GeometryPlan, SeatStatus } from '@/lib/types'
 const ITEMS: { status: SeatStatus; label: string }[] = [
   { status: 'available', label: 'Disponible' },
   { status: 'selected', label: 'Seleccionada' },
+  { status: 'owned', label: 'Tuyas' },
   { status: 'occupied', label: 'Ocupada' },
 ]
 

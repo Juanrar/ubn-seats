@@ -3,7 +3,7 @@ export type SectorId =
   | 'platea-ala-izq'
   | 'platea-ala-der'
 
-export type SeatStatus = 'available' | 'occupied' | 'selected'
+export type SeatStatus = 'available' | 'occupied' | 'selected' | 'owned'
 
 export interface Seat {
   id: string
