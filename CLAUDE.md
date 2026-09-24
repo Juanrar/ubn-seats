@@ -157,6 +157,11 @@ en `utils/admin/` y las escrituras son server actions en `app/admin/actions.ts`.
   cliente.
 - **Un bloqueo no guarda motivo.** Ni categoría, ni nota, ni quién lo hizo. Cuando exista
   la lista para la puerta y haya dónde mostrarlo, se agrega con el caso de uso adelante.
+- **Desbloquear borra la fila.** `admin_unblock_seats` hace `delete`, no `update ... set
+  status = 'cancelled'`: el check `(status = 'blocked') = (user_id is null)` no admite una
+  fila cancelada sin usuario, y un bloqueo sin motivo no deja historial que valga la pena
+  guardar. La versión de `0005_seat_blocks.sql` quedó reemplazada por la de
+  `0007_unblock_deletes_block.sql`.
 - **La selección del admin no tiene tope.** `MAX_SEATS` es una regla de venta, no de la
   sala: bloquear la fila de prensa son veinte butacas.
 - **`SeatMap` y `SeatArc` no saben pintar una butaca.** Reciben un `renderSeat` y pintan
