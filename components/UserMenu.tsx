@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { createClient } from '@/utils/supabase/client'
 
@@ -72,6 +73,14 @@ export function UserMenu({ email, avatarUrl }: UserMenuProps) {
           className="absolute right-0 top-10 z-10 flex w-56 flex-col gap-3 rounded-sm border border-rule bg-paper p-3 text-hand-sm"
         >
           <p className="truncate text-ink-mute">{email}</p>
+          <Link
+            href="/mis-entradas"
+            role="menuitem"
+            onClick={() => setOpen(false)}
+            className="border-t border-rule pt-3 text-left text-ink hover:text-accent"
+          >
+            Mis entradas
+          </Link>
           <button
             type="button"
             role="menuitem"

@@ -75,6 +75,18 @@ describe('UserMenu', () => {
     expect(posicion(logout)).toBeLessThan(posicion(tema))
   })
 
+  it('ofrece un acceso a Mis entradas', async () => {
+    const user = userEvent.setup()
+    render(<UserMenu email="juanchilorenzo@gmail.com" avatarUrl={null} />)
+
+    await user.click(screen.getByRole('button', { name: /menú de usuario/i }))
+
+    expect(screen.getByRole('menuitem', { name: 'Mis entradas' })).toHaveAttribute(
+      'href',
+      '/mis-entradas',
+    )
+  })
+
   it('cerrar sesión llama a signOut y refresca', async () => {
     render(<UserMenu email="juanchilorenzo@gmail.com" avatarUrl={null} />)
     await userEvent.click(screen.getByRole('button', { name: /menú de usuario/i }))
