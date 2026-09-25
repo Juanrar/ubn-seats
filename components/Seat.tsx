@@ -46,7 +46,7 @@ function OwnedMark({ width, height }: { width: number; height: number }) {
     <path
       d={`M ${-width / 4} 0 L ${-width / 12} ${height / 4} L ${width / 4} ${-height / 4}`}
       strokeWidth={1.2}
-      className="fill-none stroke-paper-bg"
+      className="fill-none stroke-paper"
     />
   )
 }

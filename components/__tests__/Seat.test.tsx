@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -7,6 +9,18 @@ import { buildVenue } from '@/lib/venue'
 
 const seats = buildVenue(TEATRO_DEL_GLOBO).seats
 const butaca = seats.find((s) => s.sector === 'platea' && s.row === 7 && s.number === 12)!
+
+const DECLARED_COLORS = [
+  ...readFileSync(resolve(process.cwd(), 'app/globals.css'), 'utf8').matchAll(/--color-([\w-]+):/g),
+].map((match) => match[1])
+
+function strokeToken(element: Element): string | undefined {
+  return element
+    .getAttribute('class')
+    ?.split(/\s+/)
+    .find((name) => name.startsWith('stroke-'))
+    ?.slice('stroke-'.length)
+}
 
 function renderSeat(props: Partial<Parameters<typeof SeatButton>[0]> = {}) {
   const onToggle = vi.fn()
@@ -77,5 +91,12 @@ describe('SeatButton', () => {
     expect(boton).toHaveAttribute('aria-disabled', 'true')
     await userEvent.click(boton)
     expect(onToggle).not.toHaveBeenCalled()
+  })
+
+  it('dibuja la tilde de la butaca propia con un color que el tema declara', () => {
+    renderSeat({ status: 'owned' })
+    const tilde = document.querySelector('[data-seat-id] path')
+    expect(tilde).not.toBeNull()
+    expect(DECLARED_COLORS).toContain(strokeToken(tilde!))
   })
 })
