@@ -37,7 +37,7 @@ El diseño y el plan originales viven en `docs/superpowers/` (untracked). El spe
 La forma del sistema es una **pipeline determinista y pura** en `lib/`, consumida por un árbol de React que sólo pinta:
 
 ```
-plans/teatro-del-globo.ts   ─►  venue/  buildVenue(plan) ─► Venue ─┬─► app/page.tsx (sesión + fetchOccupiedSeatIds) ─► occupied: Set<id>
+plans/teatro-del-globo.ts   ─►  venue/  buildVenue(plan) ─► Venue ─┬─► app/funciones/[performanceId]/page.tsx (sesión + fetchOccupiedSeatIds de la función) ─► occupied: Set<id>
         (VenuePlan: dato)           (numbering + pricing           │
                                      + geometry + catalog          ├─► useSeatPicker(venue, occupied) ─► SeatPicker
                                      + labels, detrás del seam)    │        (usa navigation.ts nextSeatId)
@@ -86,8 +86,8 @@ Requisitos del spec, no adornos:
 El pago vive en los bordes: `utils/mercadopago/` (preferencia y consulta de pagos), `app/api/mercadopago/webhook/` (notificaciones), `utils/orders.ts` (lectura del resumen) y `supabase/migrations/0002_orders.sql` (el esquema y las funciones). Tres decisiones que hay que conocer antes de tocar algo:
 
 - **Toda escritura sobre `reservations` y `orders` pasa por las funciones `security definer`.** Las policies de RLS de escritura directa fueron revocadas a propósito: si el cliente pudiera hacer `insert`/`update` por su cuenta, podría reservar butacas sin orden, cambiar el precio o marcarse una orden como `confirmed`. `create_order_with_reservations`, `cancel_own_order` y `set_order_status` son la única puerta, y cada una valida adentro lo que el cliente no puede validar. No agregues una policy de escritura para "arreglar" un `permission denied`: falta un argumento o una función, no una policy.
-- **El hold de 20 minutos está definido en cinco lugares y tienen que coincidir**: `HOLD_MINUTES` en `utils/mercadopago/client.ts` (arma el `expiration_date_to` de la preferencia), los de `create_order` y `admin_block_seats` en `0006_seat_id_wings.sql`, y los de `active_reservation_seats` y `admin_cancel_order` en `0005_seat_blocks.sql`. **Ojo**: hay copias viejas que ya no corren. `0002_orders.sql` tiene `create_order` y `active_reservation_seats`, y `0005_seat_blocks.sql` tiene `admin_block_seats`, pero las reemplazan migraciones posteriores. Editar ahí no cambia nada. No hay forma de derivar uno del otro: el SQL corre sin el bundle de TS y la preferencia se arma sin consultar la base. Si cambia el hold, se cambian los cinco que sí corren.
-- **El `check` del `seat_id` es específico del Teatro del Globo** (`<sector>-F<fila>-<número>`, donde el sector puede llevar guiones, como `platea-ala-izq`; vive en `create_order` y `admin_block_seats` de `0006_seat_id_wings.sql`) y contradice el "otra sala es otro `VenuePlan`, no código nuevo" de arriba. Se aceptó igual porque es la única defensa de la base contra un `seat_id` inventado, y la alternativa —una tabla de butacas poblada desde el `VenuePlan`— es trabajo que todavía no hace falta. Cuando aparezca la segunda sala, ese `check` se reemplaza por esa tabla; no se le agregan sectores a mano.
+- **El hold de 20 minutos está definido en cinco lugares y tienen que coincidir**: `HOLD_MINUTES` en `utils/mercadopago/client.ts` (arma el `expiration_date_to` de la preferencia), los de `create_order`, `admin_block_seats` y `active_reservation_seats` en `0008_performances.sql`, y el de `admin_cancel_order` en `0005_seat_blocks.sql`. **Ojo**: hay copias viejas que ya no corren. `0002_orders.sql` tiene `create_order` y `active_reservation_seats`, `0005_seat_blocks.sql` tiene `admin_block_seats` y `active_reservation_seats`, y `0006_seat_id_wings.sql` tiene `create_order` y `admin_block_seats`, pero las reemplazan migraciones posteriores. Editar ahí no cambia nada. No hay forma de derivar uno del otro: el SQL corre sin el bundle de TS y la preferencia se arma sin consultar la base. Si cambia el hold, se cambian los cinco que sí corren.
+- **El `check` del `seat_id` es específico del Teatro del Globo** (`<sector>-F<fila>-<número>`, donde el sector puede llevar guiones, como `platea-ala-izq`; vive en `create_order` y `admin_block_seats` de `0008_performances.sql`) y contradice el "otra sala es otro `VenuePlan`, no código nuevo" de arriba. Se aceptó igual porque es la única defensa de la base contra un `seat_id` inventado, y la alternativa —una tabla de butacas poblada desde el `VenuePlan`— es trabajo que todavía no hace falta. Cuando aparezca la segunda sala, ese `check` se reemplaza por esa tabla; no se le agregan sectores a mano.
 - **El `external_reference` de un pago se valida como UUID antes de llegar al RPC.** `set_order_status` recibe un `uuid`, así que una referencia con otra forma —un pago de prueba hecho desde el panel de Mercado Pago, un link reusado de otra integración— haría fallar a Postgres con `22P02` para siempre. Ese caso es un no-op con 200; el 5xx queda reservado para fallas realmente transitorias, que son las que conviene que Mercado Pago reintente.
 
 ## Envío de la entrada por mail
@@ -97,8 +97,21 @@ Cuando Mercado Pago aprueba un pago, el webhook manda un mail al comprador con l
 - **La entrega se reclama antes de mandar.** Mercado Pago reintenta las notificaciones y `set_order_status` es idempotente, pero el mail no: sin reclamo llegan dos. `claim_ticket_delivery` hace `update ... set ticket_sent_at = now() where ticket_sent_at is null and status = 'confirmed'` y devuelve si ganó la carrera; sólo el que gana manda. Si el envío falla, `release_ticket_delivery` devuelve la orden a la cola.
 - **Un mail que falla nunca devuelve 5xx.** El webhook responde 200 igual: el 5xx le dice a Mercado Pago que reintente *el cobro*, no el correo. La orden queda con `ticket_sent_at` en `null` y se puede reenviar.
 - **El adjunto es dato, no lógica.** Hoy es la imagen de `public/tickets/entrada.png`; cuando sea un PDF cambia sólo lo que produce el `EmailAttachment`. `sendTicketEmail` recibe `{ name, contentBase64 }` y no sabe de formatos. El archivo actual es un **placeholder**: se reemplaza por el que mande el cliente.
-- **La función es una constante, no una tabla.** `lib/show.ts` guarda obra, sala, dirección y horario. Hay una sola función; cuando haya cartelera, esto pasa a ser una tabla con `orders.event_id` y el selector filtra la ocupación por función.
+- **La obra es una constante; las funciones son una tabla.** `lib/show.ts` guarda obra, sala y dirección. La fecha sale de la función de la orden: `buildTicketEmail` la recibe y la escribe con `formatPerformanceDate`. Ver "Funciones".
 - El proveedor de mail está detrás de un único módulo a propósito: pasar de Brevo a Resend cuando el teatro tenga dominio propio es tocar `utils/email/client.ts` y nada más.
+
+## Funciones
+
+La obra tiene varias funciones (fechas). Después del login, `/` lista las que están a la venta (`PerformanceList`) y cada una abre su selector en `/funciones/[performanceId]`. El dominio puro está en `lib/performance.ts`, las lecturas en `utils/performances.ts` y el esquema en `supabase/migrations/0008_performances.sql`.
+
+- **Las funciones son filas de `performances`, no código.** `id uuid` y `starts_at timestamptz` único. Se cargan y se editan desde el SQL Editor de Supabase, siempre con la zona: `insert into performances (starts_at) values ('2026-12-12 21:00:00-03');`. El Table Editor toma la hora en UTC si no se aclara y la función queda tres horas antes. No hay pantalla para cargarlas.
+- **Todo lo vendible es por función.** `orders.performance_id` y `reservations.performance_id` son `not null` y apuntan a `performances`: la clave foránea impide borrar una función con ventas. El índice único parcial es `(performance_id, seat_id)`, así que la misma butaca se vende una vez por función, y los bloqueos del admin también son por función.
+- **La venta se corta a la hora de inicio, en dos lugares a propósito.** `createOrder` lee la función y responde "Esta función ya no está a la venta." sin tocar la base; `create_order` vuelve a controlar `starts_at > now()` adentro, que es la defensa real. La lista y la ruta del selector esconden las funciones que empezaron; el admin las sigue mostrando.
+- **El id de la función se valida como UUID antes de consultar** (`isPerformanceId`), igual que el `external_reference` del webhook: un id con otra forma haría fallar a Postgres con `22P02`. `fetchPerformance` devuelve `null` sin consultar.
+- **Las fechas no usan los nombres de `Intl`.** `performanceParts` saca las cifras de `Intl.DateTimeFormat` con la zona de Argentina, pero los días y los meses salen de tablas propias: los textos de `Intl` cambian entre Node y el navegador ("sáb." contra "sáb") y eso rompe la hidratación del selector. Todas las pantallas y el mail escriben la fecha con `formatPerformanceDate` ("Sábado 5 de diciembre · 21 h") o `formatPerformanceShort` ("Sáb 5").
+- **La flecha atrás reemplaza al logo en el selector.** `BackToPerformances` es un link a `/`; con butacas elegidas frena la navegación y abre un `<dialog>` modal que avisa que se pierde la selección. El "atrás" del navegador no pasa por ese aviso. El `<dialog>` y su ref viven en ese componente para que `PlateaPicker` siga siendo sólo layout. jsdom no implementa `showModal`: `vitest.setup.ts` tiene un polyfill mínimo.
+- **El join embebido necesita `as unknown as`.** `PERFORMANCE_EMBED` (`performance:performances(id, starts_at)`) trae la función en la misma consulta que la orden. Sin tipos generados de la base, supabase-js infiere un array para el embebido; PostgREST devuelve un objeto porque la relación es de muchos a uno.
+- **En el admin, la función elegida va en la URL** (`/admin?funcion=<id>`). Sin parámetro válido, `defaultPerformance` elige la próxima a la venta o, si ya pasaron todas, la última. `AdminSeatMap` se remonta con `key={performance.id}` para que la selección no pase de una función a otra.
 
 ## Mis entradas
 
@@ -157,7 +170,7 @@ en `utils/admin/` y las escrituras son server actions en `app/admin/actions.ts`.
   tablas. Metiendo `blocked` adentro de ese índice, la base impide bloquear una butaca
   vendida y vender una bloqueada sin una línea de código. El costo es que `user_id` dejó
   de ser `not null`; el check `(status = 'blocked') = (user_id is null)` lo compensa.
-- **El selector público no sabe que existen los bloqueos.** `active_reservation_seats()`
+- **El selector público no sabe que existen los bloqueos.** `active_reservation_seats(p_performance_id)`
   los devuelve junto con las vendidas, así que una butaca bloqueada se ve igual que una
   vendida para el que compra. Esa función devuelve `(seat_id, status, order_id)`: la
   tercera columna es para el panel, el selector la ignora.
@@ -170,8 +183,8 @@ en `utils/admin/` y las escrituras son server actions en `app/admin/actions.ts`.
 - **Desbloquear borra la fila.** `admin_unblock_seats` hace `delete`, no `update ... set
   status = 'cancelled'`: el check `(status = 'blocked') = (user_id is null)` no admite una
   fila cancelada sin usuario, y un bloqueo sin motivo no deja historial que valga la pena
-  guardar. La versión de `0005_seat_blocks.sql` quedó reemplazada por la de
-  `0007_unblock_deletes_block.sql`.
+  guardar. La versión vigente es la de `0008_performances.sql`, que borra sólo dentro de la
+  función; las de `0005_seat_blocks.sql` y `0007_unblock_deletes_block.sql` quedaron reemplazadas.
 - **La selección del admin no tiene tope.** `MAX_SEATS` es una regla de venta, no de la
   sala: bloquear la fila de prensa son veinte butacas.
 - **`SeatMap` y `SeatArc` no saben pintar una butaca.** Reciben un `renderSeat` y pintan
@@ -183,7 +196,7 @@ en `utils/admin/` y las escrituras son server actions en `app/admin/actions.ts`.
   para una orden `pending` creada hace menos de 20 minutos. Si se cancelara, un pago que entra
   después encuentra la orden cerrada y `set_order_status` no lo registra: se cobra y nadie se entera.
   Pasado el hold, Mercado Pago ya no acepta el pago de esa preferencia y cancelar es seguro.
-- **`active_reservation_seats()` le devuelve a cualquier usuario logueado el `order_id` y el estado
+- **`active_reservation_seats(p_performance_id)` le devuelve a cualquier usuario logueado el `order_id` y el estado
   `blocked`.** Se aceptó: los `order_id` son UUID sin uso posible desde el cliente (`cancel_own_order`
   exige ser el dueño), y separar una función para el panel sumaría otro literal del hold.
 - **El panel son tres pestañas y cada una es una ruta** del route group `app/admin/(panel)/`:
