@@ -30,7 +30,7 @@ No hay linter configurado: `typecheck` + tests son la verificación.
 
 Selector de butacas del sector **Platea** del Teatro del Globo: reproduce el plano real de la sala en SVG y permite elegir butacas con un panel de resumen. Sin backend, sin checkout, sin persistencia. Es la **base de front** sobre la que se va a añadir lógica y contenido.
 
-El diseño y el plan originales viven en `docs/superpowers/` (untracked). El spec (`specs/2026-08-20-...-design.md`) es la fuente de verdad para geometría, inventario del plano, precios, tokens de color y requisitos de accesibilidad. **Leelo antes de tocar geometría, numeración o precios.** El glosario del dominio está en `CONTEXT.md`.
+El diseño y el plan originales viven en `docs/superpowers/` (untracked). El spec (`specs/2026-08-20-...-design.md`) es la fuente de verdad para geometría, inventario del plano, precios y requisitos de accesibilidad. Sus tokens de color y tipografías quedaron viejos: lo visual está en `DESIGN.md`. **Leelo antes de tocar geometría, numeración o precios.** El glosario del dominio está en `CONTEXT.md`.
 
 ## Arquitectura
 
@@ -196,9 +196,13 @@ en `utils/admin/` y las escrituras son server actions en `app/admin/actions.ts`.
 
 ## Estilo
 
-Tailwind v4 con tokens declarados en `@theme` de `app/globals.css` (paleta `paper-bg`, `ink`, `ink-soft`, `ink-mute`, `rule`, `rule-soft`, `accent`, `highlight`; claro y oscuro). Tipografías vía `next/font/google`: **Caveat** es la voz de toda la UI (`--font-body` y `--font-hand` apuntan a ella), **JetBrains Mono** queda sólo para cifras donde la alineación en columna es funcional (precio por butaca y total) y **Lora** queda disponible como `--font-prose` para textos largos que todavía no existen.
+**`DESIGN.md` es la fuente de verdad de todo lo visual**: tokens de color en claro y oscuro, escala tipográfica de Caveat y de JetBrains Mono, radios, espaciado, componentes, movimiento y qué se usa dónde. Leelo antes de escribir o cambiar clases, colores, tipografía o un componente en `components/` o `app/`. Si cambia `DESIGN.md`, `.impeccable/design.json` (su sidecar para Impeccable) se regenera con `/impeccable document`.
 
-Caveat no se dimensiona con la escala de Tailwind: su altura de x es baja y necesita ~35% más de tamaño para leerse igual, así que la rampa vive en los tokens `--text-hand-*` (`h1`, `h2`, `lead`, `base`, `sm`, `xs`), cada uno con su `line-height`. Usá esas clases (`text-hand-base`) y no `text-sm`/`text-base`. El cuerpo va en peso 500: con 400 el trazo queda demasiado fino sobre el papel. Tampoco hay versalitas ni caja alta: el rótulo del escenario es "Escenario", no "ESCENARIO". Sin sombras, sin gradientes, radios chicos, separadores como reglas de 1px. El tema se resuelve con script inline anti-flash en `layout.tsx` + `lib/theme.ts` (`light` / `dark` / `system`).
+Tres cosas del código que `DESIGN.md` no cubre:
+
+- **Un token mal escrito falla en silencio.** Tailwind v4 genera `stroke-paper` porque existe `--color-paper` en `@theme`; con un nombre que no existe no genera nada y no avisa. El nombre de cada token está en el frontmatter de `DESIGN.md` y en `app/globals.css`, donde `.dark` los redefine con el mismo nombre.
+- **El color del papel está en tres lugares que no se derivan entre sí**: `--color-paper` en `app/globals.css`, `THEME_COLORS` en `lib/theme.ts`, y el `THEME_SCRIPT` y la `<meta name="theme-color">` de `app/layout.tsx`. Si cambia el papel, claro u oscuro, se cambian los tres.
+- **El tema se aplica antes de pintar** con el script inline de `app/layout.tsx`, que lee `localStorage` y pone la clase `dark` en `<html>`. Sin ese script la página carga en claro y parpadea a oscuro. `ThemeToggle` lo cambia después a través de `lib/theme.ts` (`light` / `dark` / `system`).
 
 ## Git
 

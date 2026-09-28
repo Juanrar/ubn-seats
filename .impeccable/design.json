@@ -1,0 +1,204 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-25T12:00:00-03:00",
+  "title": "Design System: Teatro del Globo · Platea",
+  "extensions": {
+    "colorMeta": {
+      "accent": {
+        "role": "primary",
+        "displayName": "Bronce de sala",
+        "canonical": "oklch(54.6% 0.076 75.6)",
+        "dark": "#d4a76a",
+        "tonalRamp": ["#1a0500", "#381d00", "#563903", "#765728", "#9b7a4b", "#c09e6e", "#e5c599", "#faecda"]
+      },
+      "accent-soft": {
+        "role": "primary",
+        "displayName": "Bronce claro",
+        "canonical": "oklch(62.4% 0.081 77.0)",
+        "dark": "#b8966a",
+        "tonalRamp": ["#190500", "#391c00", "#573900", "#775722", "#9c7a46", "#c19e6a", "#e4c599", "#faecda"]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Papel",
+        "canonical": "oklch(93.3% 0.029 87.5)",
+        "dark": "#1f1c16",
+        "tonalRamp": ["#100a00", "#2a2313", "#463f2e", "#655d4b", "#887f6d", "#aca490", "#d3cab5", "#f7eed9"]
+      },
+      "paper-2": {
+        "role": "neutral",
+        "displayName": "Papel tostado",
+        "canonical": "oklch(91.2% 0.037 87.8)",
+        "dark": "#1a1813",
+        "tonalRamp": ["#120a00", "#2b230e", "#483f29", "#665d46", "#897f68", "#aea48b", "#d4cab0", "#f7eed9"]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Tinta",
+        "canonical": "oklch(27.7% 0.015 89.9)",
+        "dark": "#ece2cb",
+        "tonalRamp": ["#0e0b05", "#27241c", "#434037", "#615d54", "#848076", "#a8a49a", "#cecac0", "#f2eee4"]
+      },
+      "ink-soft": {
+        "role": "neutral",
+        "displayName": "Tinta media",
+        "canonical": "oklch(44.7% 0.026 89.9)",
+        "dark": "#bfb59b",
+        "tonalRamp": ["#0f0b01", "#292415", "#453f30", "#635d4d", "#86806f", "#aba492", "#d1cab8", "#f5eedb"]
+      },
+      "ink-mute": {
+        "role": "neutral",
+        "displayName": "Tinta tenue",
+        "canonical": "oklch(51.9% 0.026 87.2)",
+        "dark": "#9d9482",
+        "tonalRamp": ["#100a01", "#292315", "#463f30", "#645d4d", "#87806f", "#aba493", "#d2cab8", "#f6eedb"]
+      },
+      "rule": {
+        "role": "neutral",
+        "displayName": "Regla",
+        "canonical": "oklch(80.5% 0.040 90.7)",
+        "dark": "#3a3528",
+        "tonalRamp": ["#110a00", "#2b230b", "#483f27", "#665d44", "#898065", "#aea489", "#d4caae", "#f6eed9"]
+      },
+      "rule-soft": {
+        "role": "neutral",
+        "displayName": "Regla suave",
+        "canonical": "oklch(86.5% 0.042 90.3)",
+        "dark": "#2c281d",
+        "tonalRamp": ["#120a00", "#2c2309", "#483f25", "#675d42", "#8a8064", "#afa487", "#d5caac", "#f6eed9"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Título del login y títulos de página de Mis entradas y del admin." },
+      "headline": { "displayName": "Headline", "purpose": "Nombre de la sala en la cabecera, título del pago, secciones del admin." },
+      "title": { "displayName": "Title", "purpose": "Títulos dentro de un panel o tarjeta." },
+      "lead": { "displayName": "Lead", "purpose": "La palabra Total del panel de selección." },
+      "body": { "displayName": "Body", "purpose": "Texto corriente, botones y filas de lista." },
+      "body-sm": { "displayName": "Body small", "purpose": "Leyenda, menú, mensajes de estado, acciones secundarias." },
+      "label": { "displayName": "Label", "purpose": "Categoría de la butaca y rótulos de contadores." },
+      "figure-inline": { "displayName": "Figure inline", "purpose": "Montos e ids dentro de una línea de texto." },
+      "figure-count": { "displayName": "Figure count", "purpose": "Contadores del admin." },
+      "figure-total": { "displayName": "Figure total", "purpose": "Total del panel de selección y de la barra fija." },
+      "figure-total-lg": { "displayName": "Figure total large", "purpose": "Total de la entrada y de la página de pago." },
+      "stamp": { "displayName": "Stamp", "purpose": "Sólo el sello en mayúsculas del login." }
+    },
+    "shadows": [],
+    "motion": [
+      { "name": "color-transition", "value": "150ms cubic-bezier(0.4, 0, 0.2, 1)", "purpose": "Cambio de color en hover de botones y butacas." },
+      { "name": "seat-reveal", "value": "480ms cubic-bezier(0.05, 0.7, 0.1, 1)", "purpose": "Cada butaca crece de 0.6 a 1 y aparece, con retraso por distancia al escenario hasta 950ms." },
+      { "name": "login-mark-reveal", "value": "2000ms cubic-bezier(0.22, 0.72, 0.16, 1) 260ms", "purpose": "El logo del login se revela de abajo hacia arriba." },
+      { "name": "login-rise", "value": "800ms cubic-bezier(0.16, 0.8, 0.24, 1)", "purpose": "Los textos del login suben 10px, escalonados entre 900ms y 1300ms." },
+      { "name": "login-ripple", "value": "5200ms cubic-bezier(0.2, 0.6, 0.3, 1) 1500ms infinite", "purpose": "Cuatro arcos detrás del logo, escalonados cada 1300ms." }
+    ],
+    "breakpoints": [
+      { "name": "lg", "value": "1024px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Botón primario",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "La acción principal del sitio público: Continuar, Iniciar sesión.",
+      "html": "<button class=\"ds-btn-primary\">Continuar</button>",
+      "css": ".ds-btn-primary { background: var(--color-accent); color: var(--color-paper); font-family: var(--font-hand); font-weight: 500; font-size: 1.3125rem; line-height: 1.35; padding: 8px 20px; border: none; border-radius: 4px; cursor: pointer; transition: background-color 150ms cubic-bezier(0.4, 0, 0.2, 1); } .ds-btn-primary:hover { background: var(--color-accent-soft); } .ds-btn-primary:disabled { opacity: 0.5; }"
+    },
+    {
+      "name": "Botón con borde",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Acción secundaria con peso propio: Descargar entradas.",
+      "html": "<a class=\"ds-btn-outline\" href=\"#\">Descargar entradas</a>",
+      "css": ".ds-btn-outline { display: inline-block; color: var(--color-accent); border: 1px solid var(--color-accent); border-radius: 4px; padding: 0 12px; font-family: var(--font-hand); font-weight: 500; font-size: 1.1875rem; line-height: 1.3; text-decoration: none; transition: background-color 150ms, color 150ms; } .ds-btn-outline:hover { background: var(--color-accent); color: var(--color-paper); }"
+    },
+    {
+      "name": "Botón de texto",
+      "kind": "button",
+      "refersTo": "button-text",
+      "description": "Acciones menores sin fondo: Vaciar, Reenviar al mail.",
+      "html": "<button class=\"ds-btn-text\">Vaciar</button>",
+      "css": ".ds-btn-text { background: none; border: none; padding: 0; color: var(--color-ink-mute); font-family: var(--font-hand); font-weight: 500; font-size: 1.1875rem; line-height: 1.3; text-underline-offset: 4px; cursor: pointer; } .ds-btn-text:hover { color: var(--color-accent); text-decoration: underline; }"
+    },
+    {
+      "name": "Botones del admin",
+      "kind": "button",
+      "refersTo": "admin-button-primary",
+      "description": "Par secundaria y primaria del panel, en grilla de dos columnas.",
+      "html": "<div class=\"ds-admin-pair\"><button class=\"ds-admin-btn-secondary\">Mejor no</button><button class=\"ds-admin-btn-primary\">Confirmar la cancelación</button></div>",
+      "css": ".ds-admin-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; } .ds-admin-btn-primary, .ds-admin-btn-secondary { display: flex; min-height: 44px; align-items: center; justify-content: center; padding: 0 16px; border-radius: 6px; font-family: var(--font-hand); font-size: 1.3125rem; line-height: 1.35; cursor: pointer; } .ds-admin-btn-primary { background: var(--color-ink); color: var(--color-paper); border: none; font-weight: 700; } .ds-admin-btn-secondary { background: transparent; color: var(--color-ink); border: 1px solid var(--color-rule); font-weight: 500; } .ds-admin-btn-primary:disabled { opacity: 0.6; }"
+    },
+    {
+      "name": "Butacas",
+      "kind": "custom",
+      "refersTo": "seat-available",
+      "description": "Los cuatro estados de la butaca del selector público, a tamaño de leyenda.",
+      "html": "<ul class=\"ds-legend\"><li><svg viewBox=\"-10 -8.5 20 17\" width=\"20\" height=\"17\"><rect class=\"ds-seat ds-seat-available\" x=\"-10\" y=\"-8.5\" width=\"20\" height=\"17\" rx=\"1\"/></svg>Disponible</li><li><svg viewBox=\"-10 -8.5 20 17\" width=\"20\" height=\"17\"><rect class=\"ds-seat ds-seat-selected\" x=\"-10\" y=\"-8.5\" width=\"20\" height=\"17\" rx=\"1\"/></svg>Seleccionada</li><li><svg viewBox=\"-10 -8.5 20 17\" width=\"20\" height=\"17\"><rect class=\"ds-seat ds-seat-owned\" x=\"-10\" y=\"-8.5\" width=\"20\" height=\"17\" rx=\"1\"/><path class=\"ds-seat-check\" d=\"M -5 0 L -1.67 4.25 L 5 -4.25\"/></svg>Tuyas</li><li><svg viewBox=\"-10 -8.5 20 17\" width=\"20\" height=\"17\"><rect class=\"ds-seat ds-seat-occupied\" x=\"-10\" y=\"-8.5\" width=\"20\" height=\"17\" rx=\"1\"/></svg>Ocupada</li></ul>",
+      "css": ".ds-legend { display: flex; flex-wrap: wrap; gap: 8px 20px; list-style: none; margin: 0; padding: 0; color: var(--color-ink-mute); font-family: var(--font-hand); font-weight: 500; font-size: 1.1875rem; } .ds-legend li { display: flex; align-items: center; gap: 8px; } .ds-seat { stroke-width: 1; transition: stroke 150ms; } .ds-seat-available { fill: transparent; stroke: var(--color-ink-mute); } .ds-seat-available:hover { stroke: var(--color-accent); } .ds-seat-selected { fill: var(--color-accent); stroke: var(--color-accent); } .ds-seat-owned { fill: var(--color-ink); stroke: var(--color-ink); } .ds-seat-occupied { fill: var(--color-rule-soft); stroke: none; } .ds-seat-check { fill: none; stroke: var(--color-paper); stroke-width: 1.2; }"
+    },
+    {
+      "name": "Tarjeta de entrada",
+      "kind": "card",
+      "refersTo": "ticket-card",
+      "description": "Una orden confirmada en Mis entradas, con chips de butaca y total.",
+      "html": "<article class=\"ds-ticket\"><p class=\"ds-ticket-title\">Muestra de fin de año</p><p class=\"ds-ticket-meta\">Teatro del Globo</p><ul class=\"ds-ticket-seats\"><li>Fila 7, butaca 12</li><li>Fila 7, butaca 13</li></ul><div class=\"ds-ticket-foot\"><span class=\"ds-ticket-total\">$ 76.000</span></div></article>",
+      "css": ".ds-ticket { background: var(--color-paper-2); border: 1px solid var(--color-accent); border-radius: 4px; padding: 20px; font-family: var(--font-hand); font-weight: 500; color: var(--color-ink); } .ds-ticket-title { margin: 0; font-size: 2rem; line-height: 1; font-weight: 600; } .ds-ticket-meta { margin: 0; font-size: 1.1875rem; line-height: 1.3; color: var(--color-ink-soft); } .ds-ticket-seats { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; margin: 16px 0 0; padding: 0; } .ds-ticket-seats li { background: var(--color-paper); border: 1px solid var(--color-rule); border-radius: 4px; padding: 0 8px; font-size: 1.1875rem; line-height: 1.3; } .ds-ticket-foot { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--color-rule); } .ds-ticket-total { font-family: var(--font-mono); font-size: 1.3125rem; color: var(--color-accent); }"
+    },
+    {
+      "name": "Pestañas del admin",
+      "kind": "nav",
+      "refersTo": "admin-tab-active",
+      "description": "Navegación fija abajo del panel de administración.",
+      "html": "<nav class=\"ds-tabs\"><a class=\"ds-tab ds-tab-active\" href=\"#\" aria-current=\"page\">Butacas</a><a class=\"ds-tab\" href=\"#\">Órdenes</a><a class=\"ds-tab\" href=\"#\">Cuenta</a></nav>",
+      "css": ".ds-tabs { display: flex; border-top: 1px solid var(--color-rule); background: var(--color-paper); } .ds-tab { flex: 1; display: flex; height: 56px; align-items: center; justify-content: center; margin-top: -1px; border-top: 2px solid transparent; font-family: var(--font-hand); font-size: 1.3125rem; font-weight: 500; color: var(--color-ink-mute); text-decoration: none; } .ds-tab-active { border-top-color: var(--color-ink); color: var(--color-ink); font-weight: 700; }"
+    },
+    {
+      "name": "Buscador del admin",
+      "kind": "input",
+      "refersTo": "admin-input",
+      "description": "Campo de búsqueda por mail en la lista de órdenes.",
+      "html": "<label class=\"ds-field\"><span>Buscar por mail</span><input class=\"ds-input\" type=\"search\"></label>",
+      "css": ".ds-field { display: flex; flex-direction: column; gap: 4px; font-family: var(--font-hand); font-weight: 500; } .ds-field span { font-size: 1.1875rem; color: var(--color-ink-mute); } .ds-input { min-height: 44px; border: 1px solid var(--color-rule); border-radius: 6px; background: transparent; padding: 0 12px; font-family: var(--font-hand); font-size: 1.3125rem; color: var(--color-ink); } .ds-input:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 1px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "El programa de mano",
+    "overview": "La Platea se lee como el programa impreso que se reparte en la puerta de una muestra de fin de año. Tiene papel crema, tinta marrón oscura, títulos escritos a mano y un único color con tono, el bronce, reservado para lo que el visitante eligió o tiene que tocar. El papel está en el color de fondo y la tinta en la tipografía. No hay texturas ni ilustraciones que lo imiten.\n\nEl mapa de la sala es el centro de cada pantalla del selector. El resto es anotación alrededor del mapa: la cabecera con el logo, la leyenda, el panel de la selección. Todo es plano. Las zonas se separan con reglas de 1px y, cuando hace falta más, con un paso de papel más oscuro. Los estados se distinguen por relleno, contorno y texto, nunca sólo por color.\n\nEl panel de administración usa el mismo papel y la misma letra con otro registro, el de una libreta de trabajo. El botón principal es de tinta en lugar de bronce, los radios pasan de 4px a 6px, los objetivos táctiles miden 44px y la navegación son pestañas fijas abajo. El sistema no es una app SaaS genérica, con tarjetas con sombra, azul de marca, íconos de librería y una sans-serif neutra. Tampoco es un scrapbook, con cinta adhesiva, texturas de papel, clips o trazos temblorosos.",
+    "keyCharacteristics": [
+      "Caveat en peso 500 para toda la interfaz, con una escala de tamaños propia.",
+      "JetBrains Mono sólo para montos, contadores e ids.",
+      "Un solo color con tono, el bronce de sala. El resto es papel y tinta.",
+      "Plano: reglas de 1px, sin sombras ni gradientes.",
+      "Claro y oscuro con los mismos nombres de token.",
+      "Movimiento sólo al entrar: la sala aparece desde el escenario y el login se revela una vez."
+    ],
+    "rules": [
+      { "name": "La regla del bronce escaso", "body": "El bronce marca lo que el visitante eligió o la próxima acción que tiene que tocar. No se usa para decorar, para títulos ni para distinguir sectores.", "section": "colors" },
+      { "name": "La regla del monocromo", "body": "Ningún estado depende sólo del color. La butaca seleccionada cambia de relleno y además aparece en la lista del panel. El sector se distingue por posición y etiqueta.", "section": "colors" },
+      { "name": "La regla de la escala propia", "body": "Caveat se dimensiona con las clases text-hand-* y nunca con text-sm o text-base. Su altura de x es baja y necesita cerca de un 35% más de tamaño para leerse igual que una sans-serif.", "section": "typography" },
+      { "name": "La regla del peso 500", "body": "El cuerpo va en 500, porque con 400 el trazo queda demasiado fino sobre el papel. El 600 y el 700 quedan para títulos.", "section": "typography" },
+      { "name": "La regla de la caja baja", "body": "No hay mayúsculas sostenidas ni versalitas. El rótulo del escenario es \"Escenario\". La única excepción es el sello del login.", "section": "typography" },
+      { "name": "La regla del mapa primero", "body": "El mapa se queda con el ancho disponible y el panel lo acompaña. En pantallas chicas el mapa se desplaza de costado; no se achica hasta volver ilegibles las butacas.", "section": "layout" },
+      { "name": "La regla de la regla", "body": "Si dos zonas necesitan separarse, va una regla de 1px. Si hace falta más, un paso de papel tostado. Nunca una sombra.", "section": "elevation" }
+    ],
+    "dos": [
+      "Usá los tokens de color de `@theme`. Un componente no lleva hex sueltos.",
+      "Dimensioná Caveat con `text-hand-*` y dejá el cuerpo en peso 500.",
+      "Reservá JetBrains Mono para montos, contadores e ids, con los cuatro tamaños de Typography.",
+      "Separá con reglas de 1px: `rule` entre bloques y `rule-soft` dentro de listas.",
+      "Dale el bronce sólo a lo seleccionado y a la acción principal del sitio público.",
+      "Comunicá cada estado con algo más que color: relleno, contorno, cruz, punteado o texto.",
+      "Poné cada animación nueva detrás de `prefers-reduced-motion: reduce`.",
+      "En el admin, usá los botones de `components/admin/buttons.ts`, con 44px de alto."
+    ],
+    "donts": [
+      "No uses sombras ni gradientes.",
+      "No escribas en mayúsculas sostenidas ni en versalitas, salvo el sello del login.",
+      "No uses `text-sm`, `text-base` ni el resto de la escala de Tailwind para Caveat.",
+      "No distingas sectores ni estados sólo por color.",
+      "No uses rojo, verde ni íconos de advertencia para errores o confirmaciones. El mensaje va en texto.",
+      "No armes la interfaz de una app SaaS genérica, con tarjetas con sombra, azul de marca, íconos de librería o una sans-serif neutra.",
+      "No imites el papel con texturas, cinta adhesiva, clips ni trazos temblorosos. El papel es un color.",
+      "No uses Lora hasta que exista un texto largo que la necesite."
+    ]
+  }
+}
