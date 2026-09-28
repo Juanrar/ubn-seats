@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { timingSafeEqual } from 'node:crypto'
 import { ADMIN_COOKIE, SESSION_HOURS, createSessionToken, verifySessionToken } from '@/lib/admin/session'
+import { isPerformanceId } from '@/lib/performance'
 import { disconnect } from '@/utils/mercadopago/account'
 import { createServiceClient } from '@/utils/supabase/service'
 import { fetchAdminOrder, type AdminOrder } from '@/utils/admin/orders'
@@ -82,18 +83,31 @@ const NO_SESSION: AdminActionResult = {
   message: 'La sesión venció. Volvé a entrar.',
 }
 
+const INVALID_PERFORMANCE: AdminActionResult = {
+  ok: false,
+  count: 0,
+  message: 'La función no es válida.',
+}
+
 function seatCount(count: number): string {
   return count === 1 ? '1 butaca' : `${count} butacas`
 }
 
-export async function blockSeats(seatIds: string[]): Promise<AdminActionResult> {
+export async function blockSeats(
+  performanceId: string,
+  seatIds: string[],
+): Promise<AdminActionResult> {
   if (!(await hasValidSession())) return NO_SESSION
+  if (!isPerformanceId(performanceId)) return INVALID_PERFORMANCE
   if (seatIds.length === 0) {
     return { ok: false, count: 0, message: 'No hay butacas elegidas.' }
   }
 
   const supabase = createServiceClient()
-  const { data, error } = await supabase.rpc('admin_block_seats', { p_seat_ids: seatIds })
+  const { data, error } = await supabase.rpc('admin_block_seats', {
+    p_performance_id: performanceId,
+    p_seat_ids: seatIds,
+  })
 
   if (error) {
     return { ok: false, count: 0, message: 'No se pudieron bloquear las butacas.' }
@@ -113,14 +127,21 @@ export async function blockSeats(seatIds: string[]): Promise<AdminActionResult> 
   return { ok: true, count, message: `Bloqueaste ${seatCount(count)}.` }
 }
 
-export async function unblockSeats(seatIds: string[]): Promise<AdminActionResult> {
+export async function unblockSeats(
+  performanceId: string,
+  seatIds: string[],
+): Promise<AdminActionResult> {
   if (!(await hasValidSession())) return NO_SESSION
+  if (!isPerformanceId(performanceId)) return INVALID_PERFORMANCE
   if (seatIds.length === 0) {
     return { ok: false, count: 0, message: 'No hay butacas elegidas.' }
   }
 
   const supabase = createServiceClient()
-  const { data, error } = await supabase.rpc('admin_unblock_seats', { p_seat_ids: seatIds })
+  const { data, error } = await supabase.rpc('admin_unblock_seats', {
+    p_performance_id: performanceId,
+    p_seat_ids: seatIds,
+  })
 
   if (error) {
     return { ok: false, count: 0, message: 'No se pudieron liberar las butacas.' }

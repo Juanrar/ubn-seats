@@ -10,6 +10,7 @@ const ORDER = {
   created_at: '2026-09-10T18:00:00Z',
   mp_payment_id: '123456',
   ticket_sent_at: '2026-09-10T18:01:00Z',
+  performance: { id: 'perf-sab', starts_at: '2026-12-06T00:00:00+00:00' },
 }
 
 function clientWith({
@@ -49,8 +50,15 @@ describe('fetchAdminOrder', () => {
       mpPaymentId: '123456',
       ticketSentAt: '2026-09-10T18:01:00Z',
       email: 'ana@mail.com',
+      performance: { id: 'perf-sab', startsAt: '2026-12-06T00:00:00+00:00' },
       seatIds: ['platea-F07-11', 'platea-F07-12'],
     })
+  })
+
+  it('una orden sin función se devuelve igual, con la función en null', async () => {
+    const order = await fetchAdminOrder(clientWith({ order: { ...ORDER, performance: null } }), 'o1')
+    expect(order?.performance).toBeNull()
+    expect(order?.seatIds).toHaveLength(2)
   })
 
   it('una orden que no existe es null', async () => {

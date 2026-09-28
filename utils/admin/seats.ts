@@ -9,8 +9,11 @@ interface SeatRow {
 
 export async function fetchAdminSeatMap(
   supabase: SupabaseClient,
+  performanceId: string,
 ): Promise<Map<string, SeatOccupancy>> {
-  const { data, error } = await supabase.rpc('active_reservation_seats')
+  const { data, error } = await supabase.rpc('active_reservation_seats', {
+    p_performance_id: performanceId,
+  })
   if (error) throw error
 
   const rows = (data as SeatRow[] | null) ?? []

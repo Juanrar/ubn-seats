@@ -1,16 +1,33 @@
 import Link from 'next/link'
 import { AdminSeatMap } from '@/components/admin/AdminSeatMap'
+import { PerformanceTabs } from '@/components/admin/PerformanceTabs'
 import { SeatSummaryBar } from '@/components/admin/SeatSummaryBar'
 import { summarizeSeats, type SeatOccupancy } from '@/lib/admin/seatState'
+import { defaultPerformance, type Performance } from '@/lib/performance'
 import { TEATRO_DEL_GLOBO } from '@/lib/plans/teatro-del-globo'
 import { buildVenue } from '@/lib/venue'
 import { fetchAdminSeatMap } from '@/utils/admin/seats'
 import { getConnectedAccount, type StoredAccount } from '@/utils/mercadopago/account'
+import { fetchAllPerformances } from '@/utils/performances'
 import { createServiceClient } from '@/utils/supabase/service'
 
 export const dynamic = 'force-dynamic'
 
-export default async function SeatsPage() {
+interface SeatsPageProps {
+  searchParams: Promise<{ funcion?: string }>
+}
+
+function selectPerformance(performances: Performance[], requestedId: string | undefined) {
+  return (
+    performances.find((performance) => performance.id === requestedId) ??
+    defaultPerformance(performances, Date.now())
+  )
+}
+
+export default async function SeatsPage({ searchParams }: SeatsPageProps) {
+  const { funcion } = await searchParams
+  const supabase = createServiceClient()
+
   let account: StoredAccount | null = null
   let accountUnknown = false
   try {
@@ -20,11 +37,21 @@ export default async function SeatsPage() {
   }
   const venue = buildVenue(TEATRO_DEL_GLOBO)
 
-  let occupancy: Map<string, SeatOccupancy> | null = null
+  let performances: Performance[] | null = null
   try {
-    occupancy = await fetchAdminSeatMap(createServiceClient())
+    performances = await fetchAllPerformances(supabase)
   } catch {
-    occupancy = null
+    performances = null
+  }
+  const performance = performances ? selectPerformance(performances, funcion) : null
+
+  let occupancy: Map<string, SeatOccupancy> | null = null
+  if (performance) {
+    try {
+      occupancy = await fetchAdminSeatMap(supabase, performance.id)
+    } catch {
+      occupancy = null
+    }
   }
 
   return (
@@ -40,10 +67,13 @@ export default async function SeatsPage() {
         </p>
       )}
 
-      {occupancy ? (
+      {performances && performances.length === 0 ? (
+        <p className="text-hand-base text-ink-mute">No hay funciones cargadas.</p>
+      ) : performance && occupancy ? (
         <>
+          <PerformanceTabs performances={performances ?? []} selectedId={performance.id} />
           <SeatSummaryBar summary={summarizeSeats(venue.seats.map((seat) => seat.id), occupancy)} />
-          <AdminSeatMap occupancy={occupancy} />
+          <AdminSeatMap key={performance.id} performanceId={performance.id} occupancy={occupancy} />
         </>
       ) : (
         <p role="alert" className="text-hand-base text-ink-mute">

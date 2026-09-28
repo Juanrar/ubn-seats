@@ -154,6 +154,8 @@ function withoutSession(): void {
   cookieGet.mockReturnValue(undefined)
 }
 
+const PERFORMANCE_ID = 'a82bd4e0-937c-4af5-a5c8-259a7f942c68'
+
 describe('blockSeats', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -161,7 +163,7 @@ describe('blockSeats', () => {
 
   it('sin sesión válida no toca la base', async () => {
     withoutSession()
-    const result = await blockSeats(['platea-F01-01'])
+    const result = await blockSeats(PERFORMANCE_ID, ['platea-F01-01'])
 
     expect(rpc).not.toHaveBeenCalled()
     expect(revalidatePath).not.toHaveBeenCalled()
@@ -172,9 +174,10 @@ describe('blockSeats', () => {
     await withSession()
     rpc.mockResolvedValue({ data: 2, error: null })
 
-    const result = await blockSeats(['platea-F01-01', 'platea-F01-02'])
+    const result = await blockSeats(PERFORMANCE_ID, ['platea-F01-01', 'platea-F01-02'])
 
     expect(rpc).toHaveBeenCalledWith('admin_block_seats', {
+      p_performance_id: PERFORMANCE_ID,
       p_seat_ids: ['platea-F01-01', 'platea-F01-02'],
     })
     expect(revalidatePath).toHaveBeenCalledWith('/admin')
@@ -186,7 +189,7 @@ describe('blockSeats', () => {
     await withSession()
     rpc.mockResolvedValue({ data: 1, error: null })
 
-    const result = await blockSeats(['platea-F01-01', 'platea-F01-02'])
+    const result = await blockSeats(PERFORMANCE_ID, ['platea-F01-01', 'platea-F01-02'])
 
     expect(result.ok).toBe(true)
     expect(result.message).toMatch(/1 de 2/)
@@ -196,15 +199,23 @@ describe('blockSeats', () => {
     await withSession()
     rpc.mockResolvedValue({ data: null, error: { message: 'roto' } })
 
-    const result = await blockSeats(['platea-F01-01'])
+    const result = await blockSeats(PERFORMANCE_ID, ['platea-F01-01'])
 
     expect(result.ok).toBe(false)
     expect(revalidatePath).not.toHaveBeenCalled()
   })
 
+  it('con una función mal formada no llama a la base', async () => {
+    await withSession()
+    const result = await blockSeats('sabado', ['platea-F01-01'])
+
+    expect(rpc).not.toHaveBeenCalled()
+    expect(result).toEqual({ ok: false, count: 0, message: 'La función no es válida.' })
+  })
+
   it('con una selección vacía no llama a la base', async () => {
     await withSession()
-    const result = await blockSeats([])
+    const result = await blockSeats(PERFORMANCE_ID, [])
 
     expect(rpc).not.toHaveBeenCalled()
     expect(result.ok).toBe(false)
@@ -218,7 +229,7 @@ describe('unblockSeats', () => {
 
   it('sin sesión válida no toca la base', async () => {
     withoutSession()
-    await unblockSeats(['platea-F01-01'])
+    await unblockSeats(PERFORMANCE_ID, ['platea-F01-01'])
     expect(rpc).not.toHaveBeenCalled()
   })
 
@@ -226,13 +237,28 @@ describe('unblockSeats', () => {
     await withSession()
     rpc.mockResolvedValue({ data: 3, error: null })
 
-    const result = await unblockSeats(['platea-F01-01'])
+    const result = await unblockSeats(PERFORMANCE_ID, ['platea-F01-01'])
 
     expect(rpc).toHaveBeenCalledWith('admin_unblock_seats', {
+      p_performance_id: PERFORMANCE_ID,
       p_seat_ids: ['platea-F01-01'],
     })
     expect(revalidatePath).toHaveBeenCalledWith('/admin')
     expect(result).toMatchObject({ ok: true, count: 3 })
+  })
+})
+
+describe('unblockSeats con una función mal formada', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('no llama a la base', async () => {
+    await withSession()
+    const result = await unblockSeats('sabado', ['platea-F01-01'])
+
+    expect(rpc).not.toHaveBeenCalled()
+    expect(result.ok).toBe(false)
   })
 })
 

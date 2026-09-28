@@ -12,6 +12,7 @@ const ORDER: AdminOrder = {
   mpPaymentId: '123456789',
   ticketSentAt: '2026-09-10T18:01:00Z',
   email: 'ana@mail.com',
+  performance: { id: 'perf-sab', startsAt: '2026-12-06T00:00:00+00:00' },
   seatIds: ['platea-F07-11', 'platea-F07-12'],
 }
 
@@ -27,6 +28,11 @@ describe('OrderDetail', () => {
     expect(screen.getByText(/ana@mail.com/)).toBeInTheDocument()
     expect(screen.getByText(/114\.000/)).toBeInTheDocument()
     expect(screen.getByText(/F07-11/)).toBeInTheDocument()
+  })
+
+  it('dice la función de la orden', () => {
+    setup()
+    expect(screen.getByText('Sábado 5 de diciembre · 21 h')).toBeInTheDocument()
   })
 
   it('cancelar pide confirmación antes de llamar', async () => {

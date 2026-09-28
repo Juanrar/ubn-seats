@@ -1,4 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import type { Performance } from '@/lib/performance'
+import { PERFORMANCE_EMBED, toPerformance, type PerformanceRow } from '@/utils/performances'
 
 export const ADMIN_ORDERS_LIMIT = 200
 
@@ -27,7 +29,10 @@ interface OrderRow {
   created_at: string
   mp_payment_id: string | null
   ticket_sent_at: string | null
+  performance: PerformanceRow | null
 }
+
+const ORDER_COLUMNS = `id, user_id, status, amount, created_at, mp_payment_id, ticket_sent_at, ${PERFORMANCE_EMBED}`
 
 export interface AdminOrder {
   id: string
@@ -37,6 +42,7 @@ export interface AdminOrder {
   mpPaymentId: string | null
   ticketSentAt: string | null
   email: string | null
+  performance: Performance | null
   seatIds: string[]
 }
 
@@ -57,11 +63,12 @@ export async function fetchAdminOrder(
 ): Promise<AdminOrder | null> {
   const { data: order, error } = await supabase
     .from('orders')
-    .select('id, user_id, status, amount, created_at, mp_payment_id, ticket_sent_at')
+    .select(ORDER_COLUMNS)
     .eq('id', orderId)
     .maybeSingle()
 
   if (error || !order) return null
+  const row = order as unknown as OrderRow
 
   const { data: reservations, error: reservationsError } = await supabase
     .from('reservations')
@@ -71,16 +78,17 @@ export async function fetchAdminOrder(
 
   if (reservationsError) return null
 
-  const { data: userData } = await supabase.auth.admin.getUserById(order.user_id)
+  const { data: userData } = await supabase.auth.admin.getUserById(row.user_id)
 
   return {
-    id: order.id,
-    status: order.status,
-    amount: order.amount,
-    createdAt: order.created_at,
-    mpPaymentId: order.mp_payment_id,
-    ticketSentAt: order.ticket_sent_at,
+    id: row.id,
+    status: row.status,
+    amount: row.amount,
+    createdAt: row.created_at,
+    mpPaymentId: row.mp_payment_id,
+    ticketSentAt: row.ticket_sent_at,
     email: userData?.user?.email ?? null,
+    performance: row.performance ? toPerformance(row.performance) : null,
     seatIds: sortSeatIds((reservations ?? []).map((row: { seat_id: string }) => row.seat_id)),
   }
 }
@@ -88,12 +96,12 @@ export async function fetchAdminOrder(
 export async function fetchAdminOrders(supabase: SupabaseClient): Promise<AdminOrder[]> {
   const { data: orders, error } = await supabase
     .from('orders')
-    .select('id, user_id, status, amount, created_at, mp_payment_id, ticket_sent_at')
+    .select(ORDER_COLUMNS)
     .order('created_at', { ascending: false })
     .limit(ADMIN_ORDERS_LIMIT)
 
   if (error) throw error
-  const rows = (orders as OrderRow[] | null) ?? []
+  const rows = (orders as unknown as OrderRow[] | null) ?? []
   if (rows.length === 0) return []
 
   const { data: reservations, error: reservationsError } = await supabase
@@ -122,6 +130,7 @@ export async function fetchAdminOrders(supabase: SupabaseClient): Promise<AdminO
     mpPaymentId: row.mp_payment_id,
     ticketSentAt: row.ticket_sent_at,
     email: emails.get(row.user_id) ?? null,
+    performance: row.performance ? toPerformance(row.performance) : null,
     seatIds: sortSeatIds(seatsByOrder.get(row.id) ?? []),
   }))
 }

@@ -12,6 +12,7 @@ const ORDER: AdminOrder = {
   mpPaymentId: '123456789',
   ticketSentAt: '2026-09-10T18:01:00Z',
   email: 'ana@mail.com',
+  performance: { id: 'perf-sab', startsAt: '2026-12-06T00:00:00+00:00' },
   seatIds: ['platea-F07-11', 'platea-F07-12'],
 }
 

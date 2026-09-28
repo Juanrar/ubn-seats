@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { PRIMARY_BUTTON, SECONDARY_BUTTON } from '@/components/admin/buttons'
 import { formatTotal } from '@/lib/format'
+import { formatPerformanceDate } from '@/lib/performance'
 import type { AdminOrder } from '@/utils/admin/orders'
 
 export const ORDER_STATUS_TEXT: Record<string, string> = {
@@ -39,6 +40,9 @@ export function OrderDetail({ order, pending, onCancelOrder, onClose }: OrderDet
         {ORDER_STATUS_TEXT[order.status] ?? order.status} ·{' '}
         <span className="font-mono text-[13px]">{formatTotal(order.amount)}</span>
       </p>
+      {order.performance ? (
+        <p className="text-hand-sm text-ink-mute">{formatPerformanceDate(order.performance.startsAt)}</p>
+      ) : null}
       <p className="text-hand-sm text-ink-mute">
         {seatCount(order.seatIds.length)}: {order.seatIds.map(seatNumber).join(', ')}
       </p>

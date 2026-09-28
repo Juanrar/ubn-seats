@@ -5,6 +5,7 @@ import { cancelOrder } from '@/app/admin/actions'
 import { ORDER_STATUS_TEXT, OrderDetail, seatCount } from '@/components/admin/OrderDetail'
 import { filterOrdersByEmail } from '@/lib/admin/orderSearch'
 import { formatTotal } from '@/lib/format'
+import { formatPerformanceShort } from '@/lib/performance'
 import type { AdminOrder } from '@/utils/admin/orders'
 
 export function OrdersList({ orders }: { orders: AdminOrder[] }) {
@@ -77,6 +78,7 @@ export function OrdersList({ orders }: { orders: AdminOrder[] }) {
                       {ORDER_STATUS_TEXT[order.status] ?? order.status} ·{' '}
                       <span className="font-mono text-[13px]">{formatTotal(order.amount)}</span> ·{' '}
                       {seatCount(order.seatIds.length)}
+                      {order.performance ? ` · ${formatPerformanceShort(order.performance.startsAt)}` : ''}
                     </span>
                   </button>
                 </li>

@@ -24,8 +24,10 @@ function labelPattern(label: string): RegExp {
   return new RegExp(`^${label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')},`, 'i')
 }
 
+const PERFORMANCE_ID = 'a82bd4e0-937c-4af5-a5c8-259a7f942c68'
+
 function renderMap(entries: [string, SeatOccupancy][] = []) {
-  render(<AdminSeatMap occupancy={new Map(entries)} />)
+  render(<AdminSeatMap performanceId={PERFORMANCE_ID} occupancy={new Map(entries)} />)
 }
 
 describe('AdminSeatMap', () => {
@@ -64,7 +66,7 @@ describe('AdminSeatMap', () => {
     const boton = await screen.findByRole('button', { name: /bloquear 1 butaca/i })
     await userEvent.click(boton)
 
-    expect(blockSeats).toHaveBeenCalledWith([firstSeat.id])
+    expect(blockSeats).toHaveBeenCalledWith(PERFORMANCE_ID, [firstSeat.id])
     expect(await screen.findByText(/bloqueaste 1 butaca/i)).toBeInTheDocument()
   })
 

@@ -16,6 +16,7 @@ const BASE: AdminOrder = {
   mpPaymentId: '123456789',
   ticketSentAt: null,
   email: 'ana@mail.com',
+  performance: { id: 'perf-sab', startsAt: '2026-12-06T00:00:00+00:00' },
   seatIds: ['platea-F07-11'],
 }
 
@@ -29,6 +30,11 @@ describe('OrdersList', () => {
     render(<OrdersList orders={ORDERS} />)
     expect(screen.getByRole('button', { name: /ana@mail.com.*pagada/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /lucia@otro.com.*pendiente/i })).toBeInTheDocument()
+  })
+
+  it('dice la función de cada orden', () => {
+    render(<OrdersList orders={[BASE]} />)
+    expect(screen.getByRole('button', { name: /ana@mail.com.*Sáb 5/ })).toBeInTheDocument()
   })
 
   it('filtra por mail mientras se escribe', async () => {

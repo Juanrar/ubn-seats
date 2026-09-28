@@ -12,10 +12,11 @@ import { buildVenue } from '@/lib/venue'
 import type { AdminOrder } from '@/utils/admin/orders'
 
 export interface AdminSeatMapProps {
+  performanceId: string
   occupancy: Map<string, SeatOccupancy>
 }
 
-export function AdminSeatMap({ occupancy }: AdminSeatMapProps) {
+export function AdminSeatMap({ performanceId, occupancy }: AdminSeatMapProps) {
   const venue = useMemo(() => buildVenue(TEATRO_DEL_GLOBO), [])
   const map = useAdminMap(venue, occupancy)
   const [order, setOrder] = useState<AdminOrder | null>(null)
@@ -87,8 +88,8 @@ export function AdminSeatMap({ occupancy }: AdminSeatMapProps) {
           order={order}
           message={message}
           pending={pending}
-          onBlock={() => run(() => blockSeats([...map.selectedIds]))}
-          onUnblock={() => run(() => unblockSeats([...map.selectedIds]))}
+          onBlock={() => run(() => blockSeats(performanceId, [...map.selectedIds]))}
+          onUnblock={() => run(() => unblockSeats(performanceId, [...map.selectedIds]))}
           onClear={map.clear}
           onCancelOrder={() => run(() => cancelOrder(order!.id))}
           onCloseOrder={map.closeOrder}
