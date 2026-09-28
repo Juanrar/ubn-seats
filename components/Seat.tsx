@@ -11,7 +11,7 @@ const STATUS_TEXT: Record<SeatStatus, string> = {
 }
 
 function shapeClass(status: SeatStatus): string {
-  if (status === 'occupied') return 'fill-rule-soft stroke-none'
+  if (status === 'occupied') return 'fill-rule-soft stroke-none dark:fill-ink-mute/35'
   if (status === 'selected') return 'fill-accent stroke-accent'
   if (status === 'owned') return 'fill-ink stroke-ink'
   return 'fill-transparent stroke-ink-mute'

@@ -15,7 +15,7 @@ const SHAPE_CLASS: Record<AdminSeatStatus, string> = {
   free: 'fill-transparent stroke-ink-mute',
   selected: 'fill-accent stroke-accent',
   blocked: 'fill-transparent stroke-ink',
-  sold: 'fill-rule-soft stroke-none',
+  sold: 'fill-rule-soft stroke-none dark:fill-ink-mute/35',
   pending: 'fill-transparent stroke-ink-mute',
 }
 

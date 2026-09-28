@@ -182,7 +182,7 @@ Papel y tinta con un solo acento cálido. Cada token se redefine con el mismo no
 - **Tinta media** (#5a5444): texto secundario dentro de tarjetas y rótulo del escenario. En oscuro pasa a #bfb59b.
 - **Tinta tenue** (#6f6858): ayudas, leyenda, estados vacíos y contorno de la butaca disponible. En oscuro pasa a #9d9482.
 - **Regla** (#c9bfa3): separadores de 1px, bordes de menús, inputs y botones secundarios, y contorno del escenario. En oscuro pasa a #3a3528.
-- **Regla suave** (#ddd2b4): divisores dentro de listas y relleno de la butaca ocupada. En oscuro pasa a #2c281d.
+- **Regla suave** (#ddd2b4): divisores dentro de listas y relleno de la butaca ocupada en claro. En oscuro pasa a #2c281d; ahí la butaca ocupada usa tinta tenue al 35% (1,8:1 sobre papel), porque la regla suave oscura queda en 1,16:1 y la butaca desaparece.
 
 Contraste medido sobre papel en el tema claro: tinta 12,1:1, tinta media 6,2:1 y tinta tenue 4,5:1 (4,3:1 sobre papel tostado). El bronce como texto sobre papel, y el papel como texto sobre bronce, dan 4,1:1. El papel sobre bronce claro da 3,0:1. Esos tres casos no llegan al 4,5:1 que WCAG AA pide para texto de cuerpo. En oscuro todos pasan: bronce 7,7:1 y bronce claro 6,2:1.
 
@@ -289,13 +289,13 @@ El componente propio del sistema. Mide 20 × 17 unidades con contorno de 1 unida
 - **Disponible:** sin relleno y contorno de tinta tenue. En hover el contorno pasa a bronce.
 - **Seleccionada:** relleno y contorno de bronce.
 - **Tuya:** relleno de tinta con una tilde de papel encima.
-- **Ocupada:** relleno de regla suave, sin contorno. No responde al click.
+- **Ocupada:** relleno de regla suave, sin contorno; en oscuro, tinta tenue al 35%. No responde al click.
 - **Foco:** contorno de bronce de 2 unidades.
 - **Admin:** la bloqueada lleva contorno de tinta y una cruz; la reservada, contorno punteado (1,5 y 1); la vendida se ve como la ocupada pero se puede tocar para abrir su orden.
 - **Entrada:** cada butaca crece de 60% a 100% y aparece en 480ms, con un retraso que depende de su distancia al escenario (hasta 950ms). La sala se llena desde el escenario hacia el fondo. Con `prefers-reduced-motion` aparece sin animación.
 
 ### Escenario y leyenda
-El escenario tiene relleno de papel tostado, contorno de regla y el rótulo "Escenario" en Caveat 600, tinta media y espaciado de 0.24em. La leyenda es una fila con las cuatro butacas del selector público a tamaño real y su nombre en Body small, en tinta tenue.
+El escenario tiene relleno de papel tostado, contorno de regla y el rótulo "Escenario" en Caveat 600, tinta media y espaciado de 0.24em. La leyenda muestra las cuatro butacas del selector público a tamaño real con su nombre en Body small, en tinta tenue: una fila desde 640px y una grilla de dos columnas debajo, para que ningún estado quede solo en una segunda línea.
 
 ### Login
 El logo de 190px se revela de abajo hacia arriba en 2000ms. Detrás, cuatro arcos de regla se expanden y se desvanecen en un ciclo de 5200ms, escalonados cada 1300ms. Los textos suben 10px en 800ms, uno detrás de otro entre los 900ms y los 1300ms. Con `prefers-reduced-motion` todo aparece quieto.
