@@ -9,7 +9,7 @@ export type ReservationStatus = 'idle' | 'pending' | 'error'
 export interface Reservation {
   status: ReservationStatus
   errorMessage: string | null
-  confirm: (seatIds: string[]) => void
+  confirm: (performanceId: string, seatIds: string[]) => void
 }
 
 export function useReservation(): Reservation {
@@ -18,10 +18,10 @@ export function useReservation(): Reservation {
   const [isPending, startTransition] = useTransition()
 
   const confirm = useCallback(
-    (seatIds: string[]) => {
+    (performanceId: string, seatIds: string[]) => {
       setErrorMessage(null)
       startTransition(async () => {
-        const result = await createOrder(seatIds)
+        const result = await createOrder(performanceId, seatIds)
         if (result.ok) {
           window.location.href = result.redirectUrl
           return

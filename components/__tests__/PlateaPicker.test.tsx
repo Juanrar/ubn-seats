@@ -192,6 +192,7 @@ describe('PlateaPicker', () => {
 
     const alerta = await screen.findByRole('alert')
     expect(alerta).toHaveTextContent(/alguien reservó/i)
+    expect(createOrder).toHaveBeenCalledWith(SABADO.id, [seat.id])
     const resumen = screen.getByRole('region', { name: /tu selección/i })
     expect(within(resumen).getByText(new RegExp(`Fila ${seat.row}`))).toBeInTheDocument()
   })

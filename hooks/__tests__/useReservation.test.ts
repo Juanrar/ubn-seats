@@ -11,6 +11,8 @@ vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh }) }))
 
 import { useReservation } from '@/hooks/useReservation'
 
+const PERFORMANCE_ID = 'a82bd4e0-937c-4af5-a5c8-259a7f942c68'
+
 beforeEach(() => {
   createOrder.mockReset()
   refresh.mockReset()
@@ -29,10 +31,10 @@ describe('useReservation', () => {
     createOrder.mockResolvedValue({ ok: true, redirectUrl: 'https://mp.example/checkout/abc' })
     const { result } = renderHook(() => useReservation())
 
-    act(() => result.current.confirm(['platea-F07-12']))
+    act(() => result.current.confirm(PERFORMANCE_ID, ['platea-F07-12']))
 
     await waitFor(() => expect(window.location.href).toBe('https://mp.example/checkout/abc'))
-    expect(createOrder).toHaveBeenCalledWith(['platea-F07-12'])
+    expect(createOrder).toHaveBeenCalledWith(PERFORMANCE_ID, ['platea-F07-12'])
     expect(refresh).not.toHaveBeenCalled()
   })
 
@@ -43,7 +45,7 @@ describe('useReservation', () => {
     })
     const { result } = renderHook(() => useReservation())
 
-    act(() => result.current.confirm(['platea-F07-12']))
+    act(() => result.current.confirm(PERFORMANCE_ID, ['platea-F07-12']))
 
     await waitFor(() => expect(result.current.status).toBe('error'))
     expect(result.current.errorMessage).toBe(

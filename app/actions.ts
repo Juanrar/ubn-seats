@@ -5,6 +5,8 @@ import { createPreference } from '@/utils/mercadopago/client'
 import { requireAccessToken, NoConnectedAccountError } from '@/utils/mercadopago/account'
 import { buildOrderItems } from '@/lib/order'
 import { MAX_SEATS } from '@/lib/constants'
+import { isOnSale } from '@/lib/performance'
+import { fetchPerformance } from '@/utils/performances'
 import { TEATRO_DEL_GLOBO } from '@/lib/plans/teatro-del-globo'
 import { buildVenue } from '@/lib/venue'
 
@@ -23,7 +25,10 @@ function siteUrl(): string {
   return origin
 }
 
-export async function createOrder(seatIds: string[]): Promise<CreateOrderResult> {
+export async function createOrder(
+  performanceId: string,
+  seatIds: string[],
+): Promise<CreateOrderResult> {
   const origin = siteUrl()
   const supabase = await createClient()
   const {
@@ -41,6 +46,11 @@ export async function createOrder(seatIds: string[]): Promise<CreateOrderResult>
     return { ok: false, message: 'Selección inválida.' }
   }
 
+  const performance = await fetchPerformance(supabase, performanceId)
+  if (!performance || !isOnSale(performance, Date.now())) {
+    return { ok: false, message: 'Esta función ya no está a la venta.' }
+  }
+
   let accessToken: string
   try {
     accessToken = await requireAccessToken()
@@ -52,9 +62,10 @@ export async function createOrder(seatIds: string[]): Promise<CreateOrderResult>
   }
 
   const seats = seatIds.map((seatId) => VENUE.byId.get(seatId)!)
-  const { items, amount } = buildOrderItems(seats)
+  const { items, amount } = buildOrderItems(seats, performance)
 
   const { data: orderId, error: rpcError } = await supabase.rpc('create_order', {
+    p_performance_id: performance.id,
     p_seat_ids: seatIds,
     p_amount: amount,
   })

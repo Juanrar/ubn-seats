@@ -105,7 +105,12 @@ export function PlateaPicker({ performance, occupied, owned, email, avatarUrl }:
         total={picker.total}
         status={reservation.status}
         errorMessage={reservation.errorMessage}
-        onContinue={() => reservation.confirm(picker.selectedSeats.map((seat) => seat.id))}
+        onContinue={() =>
+          reservation.confirm(
+            performance.id,
+            picker.selectedSeats.map((seat) => seat.id),
+          )
+        }
       />
     </div>
   )

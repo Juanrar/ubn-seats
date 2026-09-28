@@ -1,3 +1,4 @@
+import { formatPerformanceDate, type Performance } from '@/lib/performance'
 import type { Seat } from '@/lib/types'
 
 export interface OrderItem {
@@ -13,10 +14,11 @@ export interface OrderSummary {
   amount: number
 }
 
-export function buildOrderItems(seats: Seat[]): OrderSummary {
+export function buildOrderItems(seats: Seat[], performance: Performance): OrderSummary {
+  const date = formatPerformanceDate(performance.startsAt)
   const items = seats.map((seat) => ({
     id: seat.id,
-    title: seat.label,
+    title: `${seat.label} · ${date}`,
     quantity: 1,
     unit_price: seat.price,
     currency_id: 'ARS' as const,
