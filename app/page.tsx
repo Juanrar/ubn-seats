@@ -1,6 +1,6 @@
 import { LoginScreen } from '@/components/LoginScreen'
-import { PlateaPicker } from '@/components/PlateaPicker'
-import { fetchOccupiedSeatIds, fetchOwnedSeatIds } from '@/utils/occupancy'
+import { PerformanceList } from '@/components/PerformanceList'
+import { fetchPerformancesOnSale } from '@/utils/performances'
 import { createClient } from '@/utils/supabase/server'
 
 export default async function Home() {
@@ -17,16 +17,12 @@ export default async function Home() {
     )
   }
 
-  const [occupied, owned] = await Promise.all([
-    fetchOccupiedSeatIds(supabase),
-    fetchOwnedSeatIds(supabase, user.id),
-  ])
+  const performances = await fetchPerformancesOnSale(supabase)
 
   return (
     <main>
-      <PlateaPicker
-        occupied={occupied}
-        owned={owned}
+      <PerformanceList
+        performances={performances}
         email={user.email ?? ''}
         avatarUrl={user.user_metadata?.avatar_url ?? null}
       />

@@ -5,8 +5,13 @@ interface ActiveReservationRow {
   status: string
 }
 
-export async function fetchOccupiedSeatIds(supabase: SupabaseClient): Promise<Set<string>> {
-  const { data, error } = await supabase.rpc('active_reservation_seats')
+export async function fetchOccupiedSeatIds(
+  supabase: SupabaseClient,
+  performanceId: string,
+): Promise<Set<string>> {
+  const { data, error } = await supabase.rpc('active_reservation_seats', {
+    p_performance_id: performanceId,
+  })
   if (error) throw error
   return new Set((data as ActiveReservationRow[] | null ?? []).map((row) => row.seat_id))
 }
@@ -14,12 +19,14 @@ export async function fetchOccupiedSeatIds(supabase: SupabaseClient): Promise<Se
 export async function fetchOwnedSeatIds(
   supabase: SupabaseClient,
   userId: string,
+  performanceId: string,
 ): Promise<Set<string>> {
   const { data, error } = await supabase
     .from('reservations')
     .select('seat_id')
     .eq('user_id', userId)
     .eq('status', 'confirmed')
+    .eq('performance_id', performanceId)
   if (error) throw error
   return new Set((data as { seat_id: string }[] | null ?? []).map((row) => row.seat_id))
 }

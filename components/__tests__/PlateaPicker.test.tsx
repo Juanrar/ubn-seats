@@ -10,7 +10,7 @@ import { nextSeatId } from '@/lib/navigation'
 import { MAX_SEATS } from '@/lib/constants'
 
 vi.mock('@/app/actions', () => ({ createOrder: vi.fn() }))
-vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn() }) }))
+vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn(), push: vi.fn() }) }))
 
 const seats = buildVenue(TEATRO_DEL_GLOBO).seats
 const occupied = buildOccupancy(seats)
@@ -22,10 +22,48 @@ const botonDe = (id: string) => {
   return screen.getAllByRole('button', { name: nombre })[0]
 }
 
+const SABADO = { id: 'a82bd4e0-937c-4af5-a5c8-259a7f942c68', startsAt: '2026-12-06T00:00:00+00:00' }
+
 const renderPicker = () =>
-  render(<PlateaPicker occupied={occupied} email="juanchilorenzo@gmail.com" avatarUrl={null} />)
+  render(
+    <PlateaPicker
+      performance={SABADO}
+      occupied={occupied}
+      email="juanchilorenzo@gmail.com"
+      avatarUrl={null}
+    />,
+  )
 
 describe('PlateaPicker', () => {
+  it('encabeza con la función en lugar del nombre de la sala', () => {
+    renderPicker()
+    const titulo = screen.getByRole('heading', { level: 1 })
+    expect(titulo).toHaveTextContent('Sábado 5')
+    expect(titulo).toHaveTextContent('21 h · Platea')
+  })
+
+  it('pone la flecha para volver a las funciones en lugar del logo', () => {
+    renderPicker()
+    expect(screen.getByRole('link', { name: 'Volver a las funciones' })).toHaveAttribute('href', '/')
+    expect(screen.queryByRole('img', { name: /logo de la compañía/i })).not.toBeInTheDocument()
+  })
+
+  it('con butacas elegidas, la flecha avisa antes de volver', async () => {
+    renderPicker()
+    await userEvent.click(botonDe(libre().id))
+    await userEvent.click(screen.getByRole('link', { name: 'Volver a las funciones' }))
+    expect(screen.getByRole('dialog', { name: '¿Volver a las funciones?' })).toHaveTextContent(
+      'Tenés 1 butaca elegida para el sábado 5.',
+    )
+  })
+
+  it('la barra inferior dice para qué función es la selección', async () => {
+    renderPicker()
+    await userEvent.click(botonDe(libre().id))
+    const barra = screen.getByRole('region', { name: /resumen de selección y continuar/i })
+    expect(within(barra).getByText(/Sáb 5 · 1 butaca\b/)).toBeInTheDocument()
+  })
+
   it('al elegir una butaca aparece en el resumen y suma al total', async () => {
     renderPicker()
     const seat = libre()
@@ -162,6 +200,7 @@ describe('PlateaPicker', () => {
     const propias = seats.filter((s) => occupied.has(s.id)).slice(0, 2)
     render(
       <PlateaPicker
+        performance={SABADO}
         occupied={occupied}
         owned={new Set(propias.map((s) => s.id))}
         email="juanchilorenzo@gmail.com"

@@ -5,6 +5,7 @@ import type { ReservationStatus } from '@/hooks/useReservation'
 import type { Seat } from '@/lib/types'
 
 export interface SelectionBarProps {
+  performanceLabel: string
   seats: Seat[]
   total: number
   status: ReservationStatus
@@ -12,7 +13,14 @@ export interface SelectionBarProps {
   onContinue: () => void
 }
 
-export function SelectionBar({ seats, total, status, errorMessage, onContinue }: SelectionBarProps) {
+export function SelectionBar({
+  performanceLabel,
+  seats,
+  total,
+  status,
+  errorMessage,
+  onContinue,
+}: SelectionBarProps) {
   if (seats.length === 0) return null
 
   const pending = status === 'pending'
@@ -30,7 +38,7 @@ export function SelectionBar({ seats, total, status, errorMessage, onContinue }:
         )}
         <div className="flex items-center justify-between gap-4">
           <span className="text-hand-base">
-            {seats.length} {seats.length === 1 ? 'butaca' : 'butacas'} ·{' '}
+            {performanceLabel} · {seats.length} {seats.length === 1 ? 'butaca' : 'butacas'} ·{' '}
             <span className="font-mono text-base">{formatTotal(total)}</span>
           </span>
           <button

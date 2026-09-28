@@ -10,9 +10,23 @@ const pick = (row: number, number: number) =>
   catalogo.find((s) => s.sector === 'platea' && s.row === row && s.number === number)!
 
 describe('SelectionBar', () => {
+  it('dice para qué función es la selección', () => {
+    render(
+      <SelectionBar
+        performanceLabel="Lun 7"
+        seats={[pick(7, 12)]}
+        total={38000}
+        status="idle"
+        errorMessage={null}
+        onContinue={vi.fn()}
+      />,
+    )
+    expect(screen.getByText(/Lun 7 · 1 butaca\b/)).toBeInTheDocument()
+  })
+
   it('no renderiza nada sin butacas seleccionadas', () => {
     const { container } = render(
-      <SelectionBar seats={[]} total={0} status="idle" errorMessage={null} onContinue={vi.fn()} />,
+      <SelectionBar performanceLabel="Sáb 5" seats={[]} total={0} status="idle" errorMessage={null} onContinue={vi.fn()} />,
     )
     expect(container).toBeEmptyDOMElement()
   })
@@ -20,6 +34,7 @@ describe('SelectionBar', () => {
   it('muestra la cantidad de butacas y el total con selección', () => {
     render(
       <SelectionBar
+        performanceLabel="Sáb 5"
         seats={[pick(2, 1), pick(12, 4)]}
         total={75000}
         status="idle"
@@ -33,7 +48,7 @@ describe('SelectionBar', () => {
 
   it('usa singular cuando hay una sola butaca', () => {
     render(
-      <SelectionBar seats={[pick(7, 12)]} total={38000} status="idle" errorMessage={null} onContinue={vi.fn()} />,
+      <SelectionBar performanceLabel="Sáb 5" seats={[pick(7, 12)]} total={38000} status="idle" errorMessage={null} onContinue={vi.fn()} />,
     )
     expect(screen.getByText(/1 butaca\b/i)).toBeInTheDocument()
   })
@@ -41,7 +56,7 @@ describe('SelectionBar', () => {
   it('el botón Continuar está habilitado y dispara onContinue al clickear', async () => {
     const onContinue = vi.fn()
     render(
-      <SelectionBar seats={[pick(7, 12)]} total={38000} status="idle" errorMessage={null} onContinue={onContinue} />,
+      <SelectionBar performanceLabel="Sáb 5" seats={[pick(7, 12)]} total={38000} status="idle" errorMessage={null} onContinue={onContinue} />,
     )
     const boton = screen.getByRole('button', { name: /continuar/i })
     expect(boton).toBeEnabled()
@@ -51,7 +66,7 @@ describe('SelectionBar', () => {
 
   it('deshabilita el botón y cambia el texto mientras está pending', () => {
     render(
-      <SelectionBar seats={[pick(7, 12)]} total={38000} status="pending" errorMessage={null} onContinue={vi.fn()} />,
+      <SelectionBar performanceLabel="Sáb 5" seats={[pick(7, 12)]} total={38000} status="pending" errorMessage={null} onContinue={vi.fn()} />,
     )
     expect(screen.getByRole('button', { name: /reservando/i })).toBeDisabled()
   })
@@ -59,6 +74,7 @@ describe('SelectionBar', () => {
   it('muestra el mensaje de error cuando hay conflicto', () => {
     render(
       <SelectionBar
+        performanceLabel="Sáb 5"
         seats={[pick(7, 12)]}
         total={38000}
         status="error"

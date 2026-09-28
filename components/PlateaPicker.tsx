@@ -1,30 +1,34 @@
 'use client'
 
 import { useMemo } from 'react'
+import { BackToPerformances } from '@/components/BackToPerformances'
 import { Legend } from '@/components/Legend'
 import { SeatButton } from '@/components/Seat'
 import { SeatMap } from '@/components/SeatMap'
 import { SelectionBar } from '@/components/SelectionBar'
 import { SelectionPanel } from '@/components/SelectionPanel'
-import { UserMenu } from '@/components/UserMenu'
+import { SiteHeader } from '@/components/SiteHeader'
 import { useReservation } from '@/hooks/useReservation'
 import { useSeatPicker } from '@/hooks/useSeatPicker'
+import { formatPerformanceShort, performanceParts, type Performance } from '@/lib/performance'
 import { TEATRO_DEL_GLOBO } from '@/lib/plans/teatro-del-globo'
 import { buildRevealDelays } from '@/lib/reveal'
 import { buildVenue } from '@/lib/venue'
 
 export interface PlateaPickerProps {
+  performance: Performance
   occupied: Set<string>
   owned?: ReadonlySet<string>
   email: string
   avatarUrl: string | null
 }
 
-export function PlateaPicker({ occupied, owned, email, avatarUrl }: PlateaPickerProps) {
+export function PlateaPicker({ performance, occupied, owned, email, avatarUrl }: PlateaPickerProps) {
   const venue = useMemo(() => buildVenue(TEATRO_DEL_GLOBO), [])
   const revealDelays = useMemo(() => buildRevealDelays(venue.seats, venue.stage), [venue])
   const picker = useSeatPicker(venue, occupied, owned)
   const reservation = useReservation()
+  const { weekday, day, time } = performanceParts(performance.startsAt)
 
   return (
     <div
@@ -32,13 +36,25 @@ export function PlateaPicker({ occupied, owned, email, avatarUrl }: PlateaPicker
         picker.selectedSeats.length > 0 ? 'pb-28' : ''
       }`}
     >
-      <header className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 border-b border-rule pb-5">
-        <div role="img" aria-label="Logo de la compañía" className="brand-mark justify-self-start" />
-        <h1 className="text-hand-h2 font-bold">{venue.plan.name}</h1>
-        <div className="justify-self-end">
-          <UserMenu email={email} avatarUrl={avatarUrl} />
-        </div>
-      </header>
+      <SiteHeader
+        stickyOnMobile
+        leading={
+          <BackToPerformances
+            selectionCount={picker.selectedSeats.length}
+            performance={performance}
+          />
+        }
+        title={
+          <>
+            {weekday} {day}
+            <span className="block text-hand-sm font-medium text-ink-mute">
+              {time} · {venue.plan.sectionName}
+            </span>
+          </>
+        }
+        email={email}
+        avatarUrl={avatarUrl}
+      />
 
       <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
         <div className="flex min-w-0 flex-1 flex-col gap-5">
@@ -84,6 +100,7 @@ export function PlateaPicker({ occupied, owned, email, avatarUrl }: PlateaPicker
       </div>
 
       <SelectionBar
+        performanceLabel={formatPerformanceShort(performance.startsAt)}
         seats={picker.selectedSeats}
         total={picker.total}
         status={reservation.status}
