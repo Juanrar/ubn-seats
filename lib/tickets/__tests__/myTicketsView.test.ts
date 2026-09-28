@@ -5,8 +5,11 @@ import { TEATRO_DEL_GLOBO } from '@/lib/plans/teatro-del-globo'
 
 const VENUE = buildVenue(TEATRO_DEL_GLOBO)
 
+const SABADO = { id: 'perf-sab', startsAt: '2026-12-06T00:00:00+00:00' }
+const LUNES = { id: 'perf-lun', startsAt: '2026-12-08T00:00:00+00:00' }
+
 function orderWith(seatIds: string[], amount = 76000) {
-  return { orderId: 'o1', amount, seatIds, createdAt: '2026-09-10T12:00:00Z' }
+  return { orderId: 'o1', amount, seatIds, createdAt: '2026-09-10T12:00:00Z', performance: SABADO }
 }
 
 describe('buildMyTicketsView', () => {
@@ -38,17 +41,31 @@ describe('buildMyTicketsView', () => {
     expect(view.seats).toEqual([{ id: 'platea-F99-1', label: 'platea-F99-1' }])
   })
 
-  it('preserva el orden de las órdenes que recibe', () => {
+  it('muestra la fecha de la función', () => {
+    const [view] = buildMyTicketsView([orderWith([VENUE.seats[0].id])], VENUE)
+
+    expect(view.date).toBe('Sábado 5 de diciembre · 21 h')
+  })
+
+  it('ordena por función, la más próxima primero, y a igual función por compra más reciente', () => {
     const seat = VENUE.seats[0]
+    const order = (orderId: string, createdAt: string, performance: typeof SABADO) => ({
+      orderId,
+      amount: 1000,
+      seatIds: [seat.id],
+      createdAt,
+      performance,
+    })
     const views = buildMyTicketsView(
       [
-        { orderId: 'nueva', amount: 1000, seatIds: [seat.id], createdAt: '2026-09-10T12:00:00Z' },
-        { orderId: 'vieja', amount: 2000, seatIds: [seat.id], createdAt: '2026-09-01T12:00:00Z' },
+        order('lunes', '2026-09-20T12:00:00Z', LUNES),
+        order('sabado-vieja', '2026-09-01T12:00:00Z', SABADO),
+        order('sabado-nueva', '2026-09-10T12:00:00Z', SABADO),
       ],
       VENUE,
     )
 
-    expect(views.map((v) => v.orderId)).toEqual(['nueva', 'vieja'])
+    expect(views.map((v) => v.orderId)).toEqual(['sabado-nueva', 'sabado-vieja', 'lunes'])
   })
 
   it('devuelve una lista vacía si no hay órdenes', () => {

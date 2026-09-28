@@ -22,7 +22,12 @@ import { resendTicket } from '@/app/mis-entradas/actions'
 beforeEach(() => {
   vi.clearAllMocks()
   getUser.mockResolvedValue({ data: { user: { id: 'u1', email: 'compra@dor.com' } } })
-  fetchOwnPaidOrder.mockResolvedValue({ orderId: 'o1', amount: 76000, seatIds: ['platea-F07-12'] })
+  fetchOwnPaidOrder.mockResolvedValue({
+    orderId: 'o1',
+    amount: 76000,
+    performance: { id: 'perf-sab', startsAt: '2026-12-06T00:00:00+00:00' },
+    seatIds: ['platea-F07-12'],
+  })
   readTicketAttachment.mockResolvedValue({ name: 'entrada.png', contentBase64: 'aGVsbG8=' })
   buildTicketEmail.mockReturnValue({
     subject: 'Tu entrada para la obra',
@@ -40,6 +45,11 @@ describe('resendTicket', () => {
     expect(params.to).toBe('compra@dor.com')
     expect(params.attachments).toEqual([{ name: 'entrada.png', contentBase64: 'aGVsbG8=' }])
     expect(params.subject).toBe('Tu entrada para la obra')
+    expect(buildTicketEmail).toHaveBeenCalledWith({
+      seatIds: ['platea-F07-12'],
+      amount: 76000,
+      performance: { id: 'perf-sab', startsAt: '2026-12-06T00:00:00+00:00' },
+    })
   })
 
   it('rechaza sin sesión', async () => {

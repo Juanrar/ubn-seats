@@ -38,7 +38,11 @@ export async function deliverTicketEmail(supabase: SupabaseClient, orderId: stri
     }
 
     const [to, attachment] = await Promise.all([buyerEmail(supabase, orderId), readTicketAttachment()])
-    const { subject, text, html } = buildTicketEmail({ seatIds: summary.seatIds, amount: summary.amount })
+    const { subject, text, html } = buildTicketEmail({
+      seatIds: summary.seatIds,
+      amount: summary.amount,
+      performance: summary.performance,
+    })
 
     await sendTicketEmail({ to, subject, text, html, attachments: [attachment] })
   } catch (error) {

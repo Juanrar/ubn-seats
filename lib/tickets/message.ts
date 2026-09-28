@@ -1,5 +1,6 @@
 import { SHOW } from '@/lib/show'
 import { formatTotal } from '@/lib/format'
+import { formatPerformanceDate, type Performance } from '@/lib/performance'
 import { buildVenue } from '@/lib/venue'
 import { TEATRO_DEL_GLOBO } from '@/lib/plans/teatro-del-globo'
 import type { Seat } from '@/lib/types'
@@ -13,6 +14,7 @@ export interface TicketEmail {
 export interface TicketEmailParams {
   seatIds: string[]
   amount: number
+  performance: Performance
 }
 
 const VENUE = buildVenue(TEATRO_DEL_GLOBO)
@@ -28,21 +30,11 @@ const ACCENT = '#8a6a3b'
 const HAND_STACK = "'Caveat', 'Segoe Script', 'Bradley Hand', cursive"
 const MONO_STACK = "'JetBrains Mono', ui-monospace, 'Courier New', monospace"
 
-const dateFormatter = new Intl.DateTimeFormat('es-AR', {
-  dateStyle: 'full',
-  timeStyle: 'short',
-  timeZone: 'America/Argentina/Buenos_Aires',
-})
-
 function resolveSeats(seatIds: string[]): Seat[] {
   return seatIds
     .map((seatId) => VENUE.byId.get(seatId))
     .filter((seat): seat is Seat => seat !== undefined)
     .sort((a, b) => a.row - b.row || a.number - b.number)
-}
-
-function showDate(): string {
-  return dateFormatter.format(new Date(SHOW.startsAt))
 }
 
 function escapeHtml(value: string): string {
@@ -59,14 +51,14 @@ function buildSubject(seats: Seat[]): string {
     : `Tus ${seats.length} entradas para ${SHOW.title}`
 }
 
-function buildText(seats: Seat[], amount: number): string {
+function buildText(seats: Seat[], amount: number, date: string): string {
   const single = seats.length === 1
   return [
     single ? '¡Listo! Tu entrada ya está confirmada.' : '¡Listo! Tus entradas ya están confirmadas.',
     '',
     SHOW.title,
     `${SHOW.venue} — ${SHOW.address}`,
-    showDate(),
+    date,
     '',
     single ? 'Tu butaca:' : 'Tus butacas:',
     ...seats.map((seat) => `  ${seat.label}`),
@@ -91,7 +83,7 @@ function seatRows(seats: Seat[]): string {
     .join('')
 }
 
-function buildHtml(seats: Seat[], amount: number): string {
+function buildHtml(seats: Seat[], amount: number, date: string): string {
   const single = seats.length === 1
 
   return `<!doctype html>
@@ -116,7 +108,7 @@ function buildHtml(seats: Seat[], amount: number): string {
           <td style="padding:20px 28px 0 28px;">
             <p style="margin:0;font-family:${HAND_STACK};font-size:24px;line-height:1.2;color:${INK};">${escapeHtml(SHOW.title)}</p>
             <p style="margin:4px 0 0 0;font-family:${HAND_STACK};font-size:19px;line-height:1.3;color:${INK_SOFT};">${escapeHtml(SHOW.venue)} — ${escapeHtml(SHOW.address)}</p>
-            <p style="margin:2px 0 0 0;font-family:${HAND_STACK};font-size:19px;line-height:1.3;color:${INK_SOFT};">${escapeHtml(showDate())}</p>
+            <p style="margin:2px 0 0 0;font-family:${HAND_STACK};font-size:19px;line-height:1.3;color:${INK_SOFT};">${escapeHtml(date)}</p>
           </td>
         </tr>
         <tr>
@@ -143,12 +135,13 @@ function buildHtml(seats: Seat[], amount: number): string {
 </html>`
 }
 
-export function buildTicketEmail({ seatIds, amount }: TicketEmailParams): TicketEmail {
+export function buildTicketEmail({ seatIds, amount, performance }: TicketEmailParams): TicketEmail {
   const seats = resolveSeats(seatIds)
+  const date = formatPerformanceDate(performance.startsAt)
 
   return {
     subject: buildSubject(seats),
-    text: buildText(seats, amount),
-    html: buildHtml(seats, amount),
+    text: buildText(seats, amount, date),
+    html: buildHtml(seats, amount, date),
   }
 }

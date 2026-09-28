@@ -47,20 +47,33 @@ function fakeSupabase({
 }
 
 describe('fetchOrderSummary', () => {
-  it('arma el resumen con status, amount y los seat_id de la orden', async () => {
+  it('arma el resumen con status, amount, la función y los seat_id de la orden', async () => {
     const supabase = fakeSupabase({
-      order: { status: 'confirmed', amount: 76000 },
+      order: { status: 'confirmed', amount: 76000, performance: { id: 'perf-sab', starts_at: '2026-12-06T00:00:00+00:00' } },
       reservations: [{ seat_id: 'platea-F07-12' }, { seat_id: 'platea-F07-13' }],
     })
 
     const result = await fetchOrderSummary(supabase, 'order-1')
 
-    expect(result).toEqual({ status: 'confirmed', amount: 76000, seatIds: ['platea-F07-12', 'platea-F07-13'] })
+    expect(result).toEqual({
+      status: 'confirmed',
+      amount: 76000,
+      performance: { id: 'perf-sab', startsAt: '2026-12-06T00:00:00+00:00' },
+      seatIds: ['platea-F07-12', 'platea-F07-13'],
+    })
+  })
+
+  it('devuelve null si la orden no trae su función', async () => {
+    const supabase = fakeSupabase({
+      order: { status: 'confirmed', amount: 76000, performance: null },
+      reservations: [{ seat_id: 'platea-F07-12' }],
+    })
+    expect(await fetchOrderSummary(supabase, 'order-1')).toBeNull()
   })
 
   it('no devuelve las butacas de reservas canceladas', async () => {
     const supabase = fakeSupabase({
-      order: { status: 'paid_without_seats', amount: 76000 },
+      order: { status: 'paid_without_seats', amount: 76000, performance: { id: 'perf-sab', starts_at: '2026-12-06T00:00:00+00:00' } },
       reservations: [
         { seat_id: 'platea-F07-12', status: 'cancelled' },
         { seat_id: 'platea-F07-13', status: 'cancelled' },
@@ -87,7 +100,7 @@ describe('fetchOrderSummary', () => {
 
   it('devuelve null ante un error en la consulta de reservations', async () => {
     const supabase = fakeSupabase({
-      order: { status: 'confirmed', amount: 76000 },
+      order: { status: 'confirmed', amount: 76000, performance: { id: 'perf-sab', starts_at: '2026-12-06T00:00:00+00:00' } },
       reservationsError: new Error('boom'),
     })
     const result = await fetchOrderSummary(supabase, 'order-1')

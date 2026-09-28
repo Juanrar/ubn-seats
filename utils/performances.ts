@@ -1,14 +1,16 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { isPerformanceId, type Performance } from '@/lib/performance'
 
-interface PerformanceRow {
+export interface PerformanceRow {
   id: string
   starts_at: string
 }
 
 const COLUMNS = 'id, starts_at'
 
-function toPerformance(row: PerformanceRow): Performance {
+export const PERFORMANCE_EMBED = `performance:performances(${COLUMNS})`
+
+export function toPerformance(row: PerformanceRow): Performance {
   return { id: row.id, startsAt: row.starts_at }
 }
 

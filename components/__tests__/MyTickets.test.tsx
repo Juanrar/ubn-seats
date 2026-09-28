@@ -9,6 +9,7 @@ const TICKET = {
   orderId: 'o1',
   seats: [{ id: 'platea-F07-12', label: 'Fila 7, butaca 12, Platea B' }],
   total: '$ 38.000',
+  date: 'Sábado 5 de diciembre · 21 h',
 }
 
 describe('MyTickets', () => {
@@ -19,16 +20,16 @@ describe('MyTickets', () => {
     expect(screen.getByRole('link', { name: /elegir butacas/i })).toHaveAttribute('href', '/')
   })
 
+  it('con entradas, el link vuelve a la lista de funciones', () => {
+    render(<MyTickets tickets={[TICKET]} />)
+
+    expect(screen.getByRole('link', { name: 'Volver a las funciones' })).toHaveAttribute('href', '/')
+  })
+
   it('apila una tarjeta por orden', () => {
     render(<MyTickets tickets={[TICKET, { ...TICKET, orderId: 'o2' }]} />)
 
     expect(screen.getAllByRole('article')).toHaveLength(2)
-  })
-
-  it('con entradas, ofrece volver al mapa', () => {
-    render(<MyTickets tickets={[TICKET]} />)
-
-    expect(screen.getByRole('link', { name: /volver al mapa/i })).toHaveAttribute('href', '/')
   })
 
   it('tiene el título de la página', () => {

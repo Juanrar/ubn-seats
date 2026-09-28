@@ -1,4 +1,5 @@
 import { formatTotal } from '@/lib/format'
+import { formatPerformanceDate, type Performance } from '@/lib/performance'
 import type { Venue } from '@/lib/venue'
 import type { Seat } from '@/lib/types'
 
@@ -7,6 +8,7 @@ export interface MyOrder {
   amount: number
   seatIds: string[]
   createdAt: string
+  performance: Performance
 }
 
 export interface TicketSeatView {
@@ -18,6 +20,7 @@ export interface TicketView {
   orderId: string
   seats: TicketSeatView[]
   total: string
+  date: string
 }
 
 function seatOrder(venue: Venue, seatId: string): [number, number] {
@@ -30,8 +33,15 @@ function toSeatView(venue: Venue, seatId: string): TicketSeatView {
   return { id: seatId, label: seat?.label ?? seatId }
 }
 
+function byPerformanceThenNewest(a: MyOrder, b: MyOrder): number {
+  return (
+    Date.parse(a.performance.startsAt) - Date.parse(b.performance.startsAt) ||
+    Date.parse(b.createdAt) - Date.parse(a.createdAt)
+  )
+}
+
 export function buildMyTicketsView(orders: MyOrder[], venue: Venue): TicketView[] {
-  return orders.map((order) => ({
+  return [...orders].sort(byPerformanceThenNewest).map((order) => ({
     orderId: order.orderId,
     seats: [...order.seatIds]
       .sort((a, b) => {
@@ -41,5 +51,6 @@ export function buildMyTicketsView(orders: MyOrder[], venue: Venue): TicketView[
       })
       .map((seatId) => toSeatView(venue, seatId)),
     total: formatTotal(order.amount),
+    date: formatPerformanceDate(order.performance.startsAt),
   }))
 }

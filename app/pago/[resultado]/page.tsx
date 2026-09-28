@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { formatTotal } from '@/lib/format'
+import { formatPerformanceDate } from '@/lib/performance'
 import {
   isPaymentResult,
   orderStatusCopy,
@@ -38,12 +39,13 @@ export default async function PagoResultadoPage({ params, searchParams }: PagePr
       <p className="text-hand-base text-ink-mute">{copy.description}</p>
       {order && seatLabels.length > 0 && (
         <div className="flex flex-col gap-2 text-hand-base">
+          <p>{formatPerformanceDate(order.performance.startsAt)}</p>
           <p>{seatLabels.join(', ')}</p>
           <p className="font-mono text-hand-base">{formatTotal(order.amount)}</p>
         </div>
       )}
       <Link href="/" className="text-hand-base text-accent underline">
-        Volver al mapa
+        Volver a las funciones
       </Link>
     </main>
   )

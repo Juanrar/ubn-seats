@@ -47,7 +47,7 @@ function clientWith(orders: Row[], reservations: Row[], fail?: 'orders' | 'reser
 describe('fetchMyOrders', () => {
   it('agrupa las butacas confirmadas por orden', async () => {
     const { supabase } = clientWith(
-      [{ id: 'o1', amount: 76000, created_at: '2026-09-10T12:00:00Z' }],
+      [{ id: 'o1', amount: 76000, created_at: '2026-09-10T12:00:00Z', performance: { id: 'perf-sab', starts_at: '2026-12-06T00:00:00+00:00' } }],
       [
         { order_id: 'o1', seat_id: 'platea-F07-12' },
         { order_id: 'o1', seat_id: 'platea-F07-13' },
@@ -60,6 +60,7 @@ describe('fetchMyOrders', () => {
         amount: 76000,
         seatIds: ['platea-F07-12', 'platea-F07-13'],
         createdAt: '2026-09-10T12:00:00Z',
+        performance: { id: 'perf-sab', startsAt: '2026-12-06T00:00:00+00:00' },
       },
     ])
   })

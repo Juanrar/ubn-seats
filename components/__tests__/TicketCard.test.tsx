@@ -15,6 +15,7 @@ const TICKET = {
     { id: 'platea-F07-13', label: 'Fila 7, butaca 13, Platea B' },
   ],
   total: '$ 76.000',
+  date: 'Sábado 5 de diciembre · 21 h',
 }
 
 beforeEach(() => {
@@ -31,6 +32,7 @@ describe('TicketCard', () => {
     render(<TicketCard ticket={TICKET} />)
 
     expect(screen.getByText(SHOW.title)).toBeInTheDocument()
+    expect(screen.getByText('Sábado 5 de diciembre · 21 h')).toBeInTheDocument()
     expect(screen.getByText('Fila 7, butaca 12, Platea B')).toBeInTheDocument()
     expect(screen.getByText('Fila 7, butaca 13, Platea B')).toBeInTheDocument()
     expect(screen.getByText('$ 76.000')).toBeInTheDocument()

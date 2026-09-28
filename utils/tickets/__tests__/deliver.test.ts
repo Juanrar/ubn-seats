@@ -35,6 +35,7 @@ beforeEach(() => {
   fetchOrderSummary.mockReset().mockResolvedValue({
     status: 'confirmed',
     amount: 5,
+    performance: { id: 'perf-sab', startsAt: '2026-12-06T00:00:00+00:00' },
     seatIds: ['platea-F07-12', 'platea-F07-11'],
   })
 })
@@ -51,6 +52,7 @@ describe('deliverTicketEmail', () => {
     expect(params.to).toBe('compradora@correo.test')
     expect(params.subject).toBe(`Tus 2 entradas para ${SHOW.title}`)
     expect(params.text).toContain('Fila 7, butaca 11, Platea B')
+    expect(params.text).toContain('Sábado 5 de diciembre · 21 h')
     expect(params.attachments).toEqual([ATTACHMENT])
   })
 

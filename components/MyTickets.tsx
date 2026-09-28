@@ -22,7 +22,7 @@ export function MyTickets({ tickets }: MyTicketsProps) {
       )}
 
       <Link href="/" className="text-hand-base text-accent underline underline-offset-4">
-        {hasTickets ? 'Volver al mapa' : 'Elegir butacas'}
+        {hasTickets ? 'Volver a las funciones' : 'Elegir butacas'}
       </Link>
     </section>
   )

@@ -3,39 +3,46 @@ import { buildTicketEmail } from '@/lib/tickets/message'
 import { SHOW } from '@/lib/show'
 
 const SEAT_IDS = ['platea-F07-12', 'platea-F07-11']
+const SABADO = { id: 'perf-sab', startsAt: '2026-12-06T00:00:00+00:00' }
 
 describe('buildTicketEmail', () => {
   it('titula el asunto con la obra y la cantidad de entradas', () => {
-    const { subject } = buildTicketEmail({ seatIds: SEAT_IDS, amount: 5 })
+    const { subject } = buildTicketEmail({ seatIds: SEAT_IDS, amount: 5, performance: SABADO })
     expect(subject).toBe(`Tus 2 entradas para ${SHOW.title}`)
   })
 
   it('usa el singular cuando hay una sola butaca', () => {
-    const { subject } = buildTicketEmail({ seatIds: ['platea-F07-12'], amount: 3 })
+    const { subject } = buildTicketEmail({ seatIds: ['platea-F07-12'], amount: 3, performance: SABADO })
     expect(subject).toBe(`Tu entrada para ${SHOW.title}`)
   })
 
   it('lista las butacas ordenadas por fila y número, con su franja', () => {
-    const { text } = buildTicketEmail({ seatIds: SEAT_IDS, amount: 5 })
+    const { text } = buildTicketEmail({ seatIds: SEAT_IDS, amount: 5, performance: SABADO })
     expect(text).toContain('Fila 7, butaca 11, Platea B')
     expect(text).toContain('Fila 7, butaca 12, Platea B')
     expect(text.indexOf('butaca 11')).toBeLessThan(text.indexOf('butaca 12'))
   })
 
   it('anuncia la sala y el total pagado', () => {
-    const { text } = buildTicketEmail({ seatIds: SEAT_IDS, amount: 5 })
+    const { text } = buildTicketEmail({ seatIds: SEAT_IDS, amount: 5, performance: SABADO })
     expect(text).toContain('Teatro del Globo')
     expect(text).toContain('$ 5')
   })
 
+  it('anuncia la fecha de la función en el texto y en el html', () => {
+    const { text, html } = buildTicketEmail({ seatIds: SEAT_IDS, amount: 5, performance: SABADO })
+    expect(text).toContain('Sábado 5 de diciembre · 21 h')
+    expect(html).toContain('Sábado 5 de diciembre · 21 h')
+  })
+
   it('ignora identificadores de butaca que no existen en la sala', () => {
-    const { text } = buildTicketEmail({ seatIds: ['platea-F99-99', 'platea-F07-12'], amount: 3 })
+    const { text } = buildTicketEmail({ seatIds: ['platea-F99-99', 'platea-F07-12'], amount: 3, performance: SABADO })
     expect(text).toContain('butaca 12')
     expect(text).not.toContain('F99')
   })
 
   it('arma una versión html con la paleta y la tipografía de la página', () => {
-    const { html } = buildTicketEmail({ seatIds: SEAT_IDS, amount: 5 })
+    const { html } = buildTicketEmail({ seatIds: SEAT_IDS, amount: 5, performance: SABADO })
     expect(html).toContain('#f1e8d3')
     expect(html).toContain('Caveat')
     expect(html).toContain('Fila 7, butaca 11, Platea B')
@@ -43,7 +50,7 @@ describe('buildTicketEmail', () => {
   })
 
   it('escapa el html de los datos de la función', () => {
-    const { html } = buildTicketEmail({ seatIds: SEAT_IDS, amount: 5 })
+    const { html } = buildTicketEmail({ seatIds: SEAT_IDS, amount: 5, performance: SABADO })
     expect(html).not.toMatch(/<script/i)
   })
 })

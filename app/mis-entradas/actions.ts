@@ -32,6 +32,7 @@ export async function resendTicket(orderId: string): Promise<ResendResult> {
     const { subject, text, html } = buildTicketEmail({
       seatIds: order.seatIds,
       amount: order.amount,
+      performance: order.performance,
     })
 
     await sendTicketEmail({ to: user.email, subject, text, html, attachments: [attachment] })

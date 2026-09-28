@@ -7,12 +7,6 @@ import type { TicketView } from '@/lib/tickets/myTicketsView'
 
 const RESEND_COOLDOWN_MS = 60000
 
-const dateFormatter = new Intl.DateTimeFormat('es-AR', {
-  dateStyle: 'full',
-  timeStyle: 'short',
-  timeZone: 'America/Argentina/Buenos_Aires',
-})
-
 export interface TicketCardProps {
   ticket: TicketView
 }
@@ -58,7 +52,7 @@ export function TicketCard({ ticket }: TicketCardProps) {
       <p className="text-hand-sm text-ink-soft">
         {SHOW.venue} — {SHOW.address}
       </p>
-      <p className="text-hand-sm text-ink-soft">{dateFormatter.format(new Date(SHOW.startsAt))}</p>
+      <p className="text-hand-sm text-ink-soft">{ticket.date}</p>
 
       <ul className="mt-4 flex flex-wrap gap-2">
         {ticket.seats.map((seat) => (

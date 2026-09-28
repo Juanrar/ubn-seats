@@ -38,7 +38,7 @@ function clientWith(order: Row | null, reservations: Row[], reservationsError = 
 
 describe('fetchOwnPaidOrder', () => {
   it('devuelve la orden con sus butacas', async () => {
-    const { supabase } = clientWith({ id: 'o1', amount: 76000 }, [
+    const { supabase } = clientWith({ id: 'o1', amount: 76000, performance: { id: 'perf-sab', starts_at: '2026-12-06T00:00:00+00:00' } }, [
       { seat_id: 'platea-F07-12' },
       { seat_id: 'platea-F07-13' },
     ])
@@ -46,12 +46,13 @@ describe('fetchOwnPaidOrder', () => {
     expect(await fetchOwnPaidOrder(supabase, 'o1')).toEqual({
       orderId: 'o1',
       amount: 76000,
+      performance: { id: 'perf-sab', startsAt: '2026-12-06T00:00:00+00:00' },
       seatIds: ['platea-F07-12', 'platea-F07-13'],
     })
   })
 
   it('filtra por la orden pedida y por estado confirmado, en las dos tablas', async () => {
-    const { supabase, calls } = clientWith({ id: 'o1', amount: 76000 }, [
+    const { supabase, calls } = clientWith({ id: 'o1', amount: 76000, performance: { id: 'perf-sab', starts_at: '2026-12-06T00:00:00+00:00' } }, [
       { seat_id: 'platea-F07-12' },
     ])
     await fetchOwnPaidOrder(supabase, 'o1')
@@ -68,12 +69,12 @@ describe('fetchOwnPaidOrder', () => {
   })
 
   it('devuelve null si la orden no tiene butacas', async () => {
-    const { supabase } = clientWith({ id: 'o1', amount: 76000 }, [])
+    const { supabase } = clientWith({ id: 'o1', amount: 76000, performance: { id: 'perf-sab', starts_at: '2026-12-06T00:00:00+00:00' } }, [])
     expect(await fetchOwnPaidOrder(supabase, 'o1')).toBeNull()
   })
 
   it('devuelve null si falla la lectura de butacas', async () => {
-    const { supabase } = clientWith({ id: 'o1', amount: 76000 }, [], true)
+    const { supabase } = clientWith({ id: 'o1', amount: 76000, performance: { id: 'perf-sab', starts_at: '2026-12-06T00:00:00+00:00' } }, [], true)
     expect(await fetchOwnPaidOrder(supabase, 'o1')).toBeNull()
   })
 })

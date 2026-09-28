@@ -14,7 +14,12 @@ beforeEach(() => {
 
 describe('PagoResultadoPage', () => {
   it('muestra el heading de éxito y el resumen de la orden', async () => {
-    fetchOrderSummary.mockResolvedValue({ status: 'confirmed', amount: 38000, seatIds: ['platea-F07-12'] })
+    fetchOrderSummary.mockResolvedValue({
+      status: 'confirmed',
+      amount: 38000,
+      performance: { id: 'perf-sab', startsAt: '2026-12-06T00:00:00+00:00' },
+      seatIds: ['platea-F07-12'],
+    })
 
     const jsx = await PagoResultadoPage({
       params: Promise.resolve({ resultado: 'exito' }),
@@ -25,6 +30,19 @@ describe('PagoResultadoPage', () => {
     expect(screen.getByText('¡Compra confirmada!')).toBeInTheDocument()
     expect(screen.getByText('Tu pago se acreditó y te enviamos tus entradas a tu mail.')).toBeInTheDocument()
     expect(screen.getByText('$ 38.000')).toBeInTheDocument()
+    expect(screen.getByText('Sábado 5 de diciembre · 21 h')).toBeInTheDocument()
+  })
+
+  it('vuelve a la lista de funciones', async () => {
+    fetchOrderSummary.mockResolvedValue(null)
+
+    const jsx = await PagoResultadoPage({
+      params: Promise.resolve({ resultado: 'error' }),
+      searchParams: Promise.resolve({}),
+    })
+    render(jsx)
+
+    expect(screen.getByRole('link', { name: 'Volver a las funciones' })).toHaveAttribute('href', '/')
   })
 
   it('muestra el heading de pendiente sin resumen si no hay orden', async () => {
@@ -65,7 +83,12 @@ describe('PagoResultadoPage', () => {
   })
 
   it('con una orden pending redirigida a /pago/exito muestra el heading de pendiente, no el de éxito', async () => {
-    fetchOrderSummary.mockResolvedValue({ status: 'pending', amount: 38000, seatIds: ['platea-F07-12'] })
+    fetchOrderSummary.mockResolvedValue({
+      status: 'pending',
+      amount: 38000,
+      performance: { id: 'perf-sab', startsAt: '2026-12-06T00:00:00+00:00' },
+      seatIds: ['platea-F07-12'],
+    })
 
     const jsx = await PagoResultadoPage({
       params: Promise.resolve({ resultado: 'exito' }),
@@ -78,7 +101,12 @@ describe('PagoResultadoPage', () => {
   })
 
   it('con una orden confirmed muestra el heading de éxito', async () => {
-    fetchOrderSummary.mockResolvedValue({ status: 'confirmed', amount: 38000, seatIds: ['platea-F07-12'] })
+    fetchOrderSummary.mockResolvedValue({
+      status: 'confirmed',
+      amount: 38000,
+      performance: { id: 'perf-sab', startsAt: '2026-12-06T00:00:00+00:00' },
+      seatIds: ['platea-F07-12'],
+    })
 
     const jsx = await PagoResultadoPage({
       params: Promise.resolve({ resultado: 'pendiente' }),
