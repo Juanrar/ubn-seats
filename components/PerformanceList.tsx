@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import type { CSSProperties } from 'react'
 import { SiteHeader } from '@/components/SiteHeader'
 import { formatPerformanceDate, performanceParts, type Performance } from '@/lib/performance'
 import { TEATRO_DEL_GLOBO } from '@/lib/plans/teatro-del-globo'
@@ -37,8 +38,12 @@ export function PerformanceList({ performances, email, avatarUrl }: PerformanceL
           <p className="pt-4 text-hand-base text-ink-mute">No hay funciones a la venta por ahora.</p>
         ) : (
           <ul className="flex flex-col">
-            {performances.map((performance) => (
-              <li key={performance.id} className="border-b border-rule">
+            {performances.map((performance, index) => (
+              <li
+                key={performance.id}
+                style={{ '--i': index } as CSSProperties}
+                className="performance-drop border-b border-rule"
+              >
                 <PerformanceRow performance={performance} />
               </li>
             ))}
