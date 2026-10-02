@@ -81,8 +81,7 @@ export function formatPerformanceDate(startsAt: string): string {
 
 export function formatPerformanceShort(startsAt: string): string {
   const { weekdayShort, day } = performanceParts(startsAt)
-  const { month } = localNumbers(startsAt)
-  return `${weekdayShort} ${day}/${month}`
+  return `${weekdayShort} ${day}`
 }
 
 export function isOnSale(performance: Performance, now: number): boolean {
