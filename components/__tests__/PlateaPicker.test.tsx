@@ -61,7 +61,7 @@ describe('PlateaPicker', () => {
     renderPicker()
     await userEvent.click(botonDe(libre().id))
     const barra = screen.getByRole('region', { name: /resumen de selección y continuar/i })
-    expect(within(barra).getByText(/Sáb 5 · 1 butaca\b/)).toBeInTheDocument()
+    expect(within(barra).getByText(/Sáb 5\/12 · 1 butaca\b/)).toBeInTheDocument()
   })
 
   it('al elegir una butaca aparece en el resumen y suma al total', async () => {

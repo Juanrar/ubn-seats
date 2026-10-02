@@ -9,11 +9,11 @@ describe('PerformanceTabs', () => {
   it('pone un link por función a su mapa', () => {
     render(<PerformanceTabs performances={[SABADO, LUNES]} selectedId={SABADO.id} />)
 
-    expect(screen.getByRole('link', { name: 'Sáb 5' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Sáb 5/12' })).toHaveAttribute(
       'href',
       `/admin?funcion=${SABADO.id}`,
     )
-    expect(screen.getByRole('link', { name: 'Lun 7' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Lun 7/12' })).toHaveAttribute(
       'href',
       `/admin?funcion=${LUNES.id}`,
     )
@@ -22,7 +22,7 @@ describe('PerformanceTabs', () => {
   it('marca la función elegida', () => {
     render(<PerformanceTabs performances={[SABADO, LUNES]} selectedId={LUNES.id} />)
 
-    expect(screen.getByRole('link', { name: 'Lun 7' })).toHaveAttribute('aria-current', 'page')
-    expect(screen.getByRole('link', { name: 'Sáb 5' })).not.toHaveAttribute('aria-current')
+    expect(screen.getByRole('link', { name: 'Lun 7/12' })).toHaveAttribute('aria-current', 'page')
+    expect(screen.getByRole('link', { name: 'Sáb 5/12' })).not.toHaveAttribute('aria-current')
   })
 })

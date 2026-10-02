@@ -44,9 +44,9 @@ describe('formatPerformanceDate', () => {
 })
 
 describe('formatPerformanceShort', () => {
-  it('abrevia el día de la semana', () => {
-    expect(formatPerformanceShort(SABADO)).toBe('Sáb 5')
-    expect(formatPerformanceShort(LUNES)).toBe('Lun 7')
+  it('abrevia el día de la semana y agrega día y mes', () => {
+    expect(formatPerformanceShort(SABADO)).toBe('Sáb 5/12')
+    expect(formatPerformanceShort(LUNES)).toBe('Lun 7/12')
   })
 })
 

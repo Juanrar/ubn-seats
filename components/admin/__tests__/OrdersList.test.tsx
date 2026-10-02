@@ -34,7 +34,7 @@ describe('OrdersList', () => {
 
   it('dice la función de cada orden', () => {
     render(<OrdersList orders={[BASE]} />)
-    expect(screen.getByRole('button', { name: /ana@mail.com.*Sáb 5/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /ana@mail.com.*Sáb 5\/12/ })).toBeInTheDocument()
   })
 
   it('filtra por mail mientras se escribe', async () => {
