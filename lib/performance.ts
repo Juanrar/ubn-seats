@@ -8,6 +8,7 @@ export interface PerformanceParts {
   weekdayShort: string
   day: number
   month: string
+  monthNumber: number
   monthShort: string
   time: string
 }
@@ -69,6 +70,7 @@ export function performanceParts(startsAt: string): PerformanceParts {
     weekdayShort: WEEKDAYS_SHORT[weekdayIndex],
     day,
     month: MONTHS[month - 1],
+    monthNumber: month,
     monthShort: MONTHS_SHORT[month - 1],
     time: formatTime(hour, minute),
   }

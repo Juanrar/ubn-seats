@@ -21,6 +21,7 @@ describe('performanceParts', () => {
       weekdayShort: 'Sáb',
       day: 5,
       month: 'diciembre',
+      monthNumber: 12,
       monthShort: 'dic',
       time: '21 h',
     })

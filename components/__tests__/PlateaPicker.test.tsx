@@ -38,7 +38,7 @@ describe('PlateaPicker', () => {
   it('encabeza con la función en lugar del nombre de la sala', () => {
     renderPicker()
     const titulo = screen.getByRole('heading', { level: 1 })
-    expect(titulo).toHaveTextContent('Sábado 5')
+    expect(titulo).toHaveTextContent('Sábado 5/12')
     expect(titulo).toHaveTextContent('21 h · Platea')
   })
 

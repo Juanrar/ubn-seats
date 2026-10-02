@@ -28,7 +28,7 @@ export function PlateaPicker({ performance, occupied, owned, email, avatarUrl }:
   const revealDelays = useMemo(() => buildRevealDelays(venue.seats, venue.stage), [venue])
   const picker = useSeatPicker(venue, occupied, owned)
   const reservation = useReservation()
-  const { weekday, day, time } = performanceParts(performance.startsAt)
+  const { weekday, day, monthNumber, time } = performanceParts(performance.startsAt)
 
   return (
     <div
@@ -46,7 +46,7 @@ export function PlateaPicker({ performance, occupied, owned, email, avatarUrl }:
         }
         title={
           <>
-            {weekday} {day}
+            {weekday} {day}/{monthNumber}
             <span className="block text-hand-sm font-medium text-ink-mute">
               {time} · {venue.plan.sectionName}
             </span>
