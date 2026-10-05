@@ -7,11 +7,12 @@ import { SHOW } from '@/lib/show'
 
 export interface PerformanceListProps {
   performances: Performance[]
+  ticketCount: number
   email: string
   avatarUrl: string | null
 }
 
-export function PerformanceList({ performances, email, avatarUrl }: PerformanceListProps) {
+export function PerformanceList({ performances, ticketCount, email, avatarUrl }: PerformanceListProps) {
   return (
     <div className="mx-auto flex w-full max-w-[var(--layout-stack)] flex-col gap-7 px-5 py-3 sm:gap-6">
       <SiteHeader
@@ -19,6 +20,7 @@ export function PerformanceList({ performances, email, avatarUrl }: PerformanceL
         title={TEATRO_DEL_GLOBO.name}
         email={email}
         avatarUrl={avatarUrl}
+        myTickets={{ count: ticketCount }}
       />
 
       <section className="flex flex-col gap-2 sm:gap-1.5">

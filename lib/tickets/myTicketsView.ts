@@ -40,6 +40,10 @@ function byPerformanceThenNewest(a: MyOrder, b: MyOrder): number {
   )
 }
 
+export function countTickets(orders: MyOrder[]): number {
+  return orders.reduce((count, order) => count + order.seatIds.length, 0)
+}
+
 export function buildMyTicketsView(orders: MyOrder[], venue: Venue): TicketView[] {
   return [...orders].sort(byPerformanceThenNewest).map((order) => ({
     orderId: order.orderId,

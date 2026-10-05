@@ -172,7 +172,7 @@ El panel de administración usa el mismo papel y la misma letra con otro registr
 Papel y tinta con un solo acento cálido. Cada token se redefine con el mismo nombre dentro de `.dark`.
 
 ### Primary
-- **Bronce de sala** (#8a6a3b): butaca seleccionada, botón "Continuar", botón de login, logo, anillo de foco de las butacas y borde de la tarjeta de entrada. En oscuro pasa a #d4a76a.
+- **Bronce de sala** (#8a6a3b): butaca seleccionada, botón "Continuar", botón de login, logo, anillo de foco de las butacas, borde de la tarjeta de entrada y contador de entradas de la cabecera en el celular. En oscuro pasa a #d4a76a.
 - **Bronce claro** (#a3814d): hover del botón primario del sitio público. En oscuro pasa a #b8966a.
 
 ### Neutral
@@ -203,7 +203,7 @@ Contraste medido sobre papel en el tema claro: tinta 12,1:1, tinta media 6,2:1 y
 - **Display** (Caveat, 700, 3.25rem, 0.95): título del login y títulos de página de "Mis entradas" y del panel de admin.
 - **Headline** (Caveat, 700, 2rem, 1): nombre de la sala en la cabecera, título de la página de pago y secciones del admin.
 - **Title** (Caveat, 600, 2rem, 1): títulos dentro de un panel o una tarjeta, como "Tu selección" o el nombre de la obra en la entrada.
-- **Lead** (Caveat, 500, 1.5rem, 1.2): la palabra "Total" del panel de selección.
+- **Lead** (Caveat, 500, 1.5rem, 1.2): la palabra "Total" del panel de selección, y el nombre de la sala en la cabecera debajo de 640px, en peso 700, cuando comparte la fila con "Mis entradas".
 - **Body** (Caveat, 500, 1.3125rem, 1.35): texto corriente, botones y filas de lista.
 - **Body small** (Caveat, 500, 1.1875rem, 1.3): leyenda, menú de usuario, mensajes de estado y acciones secundarias.
 - **Label** (Caveat, 500, 1.125rem, 1.25): categoría de la butaca bajo su número y rótulos de los contadores del admin.
@@ -228,7 +228,7 @@ El sitio público es una columna centrada de 960px como máximo (`--layout-stack
 
 El mapa nunca baja de 560px de ancho (480px en el admin). En pantallas más angostas se desplaza de costado dentro de su contenedor y las butacas conservan su tamaño. Cuando hay al menos una butaca elegida aparece la barra de selección fija abajo, y la página suma 112px de margen inferior para que la barra no tape contenido.
 
-"Mis entradas" es una columna de lectura de 720px como máximo (`--reading-max`). El panel de admin usa 768px de ancho máximo y 16px de margen lateral, con las pestañas fijas abajo (56px más el área segura del dispositivo) y la barra de acciones del mapa pegada justo encima de ellas. El login es una columna de 320px que ocupa el alto exacto de la pantalla, sin scroll. La página de resultado de pago centra su contenido en los dos ejes.
+"Mis entradas" lleva la cabecera pública con el ancho de la columna del sitio y, debajo, una columna de lectura de 720px como máximo (`--reading-max`). El panel de admin usa 768px de ancho máximo y 16px de margen lateral, con las pestañas fijas abajo (56px más el área segura del dispositivo) y la barra de acciones del mapa pegada justo encima de ellas. El login es una columna de 320px que ocupa el alto exacto de la pantalla, sin scroll. La página de resultado de pago centra su contenido en los dos ejes.
 
 El espaciado sigue la escala de 4px de Tailwind. Dentro de un bloque los elementos se separan con 8px, 12px o 16px; entre bloques de una página, con 24px en el sitio público y 16px en el admin.
 
@@ -277,6 +277,7 @@ La butaca es un rectángulo de 20 × 17 unidades del plano con esquinas de 1 uni
 
 ### Navigation
 - **Cabecera pública:** grilla de tres columnas con el avatar de 32px a la derecha, cerrada por una regla inferior (`SiteHeader`). En la lista de funciones lleva el logo de 44px en bronce a la izquierda y el nombre de la sala en Headline al centro. En el selector el logo se reemplaza por la flecha atrás, en tinta con hover bronce y área de 44px, con el texto "Funciones" desde 640px; al centro va la función en Headline ("Sábado 5") con "21 h · Platea" debajo en Body small y tinta tenue. Debajo de 640px la cabecera del selector queda fija arriba sobre papel opaco.
+- **Acceso a Mis entradas:** link a la izquierda del avatar, en la cabecera de la lista de funciones y de "Mis entradas" (`MyTicketsLink`). En el selector no va, porque saldría sin el aviso que protege la selección. Desde 640px es un botón con borde de regla, esquinas de 4px y 44px de alto, con una entrada dibujada con trazo de 1.75, el texto "Mis entradas" en Body y la cantidad de entradas en Figure inline dentro de una caja con borde de regla. En hover el texto y el borde pasan a bronce, y en la página de "Mis entradas" el borde es de tinta. Debajo de 640px pierde el borde: queda la entrada dibujada con "Entradas" debajo en Label, y la cantidad va en un círculo de bronce de 18px sobre la esquina del dibujo. Ahí la cabecera pasa a tres columnas ajustadas, con el nombre de la sala a la izquierda en Lead. Sin compras no hay contador.
 - **Lista de funciones:** un renglón por función separado por reglas. A la izquierda el día en Display con el mes corto debajo en tinta tenue; al centro el día de la semana y la hora en Lead. En escritorio "Ver disponibilidad" es texto bronce con flecha que se corre 4px con el hover. Debajo de 640px la fecha se separa con una regla vertical `rule-soft`, la hora baja debajo del día en Body small, y "Ver disponibilidad" es un botón con borde bronce de 44px de alto; al apretar, el renglón pasa a papel tostado y el botón se llena de bronce. Debajo de 360px el botón ocupa el ancho completo. El título de la obra usa `text-wrap: balance`.
 - **Aviso de salida:** `<dialog>` modal de 420px como máximo, en papel con borde de regla y esquinas de 4px, sobre un velo de papel al 75%. Título en Headline, texto en Body y dos botones en grilla: secundario "Seguir eligiendo" a la izquierda, primario bronce "Volver igual" a la derecha.
 - **Pestañas de función del admin:** grupo con borde de regla y esquinas de 6px, un link por función ("Sáb 5") de 44px de alto. La elegida va en negrita sobre papel tostado con regla inferior de 2px en tinta.
