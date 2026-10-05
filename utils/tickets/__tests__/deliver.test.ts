@@ -1,21 +1,21 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { SHOW } from '@/lib/show'
 
-const { sendTicketEmail, readTicketAttachment, fetchOrderSummary } = vi.hoisted(() => ({
+const { sendTicketEmail, buildTicketAttachment, fetchOrderSummary } = vi.hoisted(() => ({
   sendTicketEmail: vi.fn(),
-  readTicketAttachment: vi.fn(),
+  buildTicketAttachment: vi.fn(),
   fetchOrderSummary: vi.fn(),
 }))
 
 vi.mock('@/utils/email/client', () => ({ sendTicketEmail }))
-vi.mock('@/utils/tickets/attachment', () => ({ readTicketAttachment }))
+vi.mock('@/utils/tickets/attachment', () => ({ buildTicketAttachment }))
 vi.mock('@/utils/orders', () => ({ fetchOrderSummary }))
 
 import { deliverTicketEmail } from '@/utils/tickets/deliver'
 
 const ORDER_ID = '6f1b2c3d-4e5f-4a6b-8c9d-0e1f2a3b4c5d'
 const USER_ID = '11111111-2222-4333-8444-555555555555'
-const ATTACHMENT = { name: 'entrada.png', contentBase64: 'aGVsbG8=' }
+const ATTACHMENT = { name: 'entradas-ubn-2026-12-05.pdf', contentBase64: 'aGVsbG8=' }
 
 function supabaseStub({
   claim = true,
@@ -31,7 +31,7 @@ function supabaseStub({
 
 beforeEach(() => {
   sendTicketEmail.mockReset().mockResolvedValue(undefined)
-  readTicketAttachment.mockReset().mockResolvedValue(ATTACHMENT)
+  buildTicketAttachment.mockReset().mockResolvedValue(ATTACHMENT)
   fetchOrderSummary.mockReset().mockResolvedValue({
     status: 'confirmed',
     amount: 5,
@@ -54,6 +54,10 @@ describe('deliverTicketEmail', () => {
     expect(params.text).toContain('Fila 7, butaca 11, Platea B')
     expect(params.text).toContain('Sábado 5 de diciembre · 21 h')
     expect(params.attachments).toEqual([ATTACHMENT])
+    expect(buildTicketAttachment).toHaveBeenCalledWith(
+      { id: 'perf-sab', startsAt: '2026-12-06T00:00:00+00:00' },
+      ['platea-F07-12', 'platea-F07-11'],
+    )
   })
 
   it('no manda nada si otra notificación ya reclamó la entrega', async () => {
@@ -77,6 +81,16 @@ describe('deliverTicketEmail', () => {
     const supabase = supabaseStub({ email: null })
 
     await expect(deliverTicketEmail(supabase as never, ORDER_ID)).rejects.toThrow()
+
+    expect(sendTicketEmail).not.toHaveBeenCalled()
+    expect(supabase.rpc).toHaveBeenCalledWith('release_ticket_delivery', { p_order_id: ORDER_ID })
+  })
+
+  it('libera la entrega si no se puede armar la entrada', async () => {
+    const supabase = supabaseStub()
+    buildTicketAttachment.mockRejectedValue(new Error('falta el fondo'))
+
+    await expect(deliverTicketEmail(supabase as never, ORDER_ID)).rejects.toThrow('falta el fondo')
 
     expect(sendTicketEmail).not.toHaveBeenCalled()
     expect(supabase.rpc).toHaveBeenCalledWith('release_ticket_delivery', { p_order_id: ORDER_ID })

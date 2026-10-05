@@ -1,15 +1,29 @@
 import { readFile } from 'node:fs/promises'
-import { basename, join } from 'node:path'
+import { join } from 'node:path'
 import type { EmailAttachment } from '@/utils/email/client'
+import { performanceDateKey, type Performance } from '@/lib/performance'
+import { resolveTicketSeats } from '@/lib/tickets/seats'
+import { renderTicketPdf } from '@/utils/tickets/ticketPdf'
 
-const DEFAULT_TICKET_IMAGE_PATH = join('public', 'tickets', 'entrada.png')
+const ASSETS_DIR = join(process.cwd(), 'assets')
+const FONT_PATH = join(ASSETS_DIR, 'fonts', 'Barlow-SemiBold.ttf')
 
-function ticketImagePath(): string {
-  return process.env.TICKET_IMAGE_PATH || join(process.cwd(), DEFAULT_TICKET_IMAGE_PATH)
+function backgroundPath(dateKey: string): string {
+  return join(ASSETS_DIR, 'tickets', `${dateKey}.jpg`)
 }
 
-export async function readTicketAttachment(): Promise<EmailAttachment> {
-  const path = ticketImagePath()
-  const content = await readFile(path)
-  return { name: basename(path), contentBase64: content.toString('base64') }
+export async function buildTicketAttachment(
+  performance: Performance,
+  seatIds: string[],
+): Promise<EmailAttachment> {
+  const seats = resolveTicketSeats(seatIds)
+  if (seats.length === 0) {
+    throw new Error('La orden no tiene butacas del plano para armar la entrada')
+  }
+
+  const dateKey = performanceDateKey(performance.startsAt)
+  const [background, font] = await Promise.all([readFile(backgroundPath(dateKey)), readFile(FONT_PATH)])
+  const pdf = await renderTicketPdf({ background, font, seats })
+
+  return { name: `entradas-ubn-${dateKey}.pdf`, contentBase64: Buffer.from(pdf).toString('base64') }
 }

@@ -1,18 +1,20 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { getUser, fetchOwnPaidOrder, readTicketAttachment } = vi.hoisted(() => ({
+const { getUser, fetchOwnPaidOrder, buildTicketAttachment } = vi.hoisted(() => ({
   getUser: vi.fn(),
   fetchOwnPaidOrder: vi.fn(),
-  readTicketAttachment: vi.fn(),
+  buildTicketAttachment: vi.fn(),
 }))
 
 vi.mock('@/utils/supabase/server', () => ({
   createClient: async () => ({ auth: { getUser } }),
 }))
 vi.mock('@/utils/tickets/ownOrder', () => ({ fetchOwnPaidOrder }))
-vi.mock('@/utils/tickets/attachment', () => ({ readTicketAttachment }))
+vi.mock('@/utils/tickets/attachment', () => ({ buildTicketAttachment }))
 
 import { GET } from '@/app/api/entradas/[orderId]/route'
+
+const PERFORMANCE = { id: 'perf-sab', startsAt: '2026-12-06T00:00:00+00:00' }
 
 function params(orderId: string) {
   return { params: Promise.resolve({ orderId }) }
@@ -21,8 +23,13 @@ function params(orderId: string) {
 beforeEach(() => {
   vi.clearAllMocks()
   getUser.mockResolvedValue({ data: { user: { id: 'u1', email: 'a@b.com' } } })
-  fetchOwnPaidOrder.mockResolvedValue({ orderId: 'o1', amount: 76000, seatIds: ['platea-F07-12'] })
-  readTicketAttachment.mockResolvedValue({ name: 'entrada.png', contentBase64: 'aGVsbG8=' })
+  fetchOwnPaidOrder.mockResolvedValue({
+    orderId: 'o1',
+    amount: 76000,
+    performance: PERFORMANCE,
+    seatIds: ['platea-F07-12'],
+  })
+  buildTicketAttachment.mockResolvedValue({ name: 'entradas-ubn-2026-12-05.pdf', contentBase64: 'aGVsbG8=' })
 })
 
 describe('GET /api/entradas/[orderId]', () => {
@@ -32,7 +39,7 @@ describe('GET /api/entradas/[orderId]', () => {
     const response = await GET(new Request('http://localhost'), params('o1'))
     expect(response.status).toBe(401)
     expect(fetchOwnPaidOrder).not.toHaveBeenCalled()
-    expect(readTicketAttachment).not.toHaveBeenCalled()
+    expect(buildTicketAttachment).not.toHaveBeenCalled()
   })
 
   it('devuelve 404 si la orden no es del usuario o no está pagada', async () => {
@@ -42,18 +49,24 @@ describe('GET /api/entradas/[orderId]', () => {
     expect(response.status).toBe(404)
   })
 
-  it('devuelve el archivo como adjunto', async () => {
+  it('arma la entrada con la función y las butacas de la orden', async () => {
+    await GET(new Request('http://localhost'), params('o1'))
+
+    expect(buildTicketAttachment).toHaveBeenCalledWith(PERFORMANCE, ['platea-F07-12'])
+  })
+
+  it('devuelve el PDF como adjunto', async () => {
     const response = await GET(new Request('http://localhost'), params('o1'))
 
     expect(response.status).toBe(200)
-    expect(response.headers.get('content-type')).toBe('image/png')
+    expect(response.headers.get('content-type')).toBe('application/pdf')
     expect(response.headers.get('content-disposition')).toContain('attachment')
-    expect(response.headers.get('content-disposition')).toContain('entrada.png')
+    expect(response.headers.get('content-disposition')).toContain('entradas-ubn-2026-12-05.pdf')
     expect(await response.text()).toBe('hello')
   })
 
-  it('devuelve 404 si el archivo de la entrada no se puede leer', async () => {
-    readTicketAttachment.mockRejectedValue(new Error('no está'))
+  it('devuelve 404 si la entrada no se puede armar', async () => {
+    buildTicketAttachment.mockRejectedValue(new Error('falta el fondo'))
 
     const response = await GET(new Request('http://localhost'), params('o1'))
     expect(response.status).toBe(404)
