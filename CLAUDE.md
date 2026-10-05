@@ -68,7 +68,7 @@ Next.js renderiza el mapa en el servidor y en el cliente. Dos cosas lo mantienen
 
 ### `wingInnerOffset` es constante a propósito
 
-Vale `11` (= `7.5 + 1 + aisleGap`, la posición que corresponde a una fila de 16) y **no se deriva** de la semianchura de cada fila. Las filas 15 (14 butacas) y 16 (sin bloque central) tienen el centro más angosto; derivarlo de ahí correría el ala hacia adentro y torcería una columna que en el plano está recta. `geometry.aisleGap` ya no lo lee ninguna función: queda en el plano como el dato que explica esa cuenta, y el test de `lib/plans/` la verifica.
+Vale `11` (= `7.5 + 1 + aisleGap`, la posición que corresponde a una fila de 16) y **no se deriva** de la semianchura de cada fila. Las filas 14 (15 butacas), 15 (14 butacas) y 16 (sin bloque central) tienen el centro más angosto; derivarlo de ahí correría el ala hacia adentro y torcería una columna que en el plano está recta. `geometry.aisleGap` ya no lo lee ninguna función: queda en el plano como el dato que explica esa cuenta, y el test de `lib/plans/` la verifica.
 
 ### Interacción y accesibilidad
 

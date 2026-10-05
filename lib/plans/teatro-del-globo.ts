@@ -29,7 +29,7 @@ export const TEATRO_DEL_GLOBO: VenuePlan = {
     { row: 11, center: 16, wing: 3 },
     { row: 12, center: 16, wing: 3 },
     { row: 13, center: 16, wing: 3 },
-    { row: 14, center: 16, wing: 3 },
+    { row: 14, center: 15, wing: 3 },
     { row: 15, center: 14, wing: 3 },
     { row: 16, center: 0, wing: 3 },
   ],

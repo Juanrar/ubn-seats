@@ -34,14 +34,14 @@ describe('TEATRO_DEL_GLOBO — filas', () => {
     expect(rows.map((r) => r.row)).toEqual(Array.from({ length: 16 }, (_, i) => i + 1))
   })
 
-  it('tiene 2 filas de 14 butacas centrales, 1 de 15 y 12 de 16', () => {
+  it('tiene 2 filas de 14 butacas centrales, 2 de 15 y 11 de 16', () => {
     expect(rows.filter((r) => r.center === 14).map((r) => r.row)).toEqual([1, 15])
-    expect(rows.filter((r) => r.center === 15).map((r) => r.row)).toEqual([2])
-    expect(rows.filter((r) => r.center === 16)).toHaveLength(12)
+    expect(rows.filter((r) => r.center === 15).map((r) => r.row)).toEqual([2, 14])
+    expect(rows.filter((r) => r.center === 16)).toHaveLength(11)
   })
 
-  it('el bloque central suma 235 butacas', () => {
-    expect(sum(rows.map((r) => r.center))).toBe(235)
+  it('el bloque central suma 234 butacas', () => {
+    expect(sum(rows.map((r) => r.center))).toBe(234)
   })
 
   it('la fila 16 no tiene bloque central', () => {

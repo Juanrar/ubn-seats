@@ -14,12 +14,12 @@ const pick = (row: number, number: number) =>
 const dist = (a: Seat, b: Seat) => Math.hypot(a.x - b.x, a.y - b.y)
 
 describe('buildVenue — inventario', () => {
-  it('genera 301 butacas en total', () => {
-    expect(seats).toHaveLength(301)
+  it('genera 300 butacas en total', () => {
+    expect(seats).toHaveLength(300)
   })
 
-  it('genera 235 butacas en el bloque central y 33 por ala', () => {
-    expect(bySector('platea')).toHaveLength(235)
+  it('genera 234 butacas en el bloque central y 33 por ala', () => {
+    expect(bySector('platea')).toHaveLength(234)
     expect(bySector('platea-ala-izq')).toHaveLength(33)
     expect(bySector('platea-ala-der')).toHaveLength(33)
   })
@@ -33,7 +33,7 @@ describe('buildVenue — inventario', () => {
   })
 
   it('indexa las butacas por id', () => {
-    expect(venue.byId.size).toBe(301)
+    expect(venue.byId.size).toBe(300)
     expect(venue.byId.get('platea-F07-12')).toBe(pick(7, 12))
   })
 
@@ -61,14 +61,16 @@ describe('buildVenue — numeración', () => {
     ])
   })
 
-  it('numera la fila 2 de 15 como en el plano: llega al 15 a la izquierda y al 14 a la derecha', () => {
-    expect(centerRow(2).map((s) => s.number)).toEqual([
-      15, 13, 11, 9, 7, 5, 3, 1, 2, 4, 6, 8, 10, 12, 14,
-    ])
+  it('numera las filas 2 y 14, de 15, como en el plano: llegan al 15 a la izquierda y al 14 a la derecha', () => {
+    for (const row of [2, 14]) {
+      expect(centerRow(row).map((s) => s.number)).toEqual([
+        15, 13, 11, 9, 7, 5, 3, 1, 2, 4, 6, 8, 10, 12, 14,
+      ])
+    }
   })
 
-  it('centra la fila de 15 en la butaca 1', () => {
-    expect(pick(2, 1).x).toBe(geometry.center.x)
+  it('centra las filas de 15 en la butaca 1', () => {
+    for (const row of [2, 14]) expect(pick(row, 1).x).toBe(geometry.center.x)
   })
 
   it('pone el 1 y el 2 en el centro de la fila', () => {
@@ -179,7 +181,7 @@ describe('buildVenue — geometría', () => {
   })
 
   it('alinea la columna de alas aunque el bloque central se angoste', () => {
-    const xs = [6, 10, 15, 16].map((row) =>
+    const xs = [6, 10, 14, 15, 16].map((row) =>
       bySector('platea-ala-der')
         .filter((s) => s.row === row)
         .reduce((min, s) => Math.min(min, s.x), Infinity),
@@ -256,7 +258,7 @@ describe('buildVenue — filas agrupadas', () => {
   })
 
   it('reparte todas las butacas entre las filas sin perder ninguna', () => {
-    expect(venue.rows.reduce((n, r) => n + r.seats.length, 0)).toBe(301)
+    expect(venue.rows.reduce((n, r) => n + r.seats.length, 0)).toBe(300)
   })
 })
 
