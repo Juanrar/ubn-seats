@@ -255,7 +255,7 @@ La butaca es un rectángulo de 20 × 17 unidades del plano con esquinas de 1 uni
 - **Primary:** fondo bronce, texto papel en tamaño Body, 8px por 20px de padding ("Continuar"). El de login es más grande, con 46px de alto mínimo, 24px de padding lateral y un globo de 20px dibujado con trazo.
 - **Hover / Focus:** el hover pasa a bronce claro con una transición de color de 150ms. El foco usa el contorno del navegador; la butaca es el único elemento con anillo propio. Deshabilitado baja a 50% de opacidad.
 - **Outline:** borde de 1px y texto en bronce ("Descargar entradas"). En hover se llena de bronce con texto papel.
-- **Text:** sin fondo ni borde, en tinta tenue o tinta media ("Vaciar", "Reenviar al mail", la × de quitar butaca). El hover pasa a bronce.
+- **Text:** sin fondo ni borde, en tinta tenue o tinta media ("Vaciar", la × de quitar butaca). El hover pasa a bronce.
 - **Primary (admin):** fondo tinta, texto papel en negrita, 44px de alto mínimo y sin hover. Deshabilitado baja a 60%.
 - **Secondary (admin):** borde de regla y texto tinta en peso 500, mismo alto. Las acciones que no se pueden deshacer van en una grilla de dos columnas, con la secundaria a la izquierda para volver atrás y la primaria a la derecha para confirmar.
 

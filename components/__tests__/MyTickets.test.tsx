@@ -1,8 +1,5 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
-
-vi.mock('@/app/mis-entradas/actions', () => ({ resendTicket: vi.fn() }))
-
 import { MyTickets } from '@/components/MyTickets'
 
 const TICKET = {
