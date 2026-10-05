@@ -86,6 +86,13 @@ export function formatPerformanceShort(startsAt: string): string {
   return `${weekdayShort} ${day}`
 }
 
+const pad2 = (value: number) => String(value).padStart(2, '0')
+
+export function performanceDateKey(startsAt: string): string {
+  const { year, month, day } = localNumbers(startsAt)
+  return `${year}-${pad2(month)}-${pad2(day)}`
+}
+
 export function isOnSale(performance: Performance, now: number): boolean {
   return Date.parse(performance.startsAt) > now
 }

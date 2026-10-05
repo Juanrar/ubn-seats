@@ -5,6 +5,7 @@ import {
   formatPerformanceShort,
   isOnSale,
   isPerformanceId,
+  performanceDateKey,
   performanceParts,
   type Performance,
 } from '@/lib/performance'
@@ -95,5 +96,16 @@ describe('defaultPerformance', () => {
 
   it('devuelve null sin funciones', () => {
     expect(defaultPerformance([], Date.parse(SABADO))).toBeNull()
+  })
+})
+
+describe('performanceDateKey', () => {
+  it('usa la fecha de Argentina aunque en UTC ya sea el día siguiente', () => {
+    expect(performanceDateKey(SABADO)).toBe('2026-12-05')
+    expect(performanceDateKey(LUNES)).toBe('2026-12-07')
+  })
+
+  it('completa con cero el mes y el día de una cifra', () => {
+    expect(performanceDateKey('2027-03-04T23:00:00+00:00')).toBe('2027-03-04')
   })
 })
