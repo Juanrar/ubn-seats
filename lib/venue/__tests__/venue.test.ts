@@ -14,14 +14,14 @@ const pick = (row: number, number: number) =>
 const dist = (a: Seat, b: Seat) => Math.hypot(a.x - b.x, a.y - b.y)
 
 describe('buildVenue — inventario', () => {
-  it('genera 300 butacas en total', () => {
-    expect(seats).toHaveLength(300)
+  it('genera 299 butacas en total', () => {
+    expect(seats).toHaveLength(299)
   })
 
-  it('genera 234 butacas en el bloque central y 33 por ala', () => {
+  it('genera 234 butacas en el bloque central, 33 en el ala izquierda y 32 en la derecha', () => {
     expect(bySector('platea')).toHaveLength(234)
     expect(bySector('platea-ala-izq')).toHaveLength(33)
-    expect(bySector('platea-ala-der')).toHaveLength(33)
+    expect(bySector('platea-ala-der')).toHaveLength(32)
   })
 
   it('no repite ids', () => {
@@ -33,7 +33,7 @@ describe('buildVenue — inventario', () => {
   })
 
   it('indexa las butacas por id', () => {
-    expect(venue.byId.size).toBe(300)
+    expect(venue.byId.size).toBe(299)
     expect(venue.byId.get('platea-F07-12')).toBe(pick(7, 12))
   })
 
@@ -109,9 +109,34 @@ describe('buildVenue — numeración', () => {
     expect(fila.map((s) => s.number)).toEqual([18, 20, 22])
   })
 
+  it('numera las alas de las filas 14 a 16 como en el plano, desde el pasillo hacia afuera', () => {
+    const wing = (sector: string, row: number) =>
+      bySector(sector)
+        .filter((s) => s.row === row)
+        .sort((a, b) => Math.abs(a.x) - Math.abs(b.x))
+        .map((s) => s.number)
+    expect([14, 15, 16].map((row) => wing('platea-ala-izq', row))).toEqual([
+      [17, 19, 21],
+      [15, 17, 19],
+      [15, 17, 19],
+    ])
+    expect([14, 15, 16].map((row) => wing('platea-ala-der', row))).toEqual([
+      [16, 18, 20],
+      [16, 18, 20],
+      [16, 18],
+    ])
+  })
+
+  it('no repite un número de butaca dentro de la misma fila', () => {
+    for (const { seats: rowSeats } of venue.rows) {
+      const numbers = rowSeats.map((s) => s.number)
+      expect(new Set(numbers).size).toBe(numbers.length)
+    }
+  })
+
   it('la fila 16 solo tiene butacas de ala', () => {
     const fila16 = seats.filter((s) => s.row === 16)
-    expect(fila16).toHaveLength(6)
+    expect(fila16).toHaveLength(5)
     expect(fila16.every((s) => s.sector.startsWith('platea-ala'))).toBe(true)
   })
 })
@@ -258,7 +283,7 @@ describe('buildVenue — filas agrupadas', () => {
   })
 
   it('reparte todas las butacas entre las filas sin perder ninguna', () => {
-    expect(venue.rows.reduce((n, r) => n + r.seats.length, 0)).toBe(300)
+    expect(venue.rows.reduce((n, r) => n + r.seats.length, 0)).toBe(299)
   })
 })
 
@@ -279,8 +304,8 @@ describe('buildVenue — el plano es dato', () => {
     },
     stage: { x: -50, y: 40, width: 100, height: 20, label: 'TABLADO' },
     rows: [
-      { row: 1, center: 2, wing: 0 },
-      { row: 2, center: 4, wing: 0 },
+      { row: 1, center: 2, leftWing: [], rightWing: [] },
+      { row: 2, center: 4, leftWing: [], rightWing: [] },
     ],
     centerBlock: {
       sector: 'platea',
@@ -292,8 +317,6 @@ describe('buildVenue — el plano es dato', () => {
     wings: {
       leftSector: 'platea-ala-izq',
       rightSector: 'platea-ala-der',
-      leftStartNumber: 17,
-      rightStartNumber: 18,
       tier: { label: 'Ala', price: 100 },
     },
     framePadding: 5,
@@ -310,6 +333,20 @@ describe('buildVenue — el plano es dato', () => {
   it('numera cada fila según su ancho', () => {
     expect(otro.rows[0].seats.map((s) => s.number)).toEqual([1, 2])
     expect(otro.rows[1].seats.map((s) => s.number)).toEqual([3, 1, 2, 4])
+  })
+
+  it('toma los números de cada ala del plano, desde el pasillo hacia afuera', () => {
+    const conAlas = buildVenue({
+      ...sintetico,
+      rows: [{ row: 1, center: 2, leftWing: [3, 5], rightWing: [4] }],
+    })
+    const wing = (sector: string) =>
+      conAlas.seats
+        .filter((s) => s.sector === sector)
+        .sort((a, b) => Math.abs(a.x) - Math.abs(b.x))
+        .map((s) => s.number)
+    expect(wing('platea-ala-izq')).toEqual([3, 5])
+    expect(wing('platea-ala-der')).toEqual([4])
   })
 
   it('aplica las franjas del plano sintético', () => {

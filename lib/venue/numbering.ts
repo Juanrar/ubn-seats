@@ -11,7 +11,3 @@ export function centerRowNumbers(n: number): number[] {
   const right = everyOtherUpTo(n, 2)
   return [...left, ...right]
 }
-
-export function wingNumber(startNumber: number, index: number): number {
-  return startNumber + 2 * index
-}

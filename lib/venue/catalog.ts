@@ -1,7 +1,7 @@
 import { boundingBox, placeAtOffset, type Box } from '@/lib/geometry'
 import type { RowPlan, Seat, SectorId, VenuePlan } from '@/lib/types'
 import { seatLabel } from '@/lib/venue/labels'
-import { centerRowNumbers, wingNumber } from '@/lib/venue/numbering'
+import { centerRowNumbers } from '@/lib/venue/numbering'
 import { tierFor } from '@/lib/venue/pricing'
 
 export const round3 = (n: number): number => Math.round(n * 1000) / 1000 + 0
@@ -41,7 +41,7 @@ function makeSeat(
 
 export function buildSeats(plan: VenuePlan): Seat[] {
   const { wingInnerOffset } = plan.geometry
-  const { leftSector, rightSector, leftStartNumber, rightStartNumber } = plan.wings
+  const { leftSector, rightSector } = plan.wings
   const seats: Seat[] = []
 
   for (const rowPlan of plan.rows) {
@@ -52,11 +52,13 @@ export function buildSeats(plan: VenuePlan): Seat[] {
       seats.push(makeSeat(plan, plan.centerBlock.sector, row, number, k - h))
     })
 
-    for (let j = 0; j < rowPlan.wing; j++) {
-      const offset = wingInnerOffset + j
-      seats.push(makeSeat(plan, leftSector, row, wingNumber(leftStartNumber, j), -offset))
-      seats.push(makeSeat(plan, rightSector, row, wingNumber(rightStartNumber, j), offset))
-    }
+    rowPlan.leftWing.forEach((number, j) => {
+      seats.push(makeSeat(plan, leftSector, row, number, -(wingInnerOffset + j)))
+    })
+
+    rowPlan.rightWing.forEach((number, j) => {
+      seats.push(makeSeat(plan, rightSector, row, number, wingInnerOffset + j))
+    })
   }
 
   return seats
