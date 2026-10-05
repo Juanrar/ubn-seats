@@ -29,8 +29,12 @@ export async function renderTicketPdf({ background, font, seats }: TicketPdfInpu
   const embeddedFont = await pdf.embedFont(font, { subset: true })
   const image = await pdf.embedJpg(background)
   const { capHeight, unitsPerEm } = fontkit.create(font)
+  const capHeightRatio = capHeight / unitsPerEm
+  if (!(capHeightRatio > 0 && capHeightRatio < 1)) {
+    throw new Error('La fuente de la entrada no informa la altura de las mayúsculas')
+  }
   const metrics = {
-    capHeightRatio: capHeight / unitsPerEm,
+    capHeightRatio,
     widthOfTextAtSize: (text: string, size: number) => embeddedFont.widthOfTextAtSize(text, size),
   }
 

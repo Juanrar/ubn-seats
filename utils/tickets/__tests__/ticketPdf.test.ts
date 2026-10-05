@@ -1,8 +1,8 @@
 // @vitest-environment node
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { PDFDocument } from 'pdf-lib'
+import { PDFDocument, PDFPage } from 'pdf-lib'
 import { renderTicketPdf } from '@/utils/tickets/ticketPdf'
 
 const background = readFileSync(join(process.cwd(), 'assets', 'tickets', '2026-12-05.jpg'))
@@ -28,6 +28,19 @@ describe('renderTicketPdf', () => {
 
     expect(width).toBeCloseTo(518.4)
     expect(height).toBeCloseTo(196.8)
+  })
+
+  it('dibuja la fila y el asiento con un tamaño válido', async () => {
+    const drawText = vi.spyOn(PDFPage.prototype, 'drawText')
+
+    await renderTicketPdf({ background, font, seats: [{ row: 7, number: 12 }] })
+
+    expect(drawText.mock.calls.map(([text]) => text)).toEqual(['7', '12'])
+    for (const [, options] of drawText.mock.calls) {
+      expect(Number.isFinite(options?.size)).toBe(true)
+      expect(options?.size).toBeGreaterThan(0)
+    }
+    drawText.mockRestore()
   })
 
   it('falla si el fondo no es un JPG', async () => {

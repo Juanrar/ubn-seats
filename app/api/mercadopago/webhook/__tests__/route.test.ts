@@ -191,10 +191,13 @@ describe('POST /api/mercadopago/webhook', () => {
     getPayment.mockResolvedValue({ status: 'approved', externalReference: ORDER_ID })
     rpc.mockResolvedValue({ data: null, error: null })
     deliverTicketEmail.mockRejectedValue(new Error('Brevo caído'))
+    const logError = vi.spyOn(console, 'error').mockImplementation(() => {})
 
     const res = await POST(validRequest())
 
     expect(res.status).toBe(200)
+    expect(logError.mock.calls[0][1]).toBe(ORDER_ID)
+    logError.mockRestore()
   })
 
   it('no manda la entrada si no se pudo confirmar la orden', async () => {

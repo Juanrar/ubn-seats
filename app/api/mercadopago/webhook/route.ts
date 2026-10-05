@@ -66,7 +66,8 @@ export async function POST(request: NextRequest) {
     if (status === 'confirmed') {
       try {
         await deliverTicketEmail(supabase, payment.externalReference)
-      } catch {
+      } catch (error) {
+        console.error('No se pudo entregar la entrada de la orden', payment.externalReference, error)
         return NextResponse.json({ ok: true, delivered: false })
       }
     }
