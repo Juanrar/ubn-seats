@@ -18,7 +18,7 @@ Convención: el término del dominio está en **español** (lo habla el plano y 
 
 **Fila** (`row`) — Un arco concéntrico de butacas. **Siempre 1-indexada**, igual que el plano — nunca 0-indexada en la interfaz pública. Cada fila se describe con un `RowPlan`: `{ row, center, wing }`.
 
-**Bloque central** (`center`) — Las butacas de la fila que están entre los dos pasillos. 14 butacas en las filas 1 y 15, 16 en las filas 2–14. **La fila 16 no tiene bloque central**: existe sólo en las alas.
+**Bloque central** (`center`) — Las butacas de la fila que están entre los dos pasillos. 14 butacas en las filas 1 y 15, 15 en la fila 2 y 16 en las filas 3–14. **La fila 16 no tiene bloque central**: existe sólo en las alas.
 
 **Ala** (`wing`) — La columna lateral de butacas por fuera del pasillo, izquierda y derecha. 3 butacas por lado, filas 6 a 16. A diferencia del bloque central, el ala es una **columna recta**, no un arco que sigue la fila — de ahí que su offset sea una constante del plano (`geometry.wingInnerOffset`, 11) y no se derive de la fila.
 
@@ -26,9 +26,9 @@ Convención: el término del dominio está en **español** (lo habla el plano y 
 
 ## Las butacas
 
-**Butaca** (`Seat`) — Lo único que una persona puede ocupar: 236 en el bloque central + 66 en las alas = **302 en total**. No hay otra clase de plaza; el `aria-label` de cada una lo arma `lib/venue/labels.ts` al construir el catálogo.
+**Butaca** (`Seat`) — Lo único que una persona puede ocupar: 235 en el bloque central + 66 en las alas = **301 en total**. No hay otra clase de plaza; el `aria-label` de cada una lo arma `lib/venue/labels.ts` al construir el catálogo.
 
-**Número de butaca** (`number`) — La numeración del plano: **desde el centro hacia afuera**, impares a la izquierda y pares a la derecha. Una fila de 14 queda `13 11 9 7 5 3 1 | 2 4 6 8 10 12 14`. Las alas continúan la serie: izquierda `17, 19, 21`; derecha `18, 20, 22`. No confundir con el índice posicional dentro de la fila.
+**Número de butaca** (`number`) — La numeración del plano: **desde el centro hacia afuera**, impares a la izquierda y pares a la derecha. Una fila de 14 queda `13 11 9 7 5 3 1 | 2 4 6 8 10 12 14`. La fila 2 tiene 15: un impar más que pares, `15 13 11 9 7 5 3 1 | 2 4 6 8 10 12 14`, y la butaca 1 queda en el centro de la fila. Las alas continúan la serie: izquierda `17, 19, 21`; derecha `18, 20, 22`. No confundir con el índice posicional dentro de la fila.
 
 **Id de butaca** (`Seat.id`) — `"<sector>-F<fila con 2 dígitos>-<número>"`, p. ej. `platea-F07-12`. Estable y derivable de `(sector, fila, número)`, **nunca de la geometría**: así la selección puede serializarse a URL o `localStorage` sin depender de las constantes del plano.
 

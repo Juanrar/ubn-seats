@@ -30,9 +30,9 @@ function renderMap(statusOf: (s: Seat) => SeatStatus = () => 'available') {
 }
 
 describe('SeatMap', () => {
-  it('pinta las 302 butacas', () => {
+  it('pinta las 301 butacas', () => {
     renderMap()
-    expect(screen.getAllByRole('button')).toHaveLength(302)
+    expect(screen.getAllByRole('button')).toHaveLength(301)
   })
 
   it('rotula el escenario', () => {

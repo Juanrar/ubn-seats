@@ -14,12 +14,12 @@ const pick = (row: number, number: number) =>
 const dist = (a: Seat, b: Seat) => Math.hypot(a.x - b.x, a.y - b.y)
 
 describe('buildVenue — inventario', () => {
-  it('genera 302 butacas en total', () => {
-    expect(seats).toHaveLength(302)
+  it('genera 301 butacas en total', () => {
+    expect(seats).toHaveLength(301)
   })
 
-  it('genera 236 butacas en el bloque central y 33 por ala', () => {
-    expect(bySector('platea')).toHaveLength(236)
+  it('genera 235 butacas en el bloque central y 33 por ala', () => {
+    expect(bySector('platea')).toHaveLength(235)
     expect(bySector('platea-ala-izq')).toHaveLength(33)
     expect(bySector('platea-ala-der')).toHaveLength(33)
   })
@@ -33,7 +33,7 @@ describe('buildVenue — inventario', () => {
   })
 
   it('indexa las butacas por id', () => {
-    expect(venue.byId.size).toBe(302)
+    expect(venue.byId.size).toBe(301)
     expect(venue.byId.get('platea-F07-12')).toBe(pick(7, 12))
   })
 
@@ -59,6 +59,16 @@ describe('buildVenue — numeración', () => {
     expect(centerRow(7).map((s) => s.number)).toEqual([
       15, 13, 11, 9, 7, 5, 3, 1, 2, 4, 6, 8, 10, 12, 14, 16,
     ])
+  })
+
+  it('numera la fila 2 de 15 como en el plano: llega al 15 a la izquierda y al 14 a la derecha', () => {
+    expect(centerRow(2).map((s) => s.number)).toEqual([
+      15, 13, 11, 9, 7, 5, 3, 1, 2, 4, 6, 8, 10, 12, 14,
+    ])
+  })
+
+  it('centra la fila de 15 en la butaca 1', () => {
+    expect(pick(2, 1).x).toBe(geometry.center.x)
   })
 
   it('pone el 1 y el 2 en el centro de la fila', () => {
@@ -246,7 +256,7 @@ describe('buildVenue — filas agrupadas', () => {
   })
 
   it('reparte todas las butacas entre las filas sin perder ninguna', () => {
-    expect(venue.rows.reduce((n, r) => n + r.seats.length, 0)).toBe(302)
+    expect(venue.rows.reduce((n, r) => n + r.seats.length, 0)).toBe(301)
   })
 })
 

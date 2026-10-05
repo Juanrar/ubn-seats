@@ -39,9 +39,9 @@ describe('AdminSeatMap', () => {
     loadOrder.mockResolvedValue(null)
   })
 
-  it('pinta las 302 butacas', () => {
+  it('pinta las 301 butacas', () => {
     renderMap()
-    expect(screen.getAllByRole('button', { name: /fila/i })).toHaveLength(302)
+    expect(screen.getAllByRole('button', { name: /fila/i })).toHaveLength(301)
   })
 
   it('es una sola parada de tabulación', () => {

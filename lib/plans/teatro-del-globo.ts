@@ -17,7 +17,7 @@ export const TEATRO_DEL_GLOBO: VenuePlan = {
   stage: { x: -270, y: 140, width: 540, height: 100, label: 'Escenario' },
   rows: [
     { row: 1, center: 14, wing: 0 },
-    { row: 2, center: 16, wing: 0 },
+    { row: 2, center: 15, wing: 0 },
     { row: 3, center: 16, wing: 0 },
     { row: 4, center: 16, wing: 0 },
     { row: 5, center: 16, wing: 0 },
