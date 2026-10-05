@@ -1,8 +1,7 @@
 import { SHOW } from '@/lib/show'
 import { formatTotal } from '@/lib/format'
 import { formatPerformanceDate, type Performance } from '@/lib/performance'
-import { buildVenue } from '@/lib/venue'
-import { TEATRO_DEL_GLOBO } from '@/lib/plans/teatro-del-globo'
+import { resolveTicketSeats } from '@/lib/tickets/seats'
 import type { Seat } from '@/lib/types'
 
 export interface TicketEmail {
@@ -17,8 +16,6 @@ export interface TicketEmailParams {
   performance: Performance
 }
 
-const VENUE = buildVenue(TEATRO_DEL_GLOBO)
-
 const PAPER = '#f1e8d3'
 const PAPER_2 = '#ece1c7'
 const INK = '#2b2820'
@@ -29,13 +26,6 @@ const ACCENT = '#8a6a3b'
 
 const HAND_STACK = "'Caveat', 'Segoe Script', 'Bradley Hand', cursive"
 const MONO_STACK = "'JetBrains Mono', ui-monospace, 'Courier New', monospace"
-
-function resolveSeats(seatIds: string[]): Seat[] {
-  return seatIds
-    .map((seatId) => VENUE.byId.get(seatId))
-    .filter((seat): seat is Seat => seat !== undefined)
-    .sort((a, b) => a.row - b.row || a.number - b.number)
-}
 
 function escapeHtml(value: string): string {
   return value
@@ -136,7 +126,7 @@ function buildHtml(seats: Seat[], amount: number, date: string): string {
 }
 
 export function buildTicketEmail({ seatIds, amount, performance }: TicketEmailParams): TicketEmail {
-  const seats = resolveSeats(seatIds)
+  const seats = resolveTicketSeats(seatIds)
   const date = formatPerformanceDate(performance.startsAt)
 
   return {
