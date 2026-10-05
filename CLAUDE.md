@@ -30,7 +30,7 @@ No hay linter configurado: `typecheck` + tests son la verificación.
 
 Selector de butacas del sector **Platea** del Teatro del Globo: reproduce el plano real de la sala en SVG y permite elegir butacas con un panel de resumen. Sin backend, sin checkout, sin persistencia. Es la **base de front** sobre la que se va a añadir lógica y contenido.
 
-El diseño y el plan originales viven en `docs/superpowers/` (untracked). El spec (`specs/2026-08-20-...-design.md`) es la fuente de verdad para geometría, inventario del plano, precios y requisitos de accesibilidad. Sus tokens de color y tipografías quedaron viejos: lo visual está en `DESIGN.md`. **Leelo antes de tocar geometría, numeración o precios.** El glosario del dominio está en `CONTEXT.md`.
+El diseño y el plan originales viven en `docs/superpowers/` (untracked). El spec (`specs/2026-08-20-...-design.md`) es la fuente de verdad para geometría, numeración, inventario del plano, precios de venta y requisitos de accesibilidad. Sus demás secciones son de la primera versión y lo avisan al principio: lo visual está en `DESIGN.md` y la arquitectura, en este archivo. Los precios de `lib/plans/teatro-del-globo.ts` hoy son de prueba (1, 2 y 3 en el bloque central, 1 en las alas) para probar cobros; los de venta están en el spec. **Leelo antes de tocar geometría, numeración o precios.** El glosario del dominio está en `CONTEXT.md`.
 
 ## Arquitectura
 
