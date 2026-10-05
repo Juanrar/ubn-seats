@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { buildTicketEmail } from '@/lib/tickets/message'
 import { sendTicketEmail } from '@/utils/email/client'
-import { readTicketAttachment } from '@/utils/tickets/attachment'
+import { buildTicketAttachment } from '@/utils/tickets/attachment'
 import { fetchOrderSummary } from '@/utils/orders'
 
 async function buyerEmail(supabase: SupabaseClient, orderId: string): Promise<string> {
@@ -37,7 +37,10 @@ export async function deliverTicketEmail(supabase: SupabaseClient, orderId: stri
       throw new Error(`No se pudo leer el resumen de la orden ${orderId}`)
     }
 
-    const [to, attachment] = await Promise.all([buyerEmail(supabase, orderId), readTicketAttachment()])
+    const [to, attachment] = await Promise.all([
+      buyerEmail(supabase, orderId),
+      buildTicketAttachment(summary.performance, summary.seatIds),
+    ])
     const { subject, text, html } = buildTicketEmail({
       seatIds: summary.seatIds,
       amount: summary.amount,

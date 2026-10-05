@@ -4,7 +4,7 @@ import { createClient } from '@/utils/supabase/server'
 import { fetchOwnPaidOrder } from '@/utils/tickets/ownOrder'
 import { buildTicketEmail } from '@/lib/tickets/message'
 import { sendTicketEmail } from '@/utils/email/client'
-import { readTicketAttachment } from '@/utils/tickets/attachment'
+import { buildTicketAttachment } from '@/utils/tickets/attachment'
 
 export type ResendResult = { ok: true } | { ok: false; message: string }
 
@@ -28,7 +28,7 @@ export async function resendTicket(orderId: string): Promise<ResendResult> {
   }
 
   try {
-    const attachment = await readTicketAttachment()
+    const attachment = await buildTicketAttachment(order.performance, order.seatIds)
     const { subject, text, html } = buildTicketEmail({
       seatIds: order.seatIds,
       amount: order.amount,

@@ -1,6 +1,6 @@
 import { createClient } from '@/utils/supabase/server'
 import { fetchOwnPaidOrder } from '@/utils/tickets/ownOrder'
-import { readTicketAttachment } from '@/utils/tickets/attachment'
+import { buildTicketAttachment } from '@/utils/tickets/attachment'
 import { ticketContentType } from '@/utils/tickets/contentType'
 
 export async function GET(_request: Request, { params }: { params: Promise<{ orderId: string }> }) {
@@ -16,7 +16,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ ord
   if (!order) return new Response('No encontrada', { status: 404 })
 
   try {
-    const attachment = await readTicketAttachment()
+    const attachment = await buildTicketAttachment(order.performance, order.seatIds)
     return new Response(Buffer.from(attachment.contentBase64, 'base64'), {
       headers: {
         'content-type': ticketContentType(attachment.name),
