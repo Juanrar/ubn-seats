@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { buildMyTicketsView } from '@/lib/tickets/myTicketsView'
+import { buildMyTicketsView, countTickets } from '@/lib/tickets/myTicketsView'
 import { buildVenue } from '@/lib/venue'
 import { TEATRO_DEL_GLOBO } from '@/lib/plans/teatro-del-globo'
 
@@ -70,5 +70,18 @@ describe('buildMyTicketsView', () => {
 
   it('devuelve una lista vacía si no hay órdenes', () => {
     expect(buildMyTicketsView([], VENUE)).toEqual([])
+  })
+})
+
+describe('countTickets', () => {
+  it('cuenta una entrada por butaca de todas las órdenes', () => {
+    const [a, b, c] = VENUE.seats
+    const orders = [orderWith([a.id, b.id]), { ...orderWith([c.id]), orderId: 'o2' }]
+
+    expect(countTickets(orders)).toBe(3)
+  })
+
+  it('sin órdenes no hay entradas', () => {
+    expect(countTickets([])).toBe(0)
   })
 })

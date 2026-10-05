@@ -32,6 +32,13 @@ const renderPicker = () =>
   )
 
 describe('PlateaPicker', () => {
+  it('no ofrece Mis entradas en la cabecera, que saldría sin el aviso de selección', () => {
+    renderPicker()
+    const cabecera = screen.getByRole('banner')
+
+    expect(within(cabecera).queryByRole('link', { name: /mis entradas/i })).not.toBeInTheDocument()
+  })
+
   it('encabeza con la función en lugar del nombre de la sala', () => {
     renderPicker()
     const titulo = screen.getByRole('heading', { level: 1 })

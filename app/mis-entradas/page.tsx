@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { MyTickets } from '@/components/MyTickets'
-import { buildMyTicketsView } from '@/lib/tickets/myTicketsView'
+import { buildMyTicketsView, countTickets } from '@/lib/tickets/myTicketsView'
 import { buildVenue } from '@/lib/venue'
 import { TEATRO_DEL_GLOBO } from '@/lib/plans/teatro-del-globo'
 import { fetchMyOrders } from '@/utils/tickets/myOrders'
@@ -20,7 +20,12 @@ export default async function MisEntradas() {
 
   return (
     <main>
-      <MyTickets tickets={buildMyTicketsView(orders, VENUE)} />
+      <MyTickets
+        tickets={buildMyTicketsView(orders, VENUE)}
+        ticketCount={countTickets(orders)}
+        email={user.email ?? ''}
+        avatarUrl={user.user_metadata?.avatar_url ?? null}
+      />
     </main>
   )
 }

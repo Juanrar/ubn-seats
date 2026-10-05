@@ -10,10 +10,27 @@ import { SHOW } from '@/lib/show'
 const SABADO = { id: 'a82bd4e0-937c-4af5-a5c8-259a7f942c68', startsAt: '2026-12-06T00:00:00+00:00' }
 const LUNES = { id: 'b93ce5f1-a48d-4bf6-b6d9-36a8b053d79a', startsAt: '2026-12-08T00:00:00+00:00' }
 
-const renderList = (performances = [SABADO, LUNES]) =>
-  render(<PerformanceList performances={performances} email="juanchilorenzo@gmail.com" avatarUrl={null} />)
+const renderList = (performances = [SABADO, LUNES], ticketCount = 0) =>
+  render(
+    <PerformanceList
+      performances={performances}
+      ticketCount={ticketCount}
+      email="juanchilorenzo@gmail.com"
+      avatarUrl={null}
+    />,
+  )
 
 describe('PerformanceList', () => {
+  it('muestra en la cabecera el acceso a Mis entradas con la cantidad', () => {
+    renderList([SABADO, LUNES], 3)
+    const cabecera = screen.getByRole('banner')
+
+    expect(within(cabecera).getByRole('link', { name: 'Mis entradas, 3 entradas' })).toHaveAttribute(
+      'href',
+      '/mis-entradas',
+    )
+  })
+
   it('muestra el logo, la obra y la dirección', () => {
     renderList()
     expect(screen.getByRole('img', { name: /logo de la compañía/i })).toBeInTheDocument()
