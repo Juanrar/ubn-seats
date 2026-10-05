@@ -34,27 +34,59 @@ describe('TEATRO_DEL_GLOBO — filas', () => {
     expect(rows.map((r) => r.row)).toEqual(Array.from({ length: 16 }, (_, i) => i + 1))
   })
 
-  it('tiene 2 filas de 14 butacas centrales y 13 de 16', () => {
+  it('tiene 2 filas de 14 butacas centrales, 2 de 15 y 11 de 16', () => {
     expect(rows.filter((r) => r.center === 14).map((r) => r.row)).toEqual([1, 15])
-    expect(rows.filter((r) => r.center === 16)).toHaveLength(13)
+    expect(rows.filter((r) => r.center === 15).map((r) => r.row)).toEqual([2, 14])
+    expect(rows.filter((r) => r.center === 16)).toHaveLength(11)
   })
 
-  it('el bloque central suma 236 butacas', () => {
-    expect(sum(rows.map((r) => r.center))).toBe(236)
+  it('el bloque central suma 234 butacas', () => {
+    expect(sum(rows.map((r) => r.center))).toBe(234)
   })
 
   it('la fila 16 no tiene bloque central', () => {
     expect(rows[15].center).toBe(0)
-    expect(rows[15].wing).toBe(3)
+  })
+})
+
+describe('TEATRO_DEL_GLOBO — alas', () => {
+  it('las filas 1 a 5 no tienen alas', () => {
+    for (const r of rows.slice(0, 5)) {
+      expect(r.leftWing).toEqual([])
+      expect(r.rightWing).toEqual([])
+    }
   })
 
-  it('las alas van de la fila 6 a la 16 con 3 butacas por lado', () => {
-    for (const r of rows) expect(r.wing).toBe(r.row >= 6 ? 3 : 0)
-    expect(sum(rows.map((r) => r.wing)) * 2).toBe(66)
+  it('numera las alas de las filas 6 a 13 con 17 19 21 a la izquierda y 18 20 22 a la derecha', () => {
+    for (const r of rows.slice(5, 13)) {
+      expect(r.leftWing).toEqual([17, 19, 21])
+      expect(r.rightWing).toEqual([18, 20, 22])
+    }
   })
 
-  it('todas las filas centrales tienen cantidad par de butacas', () => {
-    for (const r of rows) expect(r.center % 2).toBe(0)
+  it('numera las alas de las filas 14 a 16 como en el plano', () => {
+    expect(rows[13]).toMatchObject({ leftWing: [17, 19, 21], rightWing: [16, 18, 20] })
+    expect(rows[14]).toMatchObject({ leftWing: [15, 17, 19], rightWing: [16, 18, 20] })
+    expect(rows[15]).toMatchObject({ leftWing: [15, 17, 19], rightWing: [16, 18] })
+  })
+
+  it('el ala izquierda suma 33 butacas y la derecha 32', () => {
+    expect(sum(rows.map((r) => r.leftWing.length))).toBe(33)
+    expect(sum(rows.map((r) => r.rightWing.length))).toBe(32)
+  })
+
+  it('cada ala avanza de a dos desde el pasillo: impares a la izquierda, pares a la derecha', () => {
+    for (const r of rows) {
+      for (const [wing, parity] of [
+        [r.leftWing, 1],
+        [r.rightWing, 0],
+      ] as const) {
+        wing.forEach((number, i) => {
+          expect(number % 2).toBe(parity)
+          if (i > 0) expect(number - wing[i - 1]).toBe(2)
+        })
+      }
+    }
   })
 })
 
@@ -71,11 +103,6 @@ describe('TEATRO_DEL_GLOBO — franjas', () => {
     const tiers = plan.centerBlock.tiers
     expect(tiers[tiers.length - 1].throughRow).toBeUndefined()
     for (const t of tiers.slice(0, -1)) expect(t.throughRow).toBeGreaterThan(0)
-  })
-
-  it('las alas continúan la numeración del bloque central', () => {
-    expect(plan.wings.leftStartNumber).toBe(17)
-    expect(plan.wings.rightStartNumber).toBe(18)
   })
 
   it('asigna un sector propio a cada zona', () => {

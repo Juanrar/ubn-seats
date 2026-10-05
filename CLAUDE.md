@@ -30,7 +30,7 @@ No hay linter configurado: `typecheck` + tests son la verificación.
 
 Selector de butacas del sector **Platea** del Teatro del Globo: reproduce el plano real de la sala en SVG y permite elegir butacas con un panel de resumen. Sin backend, sin checkout, sin persistencia. Es la **base de front** sobre la que se va a añadir lógica y contenido.
 
-El diseño y el plan originales viven en `docs/superpowers/` (untracked). El spec (`specs/2026-08-20-...-design.md`) es la fuente de verdad para geometría, inventario del plano, precios y requisitos de accesibilidad. Sus tokens de color y tipografías quedaron viejos: lo visual está en `DESIGN.md`. **Leelo antes de tocar geometría, numeración o precios.** El glosario del dominio está en `CONTEXT.md`.
+El diseño y el plan originales viven en `docs/superpowers/` (untracked). El spec (`specs/2026-08-20-...-design.md`) es la fuente de verdad para geometría, numeración, inventario del plano, precios de venta y requisitos de accesibilidad. Sus demás secciones son de la primera versión y lo avisan al principio: lo visual está en `DESIGN.md` y la arquitectura, en este archivo. Los precios de `lib/plans/teatro-del-globo.ts` hoy son de prueba (1, 2 y 3 en el bloque central, 1 en las alas) para probar cobros; los de venta están en el spec. **Leelo antes de tocar geometría, numeración o precios.** El glosario del dominio está en `CONTEXT.md`.
 
 ## Arquitectura
 
@@ -68,7 +68,7 @@ Next.js renderiza el mapa en el servidor y en el cliente. Dos cosas lo mantienen
 
 ### `wingInnerOffset` es constante a propósito
 
-Vale `11` (= `7.5 + 1 + aisleGap`, la posición que corresponde a una fila de 16) y **no se deriva** de la semianchura de cada fila. Las filas 15 (14 butacas) y 16 (sin bloque central) tienen el centro más angosto; derivarlo de ahí correría el ala hacia adentro y torcería una columna que en el plano está recta. `geometry.aisleGap` ya no lo lee ninguna función: queda en el plano como el dato que explica esa cuenta, y el test de `lib/plans/` la verifica.
+Vale `11` (= `7.5 + 1 + aisleGap`, la posición que corresponde a una fila de 16) y **no se deriva** de la semianchura de cada fila. Las filas 14 (15 butacas), 15 (14 butacas) y 16 (sin bloque central) tienen el centro más angosto; derivarlo de ahí correría el ala hacia adentro y torcería una columna que en el plano está recta. `geometry.aisleGap` ya no lo lee ninguna función: queda en el plano como el dato que explica esa cuenta, y el test de `lib/plans/` la verifica.
 
 ### Interacción y accesibilidad
 

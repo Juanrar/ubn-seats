@@ -1,15 +1,13 @@
-export function centerRowNumbers(n: number): number[] {
-  if (n < 0) throw new Error(`Cantidad de butacas negativa: ${n}`)
-  if (n % 2 !== 0) throw new Error(`La fila debe tener cantidad par de butacas, recibí ${n}`)
-
-  const half = n / 2
-  const left: number[] = []
-  for (let i = half; i >= 1; i--) left.push(2 * i - 1)
-  const right: number[] = []
-  for (let i = 1; i <= half; i++) right.push(2 * i)
-  return [...left, ...right]
+function everyOtherUpTo(n: number, first: number): number[] {
+  const numbers: number[] = []
+  for (let number = first; number <= n; number += 2) numbers.push(number)
+  return numbers
 }
 
-export function wingNumber(startNumber: number, index: number): number {
-  return startNumber + 2 * index
+export function centerRowNumbers(n: number): number[] {
+  if (n < 0) throw new Error(`Cantidad de butacas negativa: ${n}`)
+
+  const left = everyOtherUpTo(n, 1).reverse()
+  const right = everyOtherUpTo(n, 2)
+  return [...left, ...right]
 }

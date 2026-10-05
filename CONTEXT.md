@@ -16,19 +16,19 @@ Convención: el término del dominio está en **español** (lo habla el plano y 
 
 **Platea** — El sector del nivel inferior, el único implementado. 16 filas.
 
-**Fila** (`row`) — Un arco concéntrico de butacas. **Siempre 1-indexada**, igual que el plano — nunca 0-indexada en la interfaz pública. Cada fila se describe con un `RowPlan`: `{ row, center, wing }`.
+**Fila** (`row`) — Un arco concéntrico de butacas. **Siempre 1-indexada**, igual que el plano — nunca 0-indexada en la interfaz pública. Cada fila se describe con un `RowPlan`: `{ row, center, leftWing, rightWing }`.
 
-**Bloque central** (`center`) — Las butacas de la fila que están entre los dos pasillos. 14 butacas en las filas 1 y 15, 16 en las filas 2–14. **La fila 16 no tiene bloque central**: existe sólo en las alas.
+**Bloque central** (`center`) — Las butacas de la fila que están entre los dos pasillos. 14 butacas en las filas 1 y 15, 15 en las filas 2 y 14, y 16 en las filas 3–13. **La fila 16 no tiene bloque central**: existe sólo en las alas.
 
-**Ala** (`wing`) — La columna lateral de butacas por fuera del pasillo, izquierda y derecha. 3 butacas por lado, filas 6 a 16. A diferencia del bloque central, el ala es una **columna recta**, no un arco que sigue la fila — de ahí que su offset sea una constante del plano (`geometry.wingInnerOffset`, 11) y no se derive de la fila.
+**Ala** (`leftWing`, `rightWing`) — La columna lateral de butacas por fuera del pasillo, izquierda y derecha. Va de la fila 6 a la 16, con 3 butacas por lado salvo el ala derecha de la fila 16, que tiene 2. Cada fila lista los números de cada ala desde el pasillo hacia afuera; la cantidad de butacas es el largo de esa lista. A diferencia del bloque central, el ala es una **columna recta**, no un arco que sigue la fila — de ahí que su offset sea una constante del plano (`geometry.wingInnerOffset`, 11) y no se derive de la fila.
 
 **Pasillo** (`geometry.aisleGap`) — La separación entre el bloque central y el ala, medida en unidades de `geometry.seatPitch` (vale 2,5). No es un objeto en el modelo ni lo lee ninguna función: es el dato que explica el `11` de `wingInnerOffset` (`7,5 + 1 + 2,5`), y el test del plano verifica esa cuenta.
 
 ## Las butacas
 
-**Butaca** (`Seat`) — Lo único que una persona puede ocupar: 236 en el bloque central + 66 en las alas = **302 en total**. No hay otra clase de plaza; el `aria-label` de cada una lo arma `lib/venue/labels.ts` al construir el catálogo.
+**Butaca** (`Seat`) — Lo único que una persona puede ocupar: 234 en el bloque central + 65 en las alas (33 a la izquierda, 32 a la derecha) = **299 en total**. No hay otra clase de plaza; el `aria-label` de cada una lo arma `lib/venue/labels.ts` al construir el catálogo.
 
-**Número de butaca** (`number`) — La numeración del plano: **desde el centro hacia afuera**, impares a la izquierda y pares a la derecha. Una fila de 14 queda `13 11 9 7 5 3 1 | 2 4 6 8 10 12 14`. Las alas continúan la serie: izquierda `17, 19, 21`; derecha `18, 20, 22`. No confundir con el índice posicional dentro de la fila.
+**Número de butaca** (`number`) — La numeración del plano: **desde el centro hacia afuera**, impares a la izquierda y pares a la derecha. Una fila de 14 queda `13 11 9 7 5 3 1 | 2 4 6 8 10 12 14`. Las filas 2 y 14 tienen 15: un impar más que pares, `15 13 11 9 7 5 3 1 | 2 4 6 8 10 12 14`, y la butaca 1 queda en el centro de la fila. Las alas siguen la serie de a dos desde el pasillo: en las filas 6 a 13, izquierda `17, 19, 21` y derecha `18, 20, 22`. Abajo cambia: la fila 14 tiene `17, 19, 21` y `16, 18, 20`; la 15, `15, 17, 19` y `16, 18, 20`; la 16, `15, 17, 19` y `16, 18`. Los números vienen del plano y no se derivan del bloque central: la fila 16 no tiene bloque central y su ala igual arranca en 15 y 16. Dentro de una fila ningún número se repite, porque el `aria-label` ("Fila 14, butaca 16") tiene que nombrar una sola butaca. No confundir con el índice posicional dentro de la fila.
 
 **Id de butaca** (`Seat.id`) — `"<sector>-F<fila con 2 dígitos>-<número>"`, p. ej. `platea-F07-12`. Estable y derivable de `(sector, fila, número)`, **nunca de la geometría**: así la selección puede serializarse a URL o `localStorage` sin depender de las constantes del plano.
 

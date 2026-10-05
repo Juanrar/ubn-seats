@@ -16,11 +16,8 @@ const seats = buildVenue(TEATRO_DEL_GLOBO).seats
 const occupied = buildOccupancy(seats)
 const libre = (n = 0) => seats.filter((s) => !occupied.has(s.id))[n]
 
-const botonDe = (id: string) => {
-  const seat = seats.find((s) => s.id === id)!
-  const nombre = new RegExp(`Fila ${seat.row}, butaca ${seat.number},`)
-  return screen.getAllByRole('button', { name: nombre })[0]
-}
+const botonDe = (id: string) =>
+  document.querySelector<SVGGElement>(`[role="button"][data-seat-id="${id}"]`)!
 
 const SABADO = { id: 'a82bd4e0-937c-4af5-a5c8-259a7f942c68', startsAt: '2026-12-06T00:00:00+00:00' }
 

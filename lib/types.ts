@@ -32,7 +32,8 @@ export interface GeometryPlan {
 export interface RowPlan {
   row: number
   center: number
-  wing: number
+  leftWing: number[]
+  rightWing: number[]
 }
 
 export interface TierPlan {
@@ -49,8 +50,6 @@ export interface CenterBlockPlan {
 export interface WingsPlan {
   leftSector: SectorId
   rightSector: SectorId
-  leftStartNumber: number
-  rightStartNumber: number
   tier: TierPlan
 }
 
