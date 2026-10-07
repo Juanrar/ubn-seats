@@ -60,6 +60,13 @@ describe('MyTickets', () => {
     )
   })
 
+  it('sin entradas no muestra en la cabecera el acceso a Mis entradas', () => {
+    renderTickets([], 0)
+    const cabecera = screen.getByRole('banner')
+
+    expect(within(cabecera).queryByRole('link', { name: /mis entradas/i })).not.toBeInTheDocument()
+  })
+
   it('tiene el título de la página', () => {
     renderTickets([])
 

@@ -31,6 +31,13 @@ describe('PerformanceList', () => {
     )
   })
 
+  it('sin entradas no muestra en la cabecera el acceso a Mis entradas', () => {
+    renderList([SABADO, LUNES], 0)
+    const cabecera = screen.getByRole('banner')
+
+    expect(within(cabecera).queryByRole('link', { name: /mis entradas/i })).not.toBeInTheDocument()
+  })
+
   it('muestra el logo, la obra y la dirección', () => {
     renderList()
     expect(screen.getByRole('img', { name: /logo de la compañía/i })).toBeInTheDocument()

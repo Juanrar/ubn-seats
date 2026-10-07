@@ -4,15 +4,9 @@ import { MyTicketsLink } from '@/components/MyTicketsLink'
 
 describe('MyTicketsLink', () => {
   it('lleva a Mis entradas', () => {
-    render(<MyTicketsLink count={0} />)
+    render(<MyTicketsLink count={3} />)
 
-    expect(screen.getByRole('link', { name: 'Mis entradas' })).toHaveAttribute('href', '/mis-entradas')
-  })
-
-  it('sin entradas no muestra un contador', () => {
-    render(<MyTicketsLink count={0} />)
-
-    expect(screen.getByRole('link')).not.toHaveTextContent(/\d/)
+    expect(screen.getByRole('link')).toHaveAttribute('href', '/mis-entradas')
   })
 
   it('con entradas suma la cantidad al nombre y la muestra', () => {

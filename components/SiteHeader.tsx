@@ -28,16 +28,18 @@ export function SiteHeader({
   myTickets,
   stickyOnMobile = false,
 }: SiteHeaderProps) {
+  const showsTickets = myTickets !== undefined && myTickets.count > 0
+
   return (
     <header
-      className={`grid items-center border-b border-rule pb-5 ${myTickets ? GRID_WITH_TICKETS : CENTERED_GRID} ${
+      className={`grid items-center border-b border-rule pb-5 ${showsTickets ? GRID_WITH_TICKETS : CENTERED_GRID} ${
         stickyOnMobile ? STICKY_ON_MOBILE : ''
       }`}
     >
       <div className="justify-self-start">{leading}</div>
-      <h1 className={`font-bold ${myTickets ? TITLE_WITH_TICKETS : CENTERED_TITLE}`}>{title}</h1>
+      <h1 className={`font-bold ${showsTickets ? TITLE_WITH_TICKETS : CENTERED_TITLE}`}>{title}</h1>
       <div className="flex items-center gap-1.5 justify-self-end sm:gap-4">
-        {myTickets && <MyTicketsLink {...myTickets} />}
+        {showsTickets && <MyTicketsLink {...myTickets} />}
         <UserMenu email={email} avatarUrl={avatarUrl} />
       </div>
     </header>

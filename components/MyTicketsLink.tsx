@@ -32,32 +32,26 @@ function TicketIcon() {
 }
 
 export function MyTicketsLink({ count, current = false }: MyTicketsLinkProps) {
-  const hasTickets = count > 0
-
   return (
     <Link
       href={MY_TICKETS_PATH}
       aria-current={current ? 'page' : undefined}
-      aria-label={hasTickets ? `Mis entradas, ${ticketCountText(count)}` : 'Mis entradas'}
+      aria-label={`Mis entradas, ${ticketCountText(count)}`}
       className={`inline-flex min-h-11 min-w-11 flex-col items-center justify-center gap-0.5 rounded-sm px-1 text-ink transition-colors hover:text-accent sm:flex-row sm:gap-2 sm:border sm:px-3 sm:hover:border-accent ${
         current ? 'sm:border-ink' : 'sm:border-rule'
       }`}
     >
       <span className="relative">
         <TicketIcon />
-        {hasTickets && (
-          <span className="absolute -top-2 -right-3 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-accent px-1 font-mono text-[0.8125rem] leading-none text-paper sm:hidden">
-            {count}
-          </span>
-        )}
+        <span className="absolute -top-2 -right-3 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-accent px-1 font-mono text-[0.8125rem] leading-none text-paper sm:hidden">
+          {count}
+        </span>
       </span>
       <span className="text-hand-xs leading-none sm:hidden">Entradas</span>
       <span className="text-hand-base max-sm:hidden">Mis entradas</span>
-      {hasTickets && (
-        <span className="rounded-sm border border-rule px-1.5 font-mono text-[0.8125rem] leading-5 text-ink-soft max-sm:hidden">
-          {count}
-        </span>
-      )}
+      <span className="rounded-sm border border-rule px-1.5 font-mono text-[0.8125rem] leading-5 text-ink-soft max-sm:hidden">
+        {count}
+      </span>
     </Link>
   )
 }
